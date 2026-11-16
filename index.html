@@ -221,6 +221,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
    <button id="bAdd" aria-label="Add new"><svg viewBox="0 0 24 24" style="stroke-width:2.6"><path d="M12 4v16M4 12h16"/></svg><span class="lbt">Add</span></button>
    <button id="bPages" aria-label="Pages"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></svg><span class="lbt" id="pgLbl">Pages</span></button>
    <button id="bUndo" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+   <button id="bLasso" title="Select several things (or Shift-drag)"><svg viewBox="0 0 24 24"><path d="M5 9c0-3 3.5-5 7.5-5S20 6 20 9s-3.5 5-7.5 5c-1.2 0-2.3-.2-3.3-.5" stroke-dasharray="3 2.5"/><path d="M8 13.5c-1.8.8-2.5 2-2 3.3.6 1.5 2.6 1.6 3.2.2.4-1-.4-2.2-1.2-3.5zM6.5 19.5L5 22"/></svg><span class="lbt">Select</span></button>
    <button id="bRedo" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
    <span class="sep"></span>
    <button id="bFr" title="Show storyboard frames"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg><span class="lbt">Frames</span></button>
@@ -245,7 +246,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_VERSION='20261116040337';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_VERSION='20261116042743';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -592,7 +593,7 @@ function restore(snap){
  const o=JSON.parse(snap),pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
  P.characters=o.c;P.scenes=o.s.map(s=>{s.pageId=pids[s.id]==='all'||s.pages.some(p=>p.id===pids[s.id])?pids[s.id]:s.pages[0].id;return s;});
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;
- cur=snap;sel=null;detectChanges();saveLocal();schedulePush();render();
+ cur=snap;sel=null;msel=null;detectChanges();saveLocal();schedulePush();render();
 }
 function undo(){if(!undoS.length)return;redoS.push(cur);restore(undoS.pop());}
 function redo(){if(!redoS.length)return;undoS.push(cur);restore(redoS.pop());}
@@ -782,6 +783,7 @@ function arrow(a,b,col,dash,trim,soft,hit){
 const MOVABLE=t=>t==='prop'||t==='light';
 function positions(it){return it.marks?it.marks:[{x:it.x,y:it.y,rot:it.rot||0},...(it.mv||[])];}
 function posAt(it,i){return it.marks?it.marks[i]:(i?it.mv[i-1]:it);}
+function stripes(g,dk){const xs=g==='m'?[0]:g==='f'?[-6.5,0,6.5]:[];return xs.map(x=>{const h=Math.sqrt(15*15-x*x)-1.2;return `<line class="deco" x1="${x}" y1="${-h}" x2="${x}" y2="${h}" stroke="${dk}" stroke-width="2"/>`;}).join('');}
 function turnArc(m,dk){
  if(m.turn==null)return '';const r0=m.rot||0;let d=((m.turn-r0)%360+540)%360-180;if(Math.abs(d)<3)return '';
  const R=25,a0=rad(r0+(d>0?14:-14)),a1=rad(r0+d),x0=Math.cos(a0)*R,y0=Math.sin(a0)*R,x1=Math.cos(a1)*R,y1=Math.sin(a1)*R,sw=d>0?1:0,lg=Math.abs(d)>194?1:0;
@@ -827,7 +829,7 @@ function itemsMarkup(sc,pid){
    it.marks.forEach((m,i)=>{
     if(i>0)paths+=arrow(it.marks[i-1],m,col,true,19,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     const L=behind(m.rot,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
-    chars+=`<g data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="26" fill="transparent"/><g transform="rotate(${m.rot||0})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/><path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${turnArc(m,dk)}<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}${n>1?`<circle class="deco" cx="0" cy="0" r="7.5" fill="#fff" stroke="${dk}" stroke-width="1.5"/><text class="bd deco" x="0" y="3.2" text-anchor="middle">${i+1}</text>`:''}</g>`;
+    chars+=`<g data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="26" fill="transparent"/><g transform="rotate(${m.rot||0})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${turnArc(m,dk)}<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}${n>1?`<circle class="deco" cx="0" cy="0" r="7.5" fill="#fff" stroke="${dk}" stroke-width="1.5"/><text class="bd deco" x="0" y="3.2" text-anchor="middle">${i+1}</text>`:''}</g>`;
    });
   }else if(it.type==='cam'){
    const st=setupIn(sc,it.setupId);const col=st?st.color:'#999',dk=shade(col,-.42),lab=`Cam ${st?st.num:'?'}${it.letter}`,n=it.marks.length;
@@ -859,6 +861,8 @@ function bendHandles(it){
 }
 function uiMarkup(){
  let h='';
+ if(gesture&&gesture.type==='lasso'&&gesture.pts.length>1)h+=`<path d="M${gesture.pts.map(p=>p.x+','+p.y).join('L')}Z" fill="#2f6fde" fill-opacity=".07" stroke="#2f6fde" stroke-width="1.5" stroke-dasharray="6 4" vector-effect="non-scaling-stroke" class="deco"/>`;
+ if(msel)for(const it of mselItems()){const b=msBox(it);if(b)h+=`<rect class="ring" x="${b.x0}" y="${b.y0}" width="${b.x1-b.x0}" height="${b.y1-b.y0}" rx="6"/>`+(it.locked?lockBadge(b.x1,b.y0):'');}
  if(tool&&tool.t==='wall'&&tool.last){h+=`<circle cx="${tool.last.x}" cy="${tool.last.y}" r="${6/view.k}" fill="#2f6fde"/>`;if(tool.hover)h+=`<line x1="${tool.last.x}" y1="${tool.last.y}" x2="${tool.hover.x}" y2="${tool.hover.y}" stroke="#2f6fde" stroke-width="${8}" stroke-opacity=".35" stroke-linecap="square"/>`;}
  if(!sel)return h;const s=scene(),k=view.k;
  if(sel.id==='__bg'){const b=s.bg;if(!b)return h;const w=b.w*b.s,hh=b.h*b.s;return h+`<rect class="ring" x="${b.x}" y="${b.y}" width="${w}" height="${hh}"/>`+(b.locked?lockBadge(b.x+w,b.y):hnd('bgscale',b.x+w,b.y+hh));}
@@ -940,6 +944,7 @@ function inspHTML(){
   return x+`<div class="ph"><i class="dot" style="background:${c.color}"></i>Character</div>
   <label class="fld">Name<input data-f="char.name" value="${esc(c.name)}" autocomplete="off" autocapitalize="characters"></label>
   <div class="lbl">Color</div>${swatches('char.color',CHAR_COLORS,c.color,true)}
+  <div class="lbl">Type <span class="mut">· one stripe male, three stripes female</span></div><div class="pgck">${[['m','Male'],['f','Female'],['','Not set']].map(([v,l])=>`<button data-act="ctype" data-v="${v}" class="${(c.g||'')===v?'on':''}">${l}</button>`).join('')}</div>
   <div class="lbl">Marks <span class="mut">${n>1?`· mark ${sel.mark+1} of ${n}`:'· one position'}</span></div>
   <div class="btns"><button data-act="moveMode">Move… (tap where they go)</button>${n>1?'<button data-act="delMark">Remove this mark</button>':''}</div>
   ${pageSelect(it)}<div class="btns">${lockBtn}<button class="danger" data-act="del">Remove from diagram</button></div>
@@ -1053,6 +1058,7 @@ function act(a,b){
   case 'sbDel':{const c=findCam(b.dataset.id);if(c){delete c.it.marks[+b.dataset.v].sb;commit();}break;}
   case 'labReset':delete it.lab;commit();break;
   case 'newSetup':setupDialog();break;
+  case 'ctype':{const c=charById(it.charId);if(c){if(b.dataset.v)c.g=b.dataset.v;else delete c.g;}commit();break;}
   case 'pgset':setPage(it,b.dataset.v);if(!vis(it,s)){sel=null;inspOpen=false;}commit();break;
  }
 }
@@ -1060,12 +1066,12 @@ function act(a,b){
 /* ---------- tools: tap-to-place moves, wall drawing ---------- */
 let tool=null;
 function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
- if(t.t==='move'){const it=itemById(t.id);const nm=it.type==='char'?String((charById(it.charId)||{}).name||'').toUpperCase():'';$('#bannerTxt').textContent=it.type==='char'?`Tap where ${nm} goes next. Keep tapping to chain moves. Drag a path to curve it.`:it.type==='cam'?'Tap where the camera moves to. Each new position is a new version. Drag the path to curve it.':'Tap where it moves to. Keep tapping to chain moves. Drag a path to curve it.';}
+ if(t.t==='move'){const it=itemById(t.id);const nm=it.type==='char'?String((charById(it.charId)||{}).name||'').toUpperCase():'';$('#bannerTxt').textContent=it.type==='char'?`Tap where ${nm} goes next.`:it.type==='cam'?'Tap where the camera moves to. The new position becomes a new version.':'Tap where it moves to.';}
  else if(t.t==='from'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap where ${String((charById(it.charId)||{}).name||'').toUpperCase()} walks in from.`;}
  else if(t.t==='turn'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap the direction ${String((charById(it.charId)||{}).name||'').toUpperCase()} turns to.`;}
  else if(t.t==='axis')$('#bannerTxt').textContent='Tap the other character to draw the axis line.';
  else $('#bannerTxt').textContent='Tap to place wall corners. Tap Done when the wall is finished.';
- $('#banner').classList.add('on');renderUI();}
+ $('#bannerDone').textContent=t.t==='wall'?'Done':'Cancel';$('#banner').classList.add('on');renderUI();}
 function endTool(){if(!tool)return;tool=null;$('#banner').classList.remove('on');renderUI();}
 $('#bannerDone').onclick=endTool;
 function snapWall(w){const r=16/view.k;let best=null,bd=r;for(const it of pageItems(scene()))if(it.type==='wall')for(const p of [{x:it.x1,y:it.y1},{x:it.x2,y:it.y2}]){const d=Math.hypot(p.x-w.x,p.y-w.y);if(d<bd){bd=d;best=p;}}return best?{x:best.x,y:best.y}:w;}
@@ -1077,11 +1083,11 @@ function toolTap(w){
  if(tool.t==='axis'){const it=itemById(tool.id);let best=null,bd=40/Math.min(view.k,1);for(const o of pageItems(s))if(o.type==='char'&&o.id!==it.id)o.marks.forEach((m,mi)=>{const d=Math.hypot(m.x-w.x,m.y-w.y);if(d<bd){bd=d;best={o,mi};}});
   if(!best){toast('Tap another character to draw the axis line to.');return;}
   const ax={id:uid(),type:'axis',a:it.id,am:tool.mark,b:best.o.id,bm:best.mi,pgs:curPgs(),locked:false};s.items.push(ax);sel={id:ax.id,mark:null};endTool();commit();return;}
- if(tool.t==='move'&&!itemById(tool.id).marks){const it=itemById(tool.id),ps=positions(it),last=ps[ps.length-1];it.mv=it.mv||[];it.mv.push({x:w.x,y:w.y,rot:last.rot||0});sel={id:it.id,mark:it.mv.length};commit();return;}
+ if(tool.t==='move'&&!itemById(tool.id).marks){const it=itemById(tool.id),ps=positions(it),last=ps[ps.length-1];it.mv=it.mv||[];it.mv.push({x:w.x,y:w.y,rot:last.rot||0});sel={id:it.id,mark:it.mv.length};endTool();commit();return;}
  if(tool.t==='move'){const it=itemById(tool.id);if(!it){endTool();return;}const last=it.marks[it.marks.length-1];
   const rot=it.type==='char'?Math.round(Math.atan2(w.y-last.y,w.x-last.x)*180/Math.PI/5)*5:(last.rot||0);
   const m={x:w.x,y:w.y,rot};if(it.type==='cam')Object.assign(m,{size:last.size||'',type:last.type||'',angle:last.angle||'',move:'',desc:''});
-  it.marks.push(m);sel={id:it.id,mark:it.marks.length-1};commit();return;}
+  it.marks.push(m);sel={id:it.id,mark:it.marks.length-1};endTool();commit();return;}
  if(tool.t==='wall'){let p=snapWall(w);if(tool.last){if(p===w)p=snapAngle(tool.last,w);if(Math.hypot(p.x-tool.last.x,p.y-tool.last.y)>6){s.items.push({id:uid(),type:'wall',x1:tool.last.x,y1:tool.last.y,x2:p.x,y2:p.y,t:8,pgs:null,locked:false});tool.last=p;commit();return;}}tool.last=p;renderUI();}
 }
 
@@ -1126,10 +1132,11 @@ function cameraDialog(){
 }
 function charDialog(){
  closePop();const s=scene(),on=new Set(pageItems(s).filter(i=>i.type==='char').map(i=>i.charId)),avail=P.characters.filter(c=>!on.has(c.id));let color=nextCharColor();
- modal(`<h3>Add a character</h3>${avail.length?`<div class="lbl">Cast in this project</div><div class="chips">${avail.map(c=>`<button class="chip" data-c="${c.id}"><i style="background:${c.color}"></i>${esc(c.name)}</button>`).join('')}</div><div class="lbl">Or a new character</div>`:''}<label class="fld">Name<input id="cn" placeholder="e.g. MICHAEL" autocomplete="off" autocapitalize="characters"></label><div class="lbl">Color</div><div id="pk"></div><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Add</button></div>`,card=>{
+ modal(`<h3>Add a character</h3>${avail.length?`<div class="lbl">Cast in this project</div><div class="chips">${avail.map(c=>`<button class="chip" data-c="${c.id}"><i style="background:${c.color}"></i>${esc(c.name)}</button>`).join('')}</div><div class="lbl">Or a new character</div>`:''}<label class="fld">Name<input id="cn" placeholder="e.g. MICHAEL" autocomplete="off" autocapitalize="characters"></label><div class="lbl">Type</div><div class="pgck" id="ct"><button data-g="m">Male</button><button data-g="f">Female</button><button data-g="" class="on">Not set</button></div><div class="lbl">Color</div><div id="pk"></div><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Add</button></div>`,card=>{
   bindPicker(card.querySelector('#pk'),CHAR_COLORS,()=>color,v=>{color=v;});
   card.addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b)placeChar(b.dataset.c);});
-  const go=()=>{const name=card.querySelector('#cn').value.trim();if(!name){card.querySelector('#cn').focus();return;}const ch={id:uid(),name,color};P.characters.push(ch);placeChar(ch.id);};
+  let g='';card.querySelector('#ct').addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b)return;g=b.dataset.g;card.querySelectorAll('#ct button').forEach(x=>x.classList.toggle('on',x===b));});
+  const go=()=>{const name=card.querySelector('#cn').value.trim();if(!name){card.querySelector('#cn').focus();return;}const ch={id:uid(),name,color};if(g)ch.g=g;P.characters.push(ch);placeChar(ch.id);};
   card.querySelector('#ok').onclick=go;card.querySelector('#cn').addEventListener('keydown',e=>{if(e.key==='Enter')go();});
  });
 }
@@ -1173,7 +1180,7 @@ function objPop(cx,cy){
   if(it.type==='char'){const c=charById(it.charId)||{},m=it.marks[sel.mark||0]||it.marks[0];title='Edit Character';
    h=sec('Actions',B('walkto','Walk To…')+B('walkfrom','Walk From…')+B('turn',m.turn!=null?'Change Turn…':'Turn…')+(m.turn!=null?B('unturn','Remove Turn'):'')+B('axis','Axis Line To…'))
     +sec('Object',B('del','Delete',IC.x)+(it.marks.length>1?B('delmark','Remove This Mark'):'')+B('dup','Duplicate',IC.dup)+B('label',m.note?'Edit Label…':'Add Label…',IC.lbl)+lk)
-    +sec('Settings',B('edit','Edit Color/Name…'))+pages;}
+    +sec('Settings',B('edit','Edit Color/Type…'))+pages;}
   else if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?'};title=`Edit Camera ${st.num}${esc(it.letter)}`;
    h=sec('Actions',B('walkto','Move To…')+B('edit','Shot Details…')+B('frame',(it.marks[sel.mark||0]||{}).sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+(it.marks.length>1?B('delmark','Remove This Version'):'')+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
@@ -1250,7 +1257,7 @@ function pagesMenu(){
    else if(x.dataset.a==='delete'){closePop();deletePage();}});
  });
 }
-function gotoPage(id){const s=scene();s.pageId=id;sel=null;inspOpen=false;endTool();saveLocal();render();}
+function gotoPage(id){const s=scene();s.pageId=id;sel=null;msel=null;inspOpen=false;endTool();saveLocal();render();}
 function newPageDialog(){
  modal(`<h3>New page</h3><p class="mut">The floor plan, walls, set, props and lighting show on every page unless you limit them.</p><div class="menu"><button id="cp"><b>Continue from this page</b><small>Each character starts where they ended on this page. Cameras start fresh.</small></button><button id="bl"><b>Start with no characters</b></button></div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{
   card.querySelector('#cp').onclick=()=>addPage(true);card.querySelector('#bl').onclick=()=>addPage(false);
@@ -1431,6 +1438,48 @@ function menu(){
  });
 }
 
+/* ---------- multi-select (lasso) ---------- */
+let msel=null,lassoArmed=false;
+function itemPts(it){if(it.marks)return it.marks;if(it.type==='wall')return [{x:it.x1,y:it.y1},{x:it.x2,y:it.y2}];if(it.type==='axis')return [];if(it.type==='text')return [{x:it.x,y:it.y}];return positions(it);}
+function inPoly(p,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const a=poly[i],b=poly[j];if(((a.y>p.y)!==(b.y>p.y))&&(p.x<(b.x-a.x)*(p.y-a.y)/((b.y-a.y)||1e-9)+a.x))c=!c;}return c;}
+function setLasso(on){lassoArmed=on;$('#bLasso').classList.toggle('on',on);}
+function clearMsel(){if(!msel)return;msel=null;closePop();renderUI();}
+function mselItems(){const s=scene();return msel?[...msel].map(id=>s.items.find(x=>x.id===id)).filter(Boolean):[];}
+function msBox(it){const pts=itemPts(it);if(!pts.length)return null;let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;const pad=it.marks?28:BOX(it.type)?Math.max(it.w,it.h)/2+6:12;for(const p of pts){x0=Math.min(x0,p.x-pad);y0=Math.min(y0,p.y-pad);x1=Math.max(x1,p.x+pad);y1=Math.max(y1,p.y+pad);}return {x0,y0,x1,y1};}
+function moveAll(dx,dy){for(const it of mselItems()){if(it.locked)continue;
+ if(it.marks)it.marks.forEach(m=>{m.x+=dx;m.y+=dy;});else if(it.type==='wall'){it.x1+=dx;it.y1+=dy;it.x2+=dx;it.y2+=dy;}
+ else if(it.type!=='axis'){it.x+=dx;it.y+=dy;for(const q of (it.mv||[])){q.x+=dx;q.y+=dy;}}}}
+function finishLasso(poly,cx,cy){
+ const s=scene(),hits=pageItems(s).filter(it=>it.type!=='axis'&&itemPts(it).some(p=>inPoly(p,poly)));
+ setLasso(false);
+ if(!hits.length){msel=null;renderUI();return;}
+ if(hits.length===1){msel=null;sel={id:hits[0].id,mark:hits[0].marks?0:null};renderUI();renderInsp();renderShotSel();objPop(cx,cy);return;}
+ sel=null;inspOpen=false;renderInsp();msel=new Set(hits.map(h=>h.id));renderUI();multiPop(cx,cy);
+}
+function multiPop(cx,cy){
+ const its=mselItems();if(!its.length){msel=null;return;}popAt={x:cx,y:cy};
+ const n=its.length,allLocked=its.every(i=>i.locked),cnt=t=>its.filter(i=>i.type===t).length,B=(o,l,i)=>`<button data-o="${o}">${i||''}${l}</button>`;
+ const kinds=[['cam','Only Cameras'],['char','Only Characters']].filter(([t])=>cnt(t)&&cnt(t)<n);
+ const other=its.filter(i=>!ACTOR(i.type)).length;
+ pop.innerHTML=`<h4>${n} Items Selected</h4><div class="ls" style="width:290px"><div class="hd">Move</div><button disabled style="opacity:.75;font-size:14px">Drag any selected item to move them all</button><div class="hd">Object</div>${B('mdel','Delete All',IC.x)}${B('mdup','Duplicate All',IC.dup)}${B('mlock',allLocked?'Unlock All':'Lock All')}${kinds.length||(other&&other<n)?'<div class="hd">Narrow selection</div>':''}${kinds.map(([t,l])=>B('only-'+t,l)).join('')}${other&&other<n?B('only-other','Only Props & Set'):''}<div class="hd">Selection</div>${B('mclear','Clear Selection')}</div>`;
+ pop.classList.add('on');popFor=null;
+ {let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const it of its){const b=msBox(it);if(!b)continue;x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}
+  const W=$('#wrap').clientWidth,H=$('#wrap').clientHeight,pw=pop.offsetWidth,ph=pop.offsetHeight,sx0=x0*view.k+view.x,sx1=x1*view.k+view.x,sy0=y0*view.k+view.y;
+  let left=sx1+16;if(left+pw>W-8)left=sx0-pw-16;if(left<8)left=W-pw-8;pop.style.bottom='auto';pop.style.left=clamp(left,8,Math.max(8,W-pw-8))+'px';pop.style.top=clamp(sy0,8,Math.max(8,H-ph-8))+'px';}
+ pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-o]');if(!x)return;const o=x.dataset.o,s=scene();
+  if(o.startsWith('only-')){const t=o.slice(5);msel=new Set(its.filter(i=>t==='other'?!ACTOR(i.type):i.type===t).map(i=>i.id));renderUI();multiPop(cx,cy);return;}
+  closePop();
+  if(o==='mclear'){clearMsel();return;}
+  if(o==='mlock'){its.forEach(i=>i.locked=!allLocked);commit();return;}
+  if(o==='mdel'){const ids=new Set(its.filter(i=>!i.locked).map(i=>i.id));s.items=s.items.filter(i=>!ids.has(i.id)&&!(i.type==='axis'&&(ids.has(i.a)||ids.has(i.b))));msel=null;commit();toast(ids.size<n?`Deleted ${ids.size}. Locked items were kept.`:`Deleted ${ids.size} items.`);return;}
+  if(o==='mdup'){const fresh=[];for(const it of its){if(it.type==='axis')continue;const c=clone(it);c.id=uid();c.locked=false;if(c.marks)c.marks.forEach(m=>{m.x+=40;m.y+=40;delete m.sba;});else if(c.type==='wall'){c.x1+=40;c.y1+=40;c.x2+=40;c.y2+=40;}else{c.x+=40;c.y+=40;(c.mv||[]).forEach(q=>{q.x+=40;q.y+=40;});}
+    if(c.type==='cam'){const used=new Set(s.items.filter(i=>i.type==='cam'&&i.setupId===c.setupId).map(i=>i.letter).concat(fresh.filter(f=>f.type==='cam'&&f.setupId===c.setupId).map(f=>f.letter)));c.letter=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].find(l=>!used.has(l))||'Z';delete c.lab;}
+    fresh.push(c);}
+   s.items.push(...fresh);msel=new Set(fresh.map(f=>f.id));commit();toast(`Duplicated ${fresh.length} items. The copies are selected.`);return;}
+ };
+}
+$('#bLasso').onclick=()=>{setLasso(!lassoArmed);if(lassoArmed){endTool();closePop();toast('Draw a loop around what you want to select.');}};
+
 /* ---------- pointer input (mouse, Pencil, fingers) ---------- */
 const pointers=new Map();let gesture=null,lastTap={id:null,t:0};
 svg.addEventListener('pointerdown',e=>{
@@ -1442,6 +1491,11 @@ svg.addEventListener('pointerdown',e=>{
  if(tool&&!(hEl&&hEl.dataset.handle.startsWith('cp:'))){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,tool:true,w};return;}
  if(hEl){const hn=hEl.dataset.handle,now=Date.now();if(hn.startsWith('cp:')&&lastTap.id===hn&&now-lastTap.t<380){const [,i,j]=hn.split(':').map(Number),it=itemById(sel.id),b=it&&posAt(it,i);if(b&&b.cp){b.cp.splice(j,1);commit({insp:false});}lastTap={id:null,t:0};return;}lastTap={id:hn,t:now};gesture={type:'handle',h:hn,moved:false};return;}
  const el=e.target.closest('[data-id]');
+ if(lassoArmed||(e.shiftKey&&!el)){gesture={type:'lasso',pts:[w],moved:false};return;}
+ if(msel&&el&&msel.has(el.dataset.id)){gesture={type:'mdrag',last:w,sx:e.clientX,sy:e.clientY,moved:false};return;}
+ if(msel&&el&&e.shiftKey&&el.dataset.id!=='__bg'){msel.has(el.dataset.id)?msel.delete(el.dataset.id):msel.add(el.dataset.id);if(!msel.size)msel=null;renderUI();gesture=null;return;}
+ if(el&&e.shiftKey&&sel&&sel.id!==el.dataset.id&&sel.id!=='__bg'&&el.dataset.id!=='__bg'){msel=new Set([sel.id,el.dataset.id]);sel=null;inspOpen=false;renderInsp();renderUI();gesture=null;return;}
+ if(msel){msel=null;renderUI();}
  if(el){
   if(el.dataset.track){const id=el.dataset.id,i=+el.dataset.track,it=itemById(id);sel={id,mark:it&&it.marks?i:i,track:i};renderUI();renderInsp();renderShotSel();
    if(it&&!it.locked){gesture={type:'track',id,i,w0:w,sx:e.clientX,sy:e.clientY,moved:false};return;}}
@@ -1459,6 +1513,8 @@ svg.addEventListener('pointermove',e=>{
  if(g.type==='pinch'){if(pointers.size<2)return;const [a,b]=[...pointers.values()],d=Math.hypot(a.x-b.x,a.y-b.y),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2},r=svg.getBoundingClientRect(),k=clamp(g.v0.k*d/g.d0,.04,8),wx=(g.m0.x-r.left-g.v0.x)/g.v0.k,wy=(g.m0.y-r.top-g.v0.y)/g.v0.k;view={k,x:m.x-r.left-wx*k,y:m.y-r.top-wy*k};applyView();$('#ui').innerHTML=uiMarkup();return;}
  if(g.type==='pan'){const dx=e.clientX-g.sx,dy=e.clientY-g.sy;if(!g.moved&&Math.hypot(dx,dy)<6)return;g.moved=true;view.x=g.vx+dx;view.y=g.vy+dy;applyView();return;}
  const w=toWorld(e.clientX,e.clientY);
+ if(g.type==='lasso'){const l=g.pts[g.pts.length-1];if(Math.hypot((w.x-l.x)*view.k,(w.y-l.y)*view.k)>4){g.pts.push(w);g.moved=true;$('#ui').innerHTML=uiMarkup();}return;}
+ if(g.type==='mdrag'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<4)return;g.moved=true;dragging=true;moveAll(w.x-g.last.x,w.y-g.last.y);g.last=w;renderCanvas();return;}
  if(g.type==='drag'||g.type==='label'||g.type==='frame'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<4)return;if(!g.moved){g.moved=true;dragging=true;$('#ctx').classList.remove('on');}
   const dx=w.x-g.last.x,dy=w.y-g.last.y;
   if(g.id==='__bg'){const b=scene().bg;b.x+=dx;b.y+=dy;}
@@ -1471,6 +1527,8 @@ function endPointer(e){
  if(!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);const g=gesture;if(!g)return;
  if(g.type==='pinch'){if(!pointers.size){gesture=null;flushRemote();}return;}
  if(pointers.size)return;gesture=null;const wasDrag=dragging;dragging=false;
+ if(g.type==='lasso'){if(g.pts.length>2)finishLasso(g.pts,e.clientX,e.clientY);else{setLasso(lassoArmed);renderUI();}flushRemote();return;}
+ if(g.type==='mdrag'){if(g.moved)commit({insp:false});else multiPop(e.clientX,e.clientY);renderUI();flushRemote();return;}
  if(g.tool&&!g.moved&&tool){toolTap(g.w);flushRemote();return;}
  if(g.type==='track'){trackPop(g.id,g.i,e.clientX,e.clientY,g.w0);flushRemote();return;}
  if(g.type!=='pan'&&g.type!=='pinch'&&g.moved)commit({insp:false});
@@ -1513,7 +1571,9 @@ addEventListener('keydown',e=>{
  if(e.key==='Escape'&&pop.classList.contains('on')){closePop();return;}
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&!typing){e.preventDefault();e.shiftKey?redo():undo();return;}
  if(typing)return;
- if(e.key==='Escape'){if(tool)endTool();else if(pop.classList.contains('on'))closePop();else if(sel)select(null);return;}
+ if(msel&&(e.key==='Delete'||e.key==='Backspace')){e.preventDefault();const s=scene(),ids=new Set(mselItems().filter(i=>!i.locked).map(i=>i.id));s.items=s.items.filter(i=>!ids.has(i.id)&&!(i.type==='axis'&&(ids.has(i.a)||ids.has(i.b))));msel=null;commit();return;}
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();const s=scene(),ids=pageItems(s).filter(i=>i.type!=='axis').map(i=>i.id);if(ids.length){sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();}return;}
+ if(e.key==='Escape'){if(lassoArmed){setLasso(false);return;}if(msel){clearMsel();return;}if(tool)endTool();else if(pop.classList.contains('on'))closePop();else if(sel)select(null);return;}
  if(e.key==='Enter'&&tool){endTool();return;}
  if((e.key==='Delete'||e.key==='Backspace')&&sel&&sel.id!=='__bg'){const it=itemById(sel.id);if(it&&!it.locked){e.preventDefault();deleteSel(false);}}
 });
