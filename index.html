@@ -91,6 +91,11 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .rrow .rad{width:20px;height:20px;border-radius:50%;border:2px solid #9a9ba1;flex:none;box-sizing:border-box}.rrow .rad.on{border:6px solid var(--accent)}
 .bgrip{font-size:17px;padding:8px 6px}.brr.droptgt,.brcr button.droptgt,.brb.droptgt{background:rgba(47,111,222,.16);outline:2px solid var(--accent);outline-offset:-2px;border-radius:6px}
 .brghost{position:fixed;z-index:90;pointer-events:none;background:#232427;color:#fff;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#animBar{display:flex;align-items:center;gap:2px;min-width:0}#animBar>button{min-width:40px}#animBar #aPlay.on{background:#2f6fde;color:#fff}
+#animBar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.asteps{display:flex;gap:1px;overflow-x:auto;max-width:min(46vw,620px);scrollbar-width:none}.asteps::-webkit-scrollbar{display:none}
+#bar .ast{min-width:34px;font-weight:700;color:#d6d7dc;padding:0 6px}#bar .ast.dim{color:#6c6d73}#bar .ast.cur{color:#fff;background:#2f6fde;border-radius:8px}
+.stepgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px 14px;width:290px;box-sizing:border-box}.stepgrid button{height:40px;border-radius:8px;border:1px solid #3a3b40;background:#2c2d31;color:#fff;font-weight:700;font-size:15px}.stepgrid button.on{background:#2f7cf6;border-color:#2f7cf6}
 .seg{display:flex;background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
 .seg button{height:30px;padding:0 12px;border:0;border-radius:7px;background:none;font-size:14px;color:var(--mut);white-space:nowrap}
 .seg button.on{background:var(--panel);color:var(--ink);font-weight:650;box-shadow:0 1px 2px rgba(0,0,0,.14)}
@@ -285,7 +290,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
    <button id="bFr" title="Show storyboard frames"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg><span class="lbt">Frames</span></button>
    <button id="bFit" title="Fit to screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
    <span class="sp"></span>
-   <span id="pq" style="display:flex;gap:2px"></span>
+   <span id="pq" style="display:none"></span><span id="animBar"></span>
    <span class="sep"></span>
    <button id="bSide" title="Shot list"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></button>
   </footer>
@@ -304,7 +309,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116052438';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116053103';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -924,6 +929,7 @@ function boxShape(it){
 function itemsMarkup(sc,pid){
  let sh='',fov='',paths='',cams='',chars='',frames='';const lay=frameOn()?frameLayout(sc,pid||sc.pageId):null;
  for(const it of pageItems(sc,pid)){
+  if(IMF){const a=ACTOR(it.type)||it.type==='axis';if(IMF==='noActors'?a:!a)continue;}
   if(BOX(it.type)){
    const L=LIB[it.kind]||{};
    if(it.type==='light'&&L.beam&&it.beam!==false){const a=rad(it.rot||0),fx=it.x+Math.cos(a)*it.w/2,fy=it.y+Math.sin(a)*it.w/2,h=rad(22),R=it.reach||220;fov+=`<path class="deco" d="M${fx},${fy}L${fx+Math.cos(a-h)*R},${fy+Math.sin(a-h)*R}A${R},${R} 0 0 1 ${fx+Math.cos(a+h)*R},${fy+Math.sin(a+h)*R}Z" fill="#ffd75e" fill-opacity=".16"/>`;}
@@ -1023,7 +1029,7 @@ function renderBg(){
 }
 function renderUI(){$('#ui').innerHTML=uiMarkup();renderCtx();}
 function renderCanvas(){
- const s=scene();syncPieces(s);renderBg();$('#items').innerHTML=itemsMarkup(s);renderUI();
+ const s=scene();syncPieces(s);renderBg();if(anim.step){anim.base=null;drawAnim();}else $('#items').innerHTML=itemsMarkup(s);renderUI();renderAnimBar();
  $('#empty').style.display=pageItems(s).length||s.bgId?'none':'';
 }
 
@@ -1327,19 +1333,20 @@ function objPop(cx,cy){
  let title='',h='';
  if(sel.id==='__bg'){const b=s.bg;if(!b)return;title='Background Image';h=sec('Object',B('lock',b.locked?'Unlock':'Lock in Place')+B('bgReplace','Replace Image…')+B('bgRemove','Remove',IC.x))+sec('Settings',B('edit','Opacity…'));}
  else{const it=itemById(sel.id);if(!it)return;const lk=B('lock',it.locked?'Unlock':'Lock in Place'),pages=`<div class="hd">Pages</div><button data-o="pages">Pages<span class="pgv">${esc(pagesSummary(it))} ›</span></button>`;
+  const stB=it.marks?B('astep',`Animation Step<span class="pgv">${effSteps(it)[sel.mark||0]} ›</span>`):'';
   if(it.type==='char'&&(it.marks[sel.mark||0]||{}).t){const m=it.marks[sel.mark],ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;title='Edit Turn';
-   h=sec('Actions',B('tbefore','Insert Turn Before…')+B('tafter','Insert Turn After…')+B('tchange','Change Direction…')+B('tdel','Delete Turn',IC.x))+sec('Settings',ck('thide','Hide Turn',m.hid)+ck('tback','Turn Back Again',m.back));}
+   h=sec('Actions',B('tbefore','Insert Turn Before…')+B('tafter','Insert Turn After…')+B('tchange','Change Direction…')+B('tdel','Delete Turn',IC.x))+sec('Settings',ck('thide','Hide Turn',m.hid)+ck('tback','Turn Back Again',m.back)+stB);}
   else if(it.type==='char'){const c=charById(it.charId)||{},m=it.marks[sel.mark||0]||it.marks[0],runs=it.marks.filter(q=>!q.t).length;title='Edit Character';
    h=sec('Actions',B('walkto','Walk To…')+B('walkfrom','Walk From…')+B('turn','Turn…')+B('axis','Axis Line To…'))
     +sec('Object',B('del','Delete',IC.x)+(runs>1?B('delmark','Remove This Mark'):'')+B('dup','Duplicate',IC.dup)+B('label',m.note?'Edit Label…':'Add Label…',IC.lbl)+lk)
-    +sec('Settings',B('edit','Edit Color/Type…'))+pages;}
+    +sec('Settings',B('edit','Edit Color/Type…')+stB)+pages;}
   else if(it.type==='cam'&&sel.pan&&((it.marks[sel.mark||0]||{}).pans||[])[sel.pan-1]){const q=it.marks[sel.mark||0].pans[sel.pan-1],ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;title='Edit Turn';
    h=sec('Actions',B('pbefore','Insert Turn Before…')+B('pafter','Insert Turn After…')+B('pchange','Change Direction…')+B('pdel','Delete Turn',IC.x))+sec('Settings',ck('tiltup','Tilt Up',q.tilt==='up')+ck('tiltdown','Tilt Down',q.tilt==='down'));}
   else if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?'};title=`Edit Camera ${esc(shotCode(s,it))}`;
    h=sec('Actions',B('walkto','Move To…')+B('pan','Pan / Turn…')+B('edit','Shot Details…')+B('frame',(it.marks[sel.mark||0]||{}).sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+(it.marks.length>1?B('delmark','Remove This Version'):'')+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
     +(s.setups.length>1?sec('Shot Order',(s.setups[0].id!==it.setupId?B('shotUp','Move Shot Earlier'):'')+(s.setups[s.setups.length-1].id!==it.setupId?B('shotDown','Move Shot Later'):'')):'')
-    +sec('Settings',B('edit','Edit Color…'))+pages;}
+    +sec('Settings',B('edit','Edit Color…')+stB)+pages;}
   else if(it.type==='axis'){title='Axis Line';h=sec('Object',B('del','Delete',IC.x));}
   else{const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';title='Edit '+name;
    h=(MOVABLE(it.type)?sec('Actions',B('walkto','Move To…')):'')
@@ -1352,6 +1359,7 @@ function objPop(cx,cy){
 function objAct(o){
  const s=scene(),it=sel&&sel.id!=='__bg'?itemById(sel.id):null,fake=d=>({dataset:d||{}});
  if(o==='pages'){pagesSub();return;}
+ if(o==='astep'){stepSub();return;}
  closePop();
  switch(o){
   case 'walkto':startTool({t:'move',id:it.id});break;
@@ -1425,7 +1433,7 @@ function pagesMenu(){
    else if(x.dataset.a==='delete'){closePop();deletePage();}});
  });
 }
-function gotoPage(id){const s=scene();s.pageId=id;sel=null;msel=null;inspOpen=false;endTool();saveLocal();render();}
+function gotoPage(id){const s=scene();stopPlay();anim.step=0;s.pageId=id;sel=null;msel=null;inspOpen=false;endTool();saveLocal();render();}
 function newPageDialog(){
  modal(`<h3>New page</h3><p class="mut">The floor plan, walls, set, props and lighting show on every page unless you limit them.</p><div class="menu"><button id="cp"><b>Continue from this page</b><small>Each character starts where they ended on this page. Cameras start fresh.</small></button><button id="bl"><b>Start with no characters</b></button></div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{
   card.querySelector('#cp').onclick=()=>addPage(true);card.querySelector('#bl').onclick=()=>addPage(false);
@@ -1495,7 +1503,7 @@ function ensureLive(){
  if(!n){n=blankScene(1);if(f)n.folder=f;P.scenes.push(n);}
  P.sceneId=n.id;sel=null;
 }
-function openScene(id){if(!P.scenes.some(s=>s.id===id&&!s.trashed))return;P.sceneId=id;noteRecent(id);sel=null;msel=null;inspOpen=false;endTool();closeModal();saveLocal();render();fit();}
+function openScene(id){if(!P.scenes.some(s=>s.id===id&&!s.trashed))return;stopPlay();anim.step=0;P.sceneId=id;noteRecent(id);sel=null;msel=null;inspOpen=false;endTool();closeModal();saveLocal();render();fit();}
 function trashScenes(ids){const now=Date.now();for(const s of P.scenes)if(ids.includes(s.id))s.trashed=now;msel=null;ensureLive();}
 function restoreScenes(ids){for(const s of P.scenes)if(ids.includes(s.id)){delete s.trashed;if(!sFolder(s))delete s.folder;}}
 function killScenes(ids){P.scenes=P.scenes.filter(s=>!ids.includes(s.id));ensureLive();}
@@ -2043,12 +2051,81 @@ function renumberDialog(){const s=scene(),c=numCfg(s);
  modal(`<h3>Renumber shots</h3><p class="mut">Numbers this scene’s shots in their current order, top to bottom.</p><label class="fld" style="max-width:180px">Start at<input id="rStart" type="number" min="0" value="${+c.start||1}"></label><label class="imopt"><input type="checkbox" id="rLet" checked> Reset camera letters to A, B, C in each setup</label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="rOk">Renumber</button></div>`,card=>{
   card.querySelector('#rOk').onclick=()=>{const st0=Math.max(0,parseInt(card.querySelector('#rStart').value,10)||1);s.setups.forEach((st,i)=>{st.num=st0+i;});if(card.querySelector('#rLet').checked)for(const st of s.setups)setupCams(s,st.id).forEach((cm,k)=>cm.letter=letterSeq(k));s.numbering=Object.assign({},s.numbering||{},{start:st0});closeModal();commit();toast('Shots renumbered.');};});}
 
+/* ---------- animation: step through the blocking ---------- */
+let anim={step:0,frac:1,playing:false,raf:0,hold:0,base:null,speed:1,loop:false};
+let IMF=null;
+function effSteps(it){let p=0;return (it.marks||[]).map(m=>{const e=m.st!=null?+m.st:p+1;p=e;return e;});}
+function lastIdx(st,N){let j=-1;st.forEach((e,i)=>{if(e<=N)j=i;});return j;}
+function animActors(sc){return pageItems(sc).filter(it=>(it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length);}
+function maxStep(sc){let m=1;for(const it of animActors(sc))for(const e of effSteps(it))m=Math.max(m,e);return m;}
+function legSample(a,b,soft){const P=[a,...legPts(a,b),b];if(P.length<3||!soft)return P.map(p=>({x:p.x,y:p.y}));const out=[{x:a.x,y:a.y}];
+ for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2,c1={x:p1.x+(p2.x-p0.x)/6,y:p1.y+(p2.y-p0.y)/6},c2={x:p2.x-(p3.x-p1.x)/6,y:p2.y-(p3.y-p1.y)/6};
+  for(let k=1;k<=14;k++){const t=k/14,u=1-t;out.push({x:u*u*u*p1.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*p2.x,y:u*u*u*p1.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t*t*t*p2.y});}}return out;}
+const angLerp=(a,b,t)=>{const d=((b-a)%360+540)%360-180;return a+d*t;};
+function timeline(it,N){
+ const st=effSteps(it),cur=lastIdx(st,N),prev=lastIdx(st,N-1),isCam=it.type==='cam';
+ if(cur<0)return null;
+ if(isCam&&!st.some(e=>e===N))return {cam:true,idle:true};
+ let s0=prev>=0?prev:(isCam?st.findIndex(e=>e===N):0);if(s0<0)s0=0;
+ const sp=170*anim.speed,segs=[],legs=[];let face=it.type==='char'?effFacing(it,s0):(it.marks[s0].rot||0);
+ if(prev<0)segs.push({k:'in',d:.35/anim.speed});
+ for(let i=s0+1;i<=cur;i++){const a=it.marks[i-1],b=it.marks[i];
+  if(it.type==='char'&&b.t){segs.push({k:'turn',r0:face,r1:b.rot,d:.55/anim.speed});if(b.back)segs.push({k:'turn',r0:b.rot,r1:face,d:.5/anim.speed});else face=b.rot;continue;}
+  const pts=legSample(a,b,!it.hard);let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k].x-pts[k-1].x,pts[k].y-pts[k-1].y);
+  if(len>1){segs.push({k:'walk',pts,len,d:Math.max(.25,len/sp),r0:a.rot||0,r1:b.rot||0});legs.push(i);}
+  if(it.type==='char'){const tr=b.rot||0;face=tr;}else face=b.rot||0;}
+ if(isCam&&st[cur]===N)for(const q of (it.marks[cur].pans||[])){segs.push({k:'turn',r0:face,r1:q.rot,d:.6/anim.speed});face=q.rot;}
+ return {s0,cur,segs,legs,dur:segs.reduce((a,s)=>a+s.d,0),cam:isCam,start:{x:it.marks[s0].x,y:it.marks[s0].y,rot:it.type==='char'?effFacing(it,s0):(it.marks[s0].rot||0)}};
+}
+function poseAt(it,tl,t){let x=tl.start.x,y=tl.start.y,r=tl.start.rot,op=1;
+ for(const s of tl.segs){const f=s.d?clamp(t/s.d,0,1):1;
+  if(s.k==='in'){op=f;}
+  else if(s.k==='turn'){r=angLerp(s.r0,s.r1,f);}
+  else{const tgt=f*s.len;let acc=0,k=1;for(;k<s.pts.length;k++){const L=Math.hypot(s.pts[k].x-s.pts[k-1].x,s.pts[k].y-s.pts[k-1].y);if(acc+L>=tgt){const u=L?(tgt-acc)/L:0;x=s.pts[k-1].x+(s.pts[k].x-s.pts[k-1].x)*u;y=s.pts[k-1].y+(s.pts[k].y-s.pts[k-1].y)*u;if(it.type==='char'&&f<1)r=Math.atan2(s.pts[k].y-s.pts[k-1].y,s.pts[k].x-s.pts[k-1].x)*180/Math.PI;break;}acc+=L;}
+   if(k>=s.pts.length){const e=s.pts[s.pts.length-1];x=e.x;y=e.y;}
+   if(it.type==='cam')r=angLerp(s.r0,s.r1,f);else if(f>=1)r=s.r1;}
+  t-=s.d;if(t<0)break;}
+ return {x,y,r,op};}
+function stepDur(sc,N){let d=.4;for(const it of animActors(sc)){const tl=timeline(it,N);if(tl&&!tl.idle)d=Math.max(d,tl.dur);}return d;}
+function animLayer(sc,N,frac){
+ const T=frac*stepDur(sc,N);let paths='',bodies='',cams='';
+ for(const it of animActors(sc)){const tl=timeline(it,N);if(!tl||tl.idle)continue;const p=poseAt(it,tl,T);
+  if(it.type==='char'){const c=charById(it.charId);if(!c)continue;const col=c.color,dk=shade(col,-.5),L=behind(p.r,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
+   for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],col,true,19,!it.hard,'class="deco"');
+   bodies+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g><text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${esc(String(c.name||'?').toUpperCase())}</text></g>`;}
+  else{const st=setupIn(sc,it.setupId),col=st?st.color:'#999',dk=shade(col,-.42),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
+   for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],col,false,20,!it.hard,'class="deco"');
+   cams+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g><g class="deco" transform="translate(0,${-34})"><rect x="${-pw/2}" y="-9" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2" y="2.8" text-anchor="middle">${tag}</text></g></g>`;}}
+ return `<g>${paths}${cams}${bodies}</g>`;}
+function animBase(sc){IMF='noActors';const a=itemsMarkup(sc);IMF='onlyActors';const g=itemsMarkup(sc);IMF=null;return a+`<g class="deco" opacity=".16">${g}</g>`;}
+function drawAnim(){const s=scene();if(!anim.base)anim.base=animBase(s);$('#items').innerHTML=anim.base+animLayer(s,anim.step,anim.frac);}
+function setStep(n){stopPlay();anim.base=null;if(!n||n===anim.step&&anim.frac>=1){anim.step=0;anim.frac=1;renderAnimBar();renderCanvas();return;}const was=anim.step;anim.step=n;anim.frac=1;renderAnimBar();renderCanvas();if(!was)toast('Animation view. Tap the step again or press Esc to go back to editing.');}
+function stopPlay(){anim.playing=false;cancelAnimationFrame(anim.raf);renderAnimBar();}
+function play(){
+ const s=scene(),mx=maxStep(s);
+ if(anim.playing){stopPlay();return;}
+ if(!anim.step||anim.step>=mx&&anim.frac>=1){anim.step=1;anim.frac=0;}else if(anim.frac>=1){anim.step++;anim.frac=0;}
+ anim.base=null;anim.playing=true;anim.hold=0;renderAnimBar();
+ let last=performance.now();
+ const tick=now=>{if(!anim.playing)return;const dt=(now-last)/1000;last=now;const D=stepDur(s,anim.step);
+  if(anim.frac<1){anim.frac=Math.min(1,anim.frac+dt/D);}else{anim.hold+=dt;if(anim.hold>.6){anim.hold=0;if(anim.step<mx){anim.step++;anim.frac=0;renderAnimBar();}else if(anim.loop){anim.step=1;anim.frac=0;renderAnimBar();}else{anim.playing=false;renderAnimBar();return;}}}
+  drawAnim();anim.raf=requestAnimationFrame(tick);};
+ drawAnim();anim.raf=requestAnimationFrame(tick);}
+function renderAnimBar(){const el=$('#animBar');if(!el)return;const s=scene(),mx=maxStep(s),K=Math.max(mx+1,5);
+ el.innerHTML=`<button id="aGear" title="Animation settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button><button id="aPlay" class="${anim.playing?'on':''}" title="${anim.playing?'Pause':'Play the blocking'} (Space)">${anim.playing?'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="3"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/></svg>'}</button><span class="asteps">${Array.from({length:K},(_,i)=>i+1).map(n=>`<button class="ast${anim.step===n?' cur':''}${n>mx?' dim':''}" data-n="${n}" title="Show step ${n}">${n}</button>`).join('')}</span>`;
+ el.querySelector('#aPlay').onclick=play;el.querySelector('.asteps').onclick=e=>{const b=e.target.closest('[data-n]');if(b)setStep(+b.dataset.n);};
+ el.querySelector('#aGear').onclick=e=>{const b=e.currentTarget;if(popFor===b){closePop();return;}openPop(`<h4>Animation</h4><div class="ls" style="width:290px"><div class="hd">Speed</div>${[['.6','Slow'],['1','Normal'],['1.7','Fast']].map(([v,l])=>`<button data-sp="${v}">${l}<span class="rad${+v===anim.speed?' on':''}"></span></button>`).join('')}<div class="hd">Settings</div><button data-lp="1">Loop<span class="chk${anim.loop?' on':''}">${anim.loop?'✓':''}</span></button>${anim.step?'<button data-x2="1">Back to editing</button>':''}<div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">Each character position and camera shot has a step. Set it from the item’s menu: Animation Step.</div></div>`,b,p=>{p.querySelector('.ls').addEventListener('click',ev=>{const x=ev.target.closest('button');if(!x)return;if(x.dataset.sp){anim.speed=+x.dataset.sp;}else if(x.dataset.lp){anim.loop=!anim.loop;}else if(x.dataset.x2){setStep(0);}closePop();});});};}
+function stepSub(){const it=itemById(sel.id);if(!it||!it.marks)return;const i=sel.mark||0,m=it.marks[i],eff=effSteps(it)[i];
+ pop.innerHTML=`<h4><button class="back">‹ Back</button>Animation Step</h4><div class="stepgrid">${Array.from({length:24},(_,k)=>k+1).map(n=>`<button data-n="${n}" class="${n===eff?'on':''}">${n}</button>`).join('')}</div><div class="ls" style="width:300px"><button data-n="auto">Automatic: one step after the previous position<span class="chk${m.st==null?' on':''}">${m.st==null?'✓':''}</span></button></div>`;
+ pop.querySelector('.back').onclick=()=>objPop(popAt.x,popAt.y);
+ pop.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{if(b.dataset.n==='auto')delete m.st;else m.st=+b.dataset.n;anim.base=null;commit();renderAnimBar();objPop(popAt.x,popAt.y);});}
+
 /* ---------- keyboard shortcuts ---------- */
 const KEYS=[['Scenes',[['⌘O','Open a scene (folders, search)'],['⌘F','Search all scenes'],['⌘I','Scene info'],['⌘S','Saves happen automatically. This just confirms it'],['⌘P','Download PDF (diagrams + shot list)']]],
  ['Add',[['C','Character'],['A','Camera'],['P','Prop'],['S','Set piece'],['L','Lighting'],['T','Annotation']]],
  ['Selected character or camera',[['W','Walk to / move to (tap where)'],['F','Walk from (character)'],['R','Turn (character) / pan (camera)'],['X','Axis line to (character)'],['E','Edit'],['⌘D','Duplicate'],['← ↑ → ↓','Nudge (hold Shift for bigger steps)'],['Delete','Delete'],['Esc','Deselect, or cancel a tool']]],
  ['Select',[['G','Lasso: draw around things to select them together'],['⌘A','Select everything on this page'],['⌘Z  /  ⇧⌘Z','Undo / redo']]],
- ['View',[['[  ]','Previous / next page'],['N','New page'],['V','Switch Diagram / Shot list'],['B','Show or hide storyboard frames'],['0','Fit to screen'],['+  −','Zoom in / out'],['?','This list']]]];
+ ['View',[['[  ]','Previous / next page'],['N','New page'],['V','Switch Diagram / Shot list'],['B','Show or hide storyboard frames'],['0','Fit to screen'],['+  −','Zoom in / out'],['Space','Play / pause the animation'],['?','This list']]]];
 function keysDialog(){const mac=/Mac|iPad|iPhone/.test(navigator.platform||navigator.userAgent),k=t=>mac?t:t.replace(/⌘/g,'Ctrl+').replace(/⇧/g,'Shift+');
  modal(`<h3>Keyboard shortcuts</h3>${KEYS.map(([h,rows])=>`<div class="lbl">${h}</div><div class="kt">${rows.map(([a,b])=>`<div><kbd>${esc(k(a))}</kbd><span>${esc(b)}</span></div>`).join('')}</div>`).join('')}<div class="btns end"><button class="pri" data-x>Done</button></div>`,null,'keycard');}
 let nudgeT=null;
@@ -2066,6 +2143,8 @@ function shortcut(e){
   return false;}
  if(e.altKey)return false;
  if(k==='?'){keysDialog();return true;}
+ if(k===' '){play();return true;}
+ if(k==='Escape'&&anim.step){setStep(0);return true;}
  if(k.startsWith('Arrow')&&(it||msel)&&mode!=='list'){const st=(e.shiftKey?40:8)/Math.max(view.k,.25);return nudge(k==='ArrowLeft'?-st:k==='ArrowRight'?st:0,k==='ArrowUp'?-st:k==='ArrowDown'?st:0);}
  if(k==='['||k===']'){const ids=s.pages.map(p=>p.id);if(s.pages.length<2)return true;let i=ids.indexOf(s.pageId);if(i<0)i=k===']'?-1:ids.length;i=clamp(i+(k===']'?1:-1),0,ids.length-1);gotoPage(ids[i]);fit();return true;}
  if(k==='0'){fit();return true;}
