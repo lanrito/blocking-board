@@ -105,9 +105,10 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 #pop .lays .lk.on{color:#fff;background:#2f7cf6}#pop .lays .lall{justify-content:space-between}
 #pop .lays .lkall{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8px;border:1px solid #45464c;background:#2c2d31;color:#fff;font-size:14px;width:auto;min-height:0}#pop .lays .lkall.on{background:#2f7cf6;border-color:#2f7cf6}
 #pop .hdr{float:right;font-weight:400;opacity:.7}
-#pop .cgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:10px 14px 12px}
-#pop .cgrid button{height:34px;border-radius:7px;border:2px solid #3a3b40;background:var(--c);padding:0;min-height:0;width:auto}#pop .cgrid button.on{border-color:#fff;box-shadow:0 0 0 2px #2f7cf6}
-#pop .cgrid .cust{position:relative;height:34px;border-radius:7px;border:2px dashed #6b6c72;display:flex;align-items:center;justify-content:center;color:#c9cad0;font-size:20px;overflow:hidden;cursor:pointer}#pop .cgrid .cust input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+#pop .cgrid{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:4px;padding:11px 14px 13px;border-bottom:1px solid #34353a}
+#pop .ls .cgrid button.sw,#pop .ls .cgrid button.sw:hover{flex:0 0 22px;width:22px;height:22px;min-height:0;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.22);background:var(--c);transition:transform .1s}
+#pop .ls .cgrid button.sw:hover{transform:scale(1.15)}#pop .ls .cgrid button.sw.on{border-color:#fff;box-shadow:0 0 0 2px #2f7cf6}
+#pop .cgrid .cust{position:relative;flex:0 0 22px;width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:2px dashed #8a8b91;display:flex;align-items:center;justify-content:center;color:#d6d7dc;font-size:15px;line-height:1;overflow:hidden;cursor:pointer}#pop .cgrid .cust input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:0;padding:0}
 .seg{display:flex;background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
 .seg button{height:30px;padding:0 12px;border:0;border-radius:7px;background:none;font-size:14px;color:var(--mut);white-space:nowrap}
 .seg button.on{background:var(--panel);color:var(--ink);font-weight:650;box-shadow:0 1px 2px rgba(0,0,0,.14)}
@@ -322,7 +323,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116140436';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116140813';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1402,8 +1403,8 @@ let popAt={x:0,y:0};
 function placePopAt(cx,cy){const wr=$('#wrap').getBoundingClientRect();pop.style.bottom='auto';pop.style.left=clamp(cx-wr.left+26,8,Math.max(8,wr.width-pop.offsetWidth-8))+'px';pop.style.top=clamp(cy-wr.top-40,8,Math.max(8,wr.height-pop.offsetHeight-8))+'px';}
 const IC={x:'<span class="xdel">✕</span>',dup:'<span class="dupi"></span>',lbl:'<span class="lbli"></span>'};
 const PROP_SWATCHES=['#B7834D','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#8E4EC6','#2B2D33','#F4F4F4'];
-function colorGrid(list,cur,kind){const seen=new Set(),L=list.filter(c=>c&&!seen.has(hex7(c))&&seen.add(hex7(c)));if(cur&&!seen.has(hex7(cur)))L.unshift(cur);
- return `<div class="hd">Color</div><div class="cgrid" data-kind="${kind}">${L.map(c=>`<button data-col="${c}" class="${hex7(c)===hex7(cur||'')?'on':''}" style="--c:${c}" aria-label="Color ${c}"></button>`).join('')}<label class="cust" title="Custom color"><input type="color" value="${hex7(cur||'#888888')}"><span>+</span></label></div>`;}
+function colorGrid(list,cur,kind){const seen=new Set();let L=list.filter(c=>c&&!seen.has(hex7(c))&&seen.add(hex7(c))).slice(0,8);if(cur&&!L.some(c=>hex7(c)===hex7(cur)))L=[cur,...L.slice(0,7)];
+ return `<div class="hd">Color</div><div class="cgrid" data-kind="${kind}">${L.map(c=>`<button data-col="${c}" class="sw${hex7(c)===hex7(cur||'')?' on':''}" style="--c:${c}" aria-label="Color ${c}"></button>`).join('')}<label class="cust" title="Pick your own color"><input type="color" value="${hex7(cur||'#888888')}"><span>+</span></label></div>`;}
 function applyColor(v){const s=scene(),it=itemById(sel&&sel.id);if(!it)return;
  if(it.type==='char'){const c=charById(it.charId);if(!c)return;const clash=P.characters.find(o=>o!==c&&hex7(o.color)===hex7(v)&&projectCast(s).has(o.id));c.color=v;if(clash)toast(`${String(clash.name).toUpperCase()} in this project already uses that color.`);}
  else if(it.type==='cam'){const st=setupIn(s,it.setupId);if(st)st.color=v;}
@@ -1422,7 +1423,7 @@ function objPop(cx,cy){
   else if(it.type==='char'){const c=charById(it.charId)||{},m=it.marks[sel.mark||0]||it.marks[0],runs=it.marks.filter(q=>!q.t).length;title='Edit Character';
    h=sec('Actions',(c.extra?B('selgroup','Select All '+esc(String(c.name).toUpperCase())):'')+B('walkto','Walk To…')+B('walkfrom','Walk From…')+B('turn','Add Turn')+B('axis','Axis Line To…'))
     +sec('Object',B('del','Delete',IC.x)+(runs>1?B('delmark','Remove This Mark'):'')+B('dup','Duplicate',IC.dup)+B('label',m.note?'Edit Label…':'Add Label…',IC.lbl)+lk)
-    +sec('Settings',B('edit','Edit Color/Type…')+stB)+colorGrid(CHAR_COLORS,c.color,'char')+pages;}
+    +sec('Settings',B('edit','Edit Color/Type…')+stB)+colorGrid(['#E5484D','#F76B15','#FFC53D','#30A46C','#12A594','#3E63DD','#8E4EC6','#D6409F'],c.color,'char')+pages;}
   else if(it.type==='cam'&&sel.pan&&((it.marks[sel.mark||0]||{}).pans||[])[sel.pan-1]){const q=it.marks[sel.mark||0].pans[sel.pan-1],ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;title='Edit Turn';
    h=sec('Actions',B('pbefore','Insert Turn Before')+B('pafter','Insert Turn After')+B('pdel','Delete Turn',IC.x))+sec('Settings',ck('tiltup','Tilt Up',q.tilt==='up')+ck('tiltdown','Tilt Down',q.tilt==='down')+(animOn?stB:''));}
   else if(it.type==='cam'&&sel.badge&&!sel.pan){title='Edit Turn';h=sec('Actions',B('pbefore','Insert Turn Before')+B('pafter','Insert Turn After'));}
@@ -1437,7 +1438,7 @@ function objPop(cx,cy){
    h=(MOVABLE(it.type)?sec('Actions',B('walkto','Move To…')+(sel.mark?'':B('movefrom','Move From…'))):'')
     +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')+sec('Object',B('del','Delete',IC.x)+(sel.mark?B('delmark','Remove This Position'):'')+B('dup','Duplicate',IC.dup)+(it.type==='prop'||it.type==='set'||it.type==='light'?B('label',it.label?'Edit Label…':'Add Label…',IC.lbl):'')+lk+B('front','Bring to Front')+B('back','Send to Back'))
     +sec('Settings',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+ck('scal','Scalable',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Edit…'))
-    +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3',...PROP_SWATCHES],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages;}
+    +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#2B2D33'],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages;}
  }
  pop.innerHTML=`<h4>${title}</h4><div class="ls" style="width:290px">${h}</div>`;pop.classList.add('on');popFor=null;placePopAt(cx,cy);
  pop.querySelector('.ls').onclick=e=>{const cc=e.target.closest('[data-col]');if(cc){applyColor(cc.dataset.col);return;}const x=e.target.closest('[data-o]');if(!x)return;objAct(x.dataset.o);};
