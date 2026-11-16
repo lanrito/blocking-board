@@ -310,7 +310,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116053912';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116054448';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1480,7 +1480,7 @@ $('#chip').onclick=()=>sceneInfo();
 
 /* ---------- scenes ---------- */
 function renderTop(){
- {const c=scene(),fp=pathTxt(sFolder(c));$('#sceneBtnT').innerHTML=(fp?`<small>${esc(fPath(sFolder(c)).slice(-1)[0].name)} ›</small> `:'')+esc(sceneLabel(c));$('#sceneBtn').title=(fp?fp+' › ':'')+sceneLabel(c)+'  (⌘O to open another scene)';}
+ {const c=scene(),fp=c.tpl?'Template':pathTxt(sFolder(c));$('#sceneBtnT').innerHTML=(fp?`<small>${esc(c.tpl?'Template':fPath(sFolder(c)).slice(-1)[0].name)} ›</small> `:'')+esc(sceneLabel(c));$('#sceneBtn').title=(fp?fp+' › ':'')+sceneLabel(c)+'  (⌘O to open another scene)';}
  const s=scene();$('#chip').innerHTML=`<b>${esc((s.number?s.number+'  ':'')+(s.title||s.heading||'Untitled scene'))}</b><span>${esc(s.title&&s.heading?s.heading:'Tap to add scene info')}</span>`;
  $('#bFr').classList.toggle('on',frameOn());
 }
@@ -1488,8 +1488,8 @@ $('#sceneBtn').onclick=()=>openBrowser();
 function newScene(folder){if(folder===undefined)folder=sFolder(scene());const n=fScenes(folder).reduce((m,s)=>Math.max(m,parseInt(s.number,10)||0),0)+1;const s=blankScene(n);if(folder)s.folder=folder;P.scenes.push(s);noteRecent(s.id);P.sceneId=s.id;sel=null;msel=null;inspOpen=false;endTool();commit();fit();sceneInfo();}
 /* ---------- scene browser: folders, search, recent, trash ---------- */
 function natCmp(a,b){return String(a||'').localeCompare(String(b||''),undefined,{numeric:true,sensitivity:'base'});}
-function liveScenes(){return P.scenes.filter(s=>!s.trashed);}
-function trashed(){return P.scenes.filter(s=>s.trashed).sort((a,b)=>b.trashed-a.trashed);}
+function liveScenes(){return P.scenes.filter(s=>!s.trashed&&!s.tpl);}
+function trashed(){return P.scenes.filter(s=>s.trashed&&!s.tpl).sort((a,b)=>b.trashed-a.trashed);}
 function fById(id){return id?P.folders.find(f=>f.id===id):null;}
 function fParent(f){return f&&f.parent&&fById(f.parent)?f.parent:null;}
 function sFolder(s){return s&&s.folder&&fById(s.folder)?s.folder:null;}
@@ -1524,6 +1524,7 @@ const BIC={
  fold:'<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#e9c46a" stroke="#b8902f" stroke-width="1.2"/></svg>',
  scene:'<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" fill="#fff" stroke="#8a8f98" stroke-width="1.4"/><circle cx="9.5" cy="10" r="2.3" fill="#e05252"/><path d="M12.5 16.5l4.5-2.7v5.4z" fill="#3a7bd5"/></svg>',
  trash:'<svg viewBox="0 0 24 24"><path d="M5 7h14M9.5 7V5h5v2M7 7l1 13h8l1-13" fill="none" stroke="#8a8f98" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+ tpl:'<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#e9c46a" stroke="#b8902f" stroke-width="1.2"/><path d="M15.5 10.2l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="#f59e0b" stroke="#b45309" stroke-width=".7"/></svg>',
  find:'<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="#8a8f98" stroke-width="2"/><path d="M15 15l5 5" stroke="#8a8f98" stroke-width="2" stroke-linecap="round"/></svg>'};
 let br=null;
 function openBrowser(at){
@@ -1537,12 +1538,54 @@ function openBrowser(at){
 function rowF(f,sub){const n=countIn(f.id),k=fKids(f.id).length;return `<div class="brr" data-f="${f.id}"><span class="bri">${BIC.fold}</span><span class="brt"><b>${esc(f.name)}</b><small>${sub?esc(sub)+' · ':''}${plural(n,'scene')}${k?' · '+plural(k,'folder'):''}</small></span><button class="brm" data-fm="${f.id}" aria-label="Folder options">•••</button><span class="grip bgrip" title="Drag into a folder">⠿</span><span class="chev">›</span></div>`;}
 function rowS(s,sub,pickable){const cur=s.id===P.sceneId&&!s.trashed,picked=br.pick&&br.pick.has(s.id),n=shotCount(s),meta=sub!=null?sub:[s.heading,n?plural(n,'shot'):''].filter(Boolean).join(' · ');
  return `<div class="brr${cur?' cur':''}${picked?' picked':''}" data-s="${s.id}"><span class="bri">${br.pick&&pickable?'<i class="ck"></i>':BIC.scene}</span><span class="brt"><b>${esc(sceneLabel(s))}${cur?'<em>Open now</em>':''}</b><small>${meta?esc(meta):'&nbsp;'}</small></span><button class="brm" data-sm="${s.id}" aria-label="Scene options">•••</button>${s.trashed?'':'<span class="grip bgrip" title="Drag into a folder">⠿</span>'}</div>`;}
+/* ---------- templates: reusable sets ---------- */
+function templates(){return P.scenes.filter(s=>s.tpl&&!s.trashed).sort((a,b)=>natCmp(a.title,b.title));}
+function locKey(h){let t=String(h||'').toUpperCase().replace(/^\s*\d+[A-Z]?\.?\s+/,'').replace(/^\s*(INT\.?\s*\/\s*EXT\.?|EXT\.?\s*\/\s*INT\.?|I\/E\.?|INT\.?|EXT\.?|EST\.?)\s+/,'').trim();
+ const parts=t.split(/\s+[-–—]+\s+/);if(parts.length>1&&/^(DAY|NIGHT|MORNING|EVENING|AFTERNOON|DUSK|DAWN|LATER|CONTINUOUS|SAME|MOMENTS LATER|SUNSET|SUNRISE|MAGIC HOUR|SAME TIME|NEXT DAY|\()/.test(parts[parts.length-1]))parts.pop();
+ return parts.join(' - ').replace(/\s*\([^)]*\)\s*$/,'').trim();}
+function cloneScene(s){let j=JSON.stringify(stripScene(s));for(const id of [s.id,...s.items.map(i=>i.id)])j=j.split('"'+id+'"').join('"'+uid()+'"');const n=JSON.parse(j);delete n.trashed;migrateScene(n);return n;}
+function tplMatches(t,target){const k=t.loc||locKey(t.heading);if(!k)return [];return liveScenes().filter(s=>s!==target&&rootOf(s)===rootOf(target)&&locKey(s.heading)===k&&!(s.tplApplied||[]).includes(t.id));}
+function applyTemplate(t,target,replaceBg){
+ const c=cloneScene(t),pg=target.pageId&&target.pageId!=='all'?target.pageId:target.pages[0].id,setI=[],actI=[];
+ for(const it of c.items){if(ACTOR(it.type)||it.type==='axis'){it.pgs=[pg];actI.push(it);}else{it.pgs=null;setI.push(it);}}
+ target.items=[...setI,...target.items,...actI];
+ for(const st of (c.setups||[]))if(actI.some(i=>i.setupId===st.id))target.setups.push(st);
+ if(c.bgId&&(!target.bgId||replaceBg)){target.bgId=c.bgId;target.bg=clone(c.bg);}
+ target.tplApplied=[...(target.tplApplied||[]),t.id];
+}
+function sceneFromTemplate(t,folder){const n=cloneScene(t);delete n.tpl;delete n.loc;delete n.tplApplied;delete n.numbering;n.title='';n.tplApplied=[t.id];
+ if(folder&&fById(folder))n.folder=folder;else delete n.folder;n.number=String(fScenes(folder||null).reduce((m,s)=>Math.max(m,parseInt(s.number,10)||0),0)+1);
+ P.scenes.push(n);noteRecent(n.id);P.sceneId=n.id;sel=null;msel=null;inspOpen=false;endTool();closeModal();commit();fit();sceneInfo();}
+function saveTemplateDialog(){const s=scene(),lk=locKey(s.heading),hasActors=s.items.some(i=>ACTOR(i.type));
+ modal(`<h3>Save as template</h3><p class="mut">Keeps this scene’s set so you can start new scenes from it or add it to scenes you already have.</p>
+  <label class="fld">Template name<input id="tN" value="${esc(lk||s.title||'Set')}" autocomplete="off"></label>
+  <label class="fld">Location it’s for<input id="tL" value="${esc(lk)}" placeholder="e.g. PRECINCT - BULLPEN" autocomplete="off" autocapitalize="characters"></label>
+  <p class="mut" style="font-size:12.5px">Scenes whose heading matches this location are offered the template, including scenes from scripts you import later.</p>
+  <label class="imopt"><input type="checkbox" id="tA"${hasActors?'':' disabled'}> Also keep the characters and cameras</label>
+  <div class="btns end"><button data-x>Cancel</button><button class="pri" id="tOk">Save template</button></div>`,card=>{
+  card.querySelector('#tOk').onclick=()=>{const name=card.querySelector('#tN').value.trim()||'Set',loc=card.querySelector('#tL').value.trim().toUpperCase(),actors=card.querySelector('#tA').checked;
+   const t=cloneScene(s);if(!actors){t.items=t.items.filter(i=>!(ACTOR(i.type)||i.type==='axis'));t.setups=[];t.pages=[t.pages[0]];t.pageId=t.pages[0].id;t.items.forEach(i=>i.pgs=null);}
+   Object.assign(t,{tpl:true,title:name,loc,number:''});delete t.folder;delete t.tplApplied;delete t.numbering;P.scenes.push(t);
+   s.tplApplied=[...(s.tplApplied||[]),t.id];closeModal();commit();toast(`Template “${name}” saved. Find it under Open Scene › Templates.`);};});}
+function applyTemplateDialog(t){const s=scene();if(s.tpl){toast('This is a template. Open a scene to add a template to it.');return;}
+ const others=tplMatches(t,s),k=t.loc||locKey(t.heading),bgBoth=t.bgId&&s.bgId&&t.bgId!==s.bgId;
+ modal(`<h3>Add “${esc(t.title)}” to this scene</h3><p class="mut">Adds the template’s floor plan, walls and set pieces${t.items.some(i=>ACTOR(i.type))?', characters and cameras':''} to ${esc(sceneLabel(s))}.</p>
+  ${bgBoth?'<label class="imopt"><input type="checkbox" id="aBg"> Replace this scene’s floor plan image with the template’s</label>':''}
+  ${others.length?`<label class="imopt"><input type="checkbox" id="aAll" checked> Also add it to the ${plural(others.length,'other scene')} at ${esc(k)} in this project</label>`:''}
+  <div class="btns end"><button data-x>Cancel</button><button class="pri" id="aOk">Add template</button></div>`,card=>{
+  card.querySelector('#aOk').onclick=()=>{const rb=!!(card.querySelector('#aBg')||{}).checked,all=!!(card.querySelector('#aAll')||{}).checked;applyTemplate(t,s,rb);let n=1;if(all)for(const o of others){applyTemplate(t,o,false);n++;}closeModal();commit();fit();toast(n>1?`Added to ${plural(n,'scene')}. Undo takes it all back.`:'Template added.');};});}
+function pickTemplateDialog(){const s=scene(),ts=templates();if(!ts.length){toast('No templates yet. Use Menu › Save as template on a scene with your set.');return;}
+ const k=locKey(s.heading),m=t=>k&&(t.loc||locKey(t.heading))===k;ts.sort((a,b)=>m(b)-m(a));
+ modal(`<h3>Add a template</h3><div class="menu">${ts.map(t=>`<button data-t="${t.id}"><b>${esc(t.title)}${m(t)?' · matches this scene':''}</b><small>${esc(t.loc||'')}</small></button>`).join('')}</div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{card.querySelector('.menu').onclick=e=>{const b=e.target.closest('[data-t]');if(b)applyTemplateDialog(P.scenes.find(x=>x.id===b.dataset.t));};});}
+function brTemplates(){const ts=templates();if(!ts.length)return `<div class="brempty">No templates yet.<br><small>Open a scene with your set built, then Menu › Save as template. Standing sets you return to every episode are the best use.</small></div>`;
+ return ts.map(t=>{const n=t.items.filter(i=>!ACTOR(i.type)&&i.type!=='axis').length;return `<div class="brr" data-t="${t.id}"><span class="bri">${BIC.tpl}</span><span class="brt"><b>${esc(t.title)}</b><small>${esc([t.loc,plural(n,'set piece'),t.bgId?'floor plan':''].filter(Boolean).join(' · '))}</small></span><button class="brm" data-tm="${t.id}" aria-label="Template options">•••</button></div>`;}).join('');}
 function brFolder(id){
  const kids=fKids(id),scs=fScenes(id),secs=[];
- if(!id&&!br.pick){const rec=(P.ui.recentScenes||[]).map(x=>P.scenes.find(s=>s.id===x&&!s.trashed)).filter(Boolean).slice(0,4);if(rec.length>1&&liveScenes().length>4)secs.push(['Recent',rec.map(s=>rowS(s,pathTxt(sFolder(s))||'Not in a folder')).join('')]);}
+ if(!id&&!br.pick){const rec=(P.ui.recentScenes||[]).map(x=>P.scenes.find(s=>s.id===x&&!s.trashed&&!s.tpl)).filter(Boolean).slice(0,4);if(rec.length>1&&liveScenes().length>4)secs.push(['Recent',rec.map(s=>rowS(s,pathTxt(sFolder(s))||'Not in a folder')).join('')]);}
  if(kids.length)secs.push(['Folders',kids.map(f=>rowF(f)).join('')]);
  if(scs.length)secs.push([id?'Scenes':'Not in a folder',scs.map(s=>rowS(s,null,true)).join('')]);
  let h=secs.length>1?secs.map(([t,r])=>`<div class="brsec">${t}</div>${r}`).join(''):secs.length?secs[0][1]:`<div class="brempty">${id?'This folder is empty.<br>Add a scene or a folder above.':'No scenes yet.'}</div>`;
+ if(!id){const tn=templates().length;h+=`<div class="brr" data-a="tpls"><span class="bri">${BIC.tpl}</span><span class="brt"><b>Templates</b><small>${tn?plural(tn,'template'):'Reusable sets'}</small></span><span class="chev">›</span></div>`;}
  if(!id){const t=trashed().length;h+=`<div class="brr trashrow" data-a="trash"><span class="bri">${BIC.trash}</span><span class="brt"><b>Trash</b><small>${t?plural(t,'scene'):'Empty'}</small></span><span class="chev">›</span></div>`;}
  return h;
 }
@@ -1569,27 +1612,30 @@ function brRender(){
  root.classList.toggle('sub',!!br.sub);
  if(br.sub){$('#brSub').innerHTML=brSubHTML();const i=$('#brSub input');if(i){if(matchMedia('(pointer:fine)').matches){i.focus();i.select();}i.onkeydown=e=>{if(e.key==='Enter')brSubAct('save');};}return;}
  $('#brSub').innerHTML='';
- if(br.at&&br.at!=='__trash'&&!fById(br.at))br.at=null;
- const q=br.q.trim(),trash=br.at==='__trash',f=trash?null:fById(br.at);
- const title=q?'Search':trash?'Trash':f?f.name:'All scenes',path=f?fPath(f.id).slice(0,-1):[];
+ if(br.at&&br.at!=='__trash'&&br.at!=='__tpl'&&!fById(br.at))br.at=null;
+ const q=br.q.trim(),tview=br.at==='__tpl',trash=br.at==='__trash'||tview,f=trash?null:fById(br.at);
+ const title=q?'Search':tview?'Templates':trash?'Trash':f?f.name:'All scenes',path=f?fPath(f.id).slice(0,-1):[];
  $('#brTop').innerHTML=`<div class="brh"><button class="brb" data-a="up"${!q&&(f||trash)?'':' style="visibility:hidden"'} aria-label="Back">‹</button><h3>${esc(title)}</h3><button class="brb" data-x aria-label="Close">✕</button></div>${!q&&(f||trash)?`<div class="brcr"><button data-go="">All scenes</button>${path.map(x=>`<span>›</span><button data-go="${x.id}">${esc(x.name)}</button>`).join('')}</div>`:''}`;
- $('#brTools').innerHTML=q?'':trash?(trashed().length?'<button data-a="empty" class="danger">Empty Trash</button>':''):`<button data-a="newscene">＋ New scene</button><button data-a="newfolder">＋ New folder</button><button data-a="import">Import script…</button>${fScenes(br.at).length>1||br.pick?`<button data-a="pick" class="${br.pick?'on':''}">${br.pick?'Done':'Select'}</button>`:''}`;
- $('#brL').innerHTML=q?brSearch(q):trash?brTrash():brFolder(br.at);
+ $('#brTools').innerHTML=q?'':tview?(scene().tpl?'':'<button data-a="savetpl">＋ Save open scene as template…</button>'):trash?(trashed().length?'<button data-a="empty" class="danger">Empty Trash</button>':''):`<button data-a="newscene">＋ New scene</button><button data-a="newfolder">＋ New folder</button><button data-a="import">Import script…</button>${fScenes(br.at).length>1||br.pick?`<button data-a="pick" class="${br.pick?'on':''}">${br.pick?'Done':'Select'}</button>`:''}`;
+ $('#brL').innerHTML=q?brSearch(q):tview?brTemplates():trash?brTrash():brFolder(br.at);
  const n=br.pick?br.pick.size:0,all=fScenes(br.at).length;
  $('#brFoot').innerHTML=br.pick&&!q&&!trash?`<span>${n} selected</span><button data-a="pickall">${n&&n===all?'Select none':'Select all'}</button><button data-a="pmove"${n?'':' disabled'}>Move to…</button><button data-a="ptrash" class="danger"${n?'':' disabled'}>Move to Trash</button>`:'';
 }
 function brGo(id){br.at=id||null;br.q='';br.pick=null;br.sub=null;const q=$('#brq');if(q)q.value='';brRender();$('#brL').scrollTop=0;}
 function brClick(e){
  if(Date.now()-brDragEnd<400)return;
- const t=e.target;if(t.closest('#brSub')){const b=t.closest('[data-b],[data-dest]');if(b)brSubAct(b.dataset.b||'dest',b.dataset.dest);return;}
+ const t=e.target;if(t.closest('#brSub')){const b=t.closest('[data-b],[data-dest]');if(b)brSubAct(b.dataset.b==='fromtpl'?'dest':(b.dataset.b||'dest'),b.dataset.dest);return;}
  const fm=t.closest('[data-fm]'),sm=t.closest('[data-sm]'),go=t.closest('[data-go]'),a=t.closest('[data-a]');
  if(fm){br.sub={k:'fact',id:fm.dataset.fm};brRender();return;}
+ {const tr=t.closest('[data-t],[data-tm]');if(tr){br.sub={k:'tact',id:tr.dataset.t||tr.dataset.tm};brRender();return;}}
  if(sm){br.sub={k:'sact',id:sm.dataset.sm};brRender();return;}
  if(go){brGo(go.dataset.go);return;}
  if(a){const k=a.dataset.a;
   if(k==='up'){brGo(br.at==='__trash'?null:fParent(fById(br.at)));return;}
   if(k==='trash'){brGo('__trash');return;}
-  if(k==='newscene'){closeModal();newScene(br.at);return;}
+  if(k==='tpls'){brGo('__tpl');return;}
+  if(k==='savetpl'){closeModal();saveTemplateDialog();return;}
+  if(k==='newscene'){if(templates().length){br.sub={k:'newpick'};brRender();return;}closeModal();newScene(br.at);return;}
   if(k==='import'){importScript();return;}
   if(k==='newfolder'){br.sub={k:'name',mode:'new',parent:br.at};brRender();return;}
   if(k==='pick'){br.pick=br.pick?null:new Set();brRender();return;}
@@ -1608,8 +1654,12 @@ function brSubHTML(){
  const u=br.sub,B=(a,l,c)=>`<button data-b="${a}"${c?` class="${c}"`:''}>${l}</button>`,cancel=`<div class="btns end">${B('back','Cancel')}</div>`;
  if(u.k==='sact'){const s=P.scenes.find(x=>x.id===u.id);if(!s)return cancel;const fo=sFolder(s);
   return `<h3>${esc(sceneLabel(s))}</h3><p class="mut">${esc(pathTxt(fo)||'Not in a folder')}${s.heading?' · '+esc(s.heading):''}</p><div class="menu">${s.trashed?B('restore','Put back'+(fo?' in '+esc(fById(fo).name):''))+B('kill','Delete forever…','danger'):B('open','Open')+B('info','Scene info…')+B('dup','Duplicate')+B('move','Move to…')+B('trash','Move to Trash','danger')}</div>${cancel}`;}
+ if(u.k==='newpick')return `<h3>New scene</h3><p class="mut">${br.at&&fById(br.at)?'In '+esc(fById(br.at).name):'At the top level'}</p><div class="menu">${B('blank','Blank scene')}${templates().map(t=>`<button data-b="fromtpl" data-dest="${t.id}"><b>From template: ${esc(t.title)}</b><small>${esc(t.loc||'')}</small></button>`).join('')}</div>${cancel}`;
+ if(u.k==='tact'){const t=P.scenes.find(x=>x.id===u.id);if(!t)return cancel;const cur=scene();
+  return `<h3>${esc(t.title)}</h3><p class="mut">Template${t.loc?' · '+esc(t.loc):''}</p><div class="menu">${B('tnew','New scene from this template')}${cur.tpl?'':B('tapply','Add to the open scene ('+esc(sceneLabel(cur))+')…')}${B('tedit','Edit template')}${B('trename','Rename…')}${B('tdelete','Delete template…','danger')}</div>${cancel}`;}
  if(u.k==='fact'){const f=fById(u.id);if(!f)return cancel;const n=countIn(f.id);
   return `<h3>${esc(f.name)}</h3><p class="mut">${esc(pathTxt(fParent(f))||'Top level')} · ${plural(n,'scene')}</p><div class="menu">${B('fopen','Open')+B('rename','Rename…')+B('sub','New folder inside…')+B('fmove','Move to…')+B('fdel','Delete folder…','danger')}</div>${cancel}`;}
+ if(u.k==='tname'){const t=P.scenes.find(x=>x.id===u.id);return `<h3>Rename template</h3><label class="fld">Name<input id="brn" value="${esc(t.title)}" autocomplete="off"></label><label class="fld">Location it’s for<input id="brl" value="${esc(t.loc||'')}" autocomplete="off" autocapitalize="characters"></label><div class="btns end">${B('back','Cancel')}${B('save','Save','pri')}</div>`;}
  if(u.k==='name'){const f=u.mode==='rename'?fById(u.id):null,par=u.parent?fById(u.parent):null;
   return `<h3>${f?'Rename folder':'New folder'}</h3>${par?`<p class="mut">Inside ${esc(pathTxt(par.id))}</p>`:''}<label class="fld">Name<input id="brn" value="${esc(f?f.name:'')}" placeholder="e.g. The Rookie, Season 8" autocomplete="off"></label><div class="btns end">${B('back','Cancel')}${B('save',f?'Save':'Create','pri')}</div>`;}
  if(u.k==='move'){
@@ -1620,6 +1670,7 @@ function brSubHTML(){
   return `<h3>Move ${what} to…</h3><div class="mvl"><button data-dest=""${cur===null?' disabled':''}>${BIC.scene}<span>Top level (not in a folder)</span></button>${tree(null,0)}</div><div class="btns end">${B('newdest','＋ New folder…')}${B('back','Cancel')}</div>`;}
  if(u.k==='confirm'){
   if(u.what==='empty'){const n=trashed().length;return `<h3>Empty the Trash?</h3><p>${plural(n,'scene')} will be deleted on all your devices. This can’t be undone.</p><div class="btns end">${B('back','Cancel')}${B('yes','Empty Trash','pri danger')}</div>`;}
+  if(u.what==='tdel'){const t=P.scenes.find(x=>x.id===u.id);return `<h3>Delete template “${esc(t.title)}”?</h3><p>Scenes made from it keep their sets. Only the template goes.</p><div class="btns end">${B('back','Cancel')}${B('yes','Delete template','pri danger')}</div>`;}
   if(u.what==='kill'){const s=P.scenes.find(x=>x.id===u.id);return `<h3>Delete ${esc(sceneLabel(s))} forever?</h3><p>It will be deleted on all your devices, along with its pages and shot list.</p><div class="btns end">${B('back','Cancel')}${B('yes','Delete forever','pri danger')}</div>`;}
   if(u.what==='fdel'){const f=fById(u.id),n=countIn(f.id),k=fDesc(f.id).size-1;return `<h3>Delete “${esc(f.name)}”?</h3><p>${n?`Its ${plural(n,'scene')} go to the Trash, where you can put them back. `:''}${k?`The ${plural(k,'folder')} inside it ${k===1?'is':'are'} removed too.`:''}${!n&&!k?'The folder is empty.':''}</p><div class="btns end">${B('back','Cancel')}${B('yes','Delete folder','pri danger')}</div>`;}
  }
@@ -1628,6 +1679,14 @@ function brSubHTML(){
 function brSubAct(a,dest){
  const u=br.sub;if(!u)return;
  if(a==='back'){br.sub=u.prev||null;brRender();return;}
+ if(u.k==='newpick'){if(a==='blank'){closeModal();newScene(br.at);return;}if(a==='dest'&&dest){sceneFromTemplate(P.scenes.find(x=>x.id===dest),br.at==='__tpl'?null:br.at);return;}}
+ if(u.k==='tact'){const t=P.scenes.find(x=>x.id===u.id);if(!t)return;
+  if(a==='tnew'){const f=sFolder(scene());sceneFromTemplate(t,f);return;}
+  if(a==='tapply'){closeModal();applyTemplateDialog(t);return;}
+  if(a==='tedit'){openScene(t.id);toast('Editing the template. Changes affect new scenes made from it, not scenes already made.');return;}
+  if(a==='trename'){br.sub={k:'tname',id:t.id,prev:u};brRender();return;}
+  if(a==='tdelete'){br.sub={k:'confirm',what:'tdel',id:t.id,prev:u};brRender();return;}}
+ if(u.k==='tname'&&a==='save'){const t=P.scenes.find(x=>x.id===u.id);t.title=($('#brn').value||'').trim()||t.title;t.loc=($('#brl').value||'').trim().toUpperCase();commit();br.sub=null;brRender();return;}
  if(u.k==='sact'){const s=P.scenes.find(x=>x.id===u.id);if(!s)return;
   if(a==='open'){openScene(s.id);return;}
   if(a==='info'){sceneInfo(s,()=>openBrowser(br.at));return;}
@@ -1653,6 +1712,7 @@ function brSubAct(a,dest){
  if(u.k==='confirm'&&a==='yes'){
   if(u.what==='empty'){const n=trashed().length;killScenes(trashed().map(s=>s.id));commit();br.sub=null;brRender();toast(`${plural(n,'scene')} deleted.`);return;}
   if(u.what==='kill'){killScenes([u.id]);commit();br.sub=null;brRender();toast('Scene deleted.');return;}
+  if(u.what==='tdel'){killScenes([u.id]);commit();br.sub=null;brRender();toast('Template deleted.');return;}
   if(u.what==='fdel'){const name=fById(u.id).name;deleteFolder(u.id);commit();if(br.at&&!fById(br.at))br.at=null;br.sub=null;brRender();toast(`Folder “${name}” deleted.`);}}
 }
 /* ---------- script import: Final Draft, PDF, Fountain / plain text ---------- */
@@ -1813,18 +1873,20 @@ function importReview(ps,chars,fname){
   <details class="oth"><summary>Scenes (${ps.scenes.length})</summary><div class="imsc">${ps.scenes.map((s,i)=>`<div><b>${esc(s.num||String(i+1))}</b>${esc(s.heading)}<small>${s.present.length?esc(s.present.join(', ')):'No characters found'}</small></div>`).join('')}</div></details>
   <div class="lbl">Characters <span style="font-weight:400">· set each one’s sex. “guess” means it was read from the script (pronouns, Mr./Mrs., Mom, etc.); please check those.</span></div>
   <div class="imch">${chars.map(row).join('')||'<p class="mut">No character cues found.</p>'}</div>
+  ${(()=>{const ts=templates().filter(t=>t.loc);const n=ps.scenes.filter(sc=>ts.some(t=>t.loc===locKey(sc.heading))).length;return n?`<label class="imopt"><input type="checkbox" id="imTp" checked> Add saved set templates to the ${plural(n,'scene')} at matching locations</label>`:'';})()}
   <label class="imopt"><input type="checkbox" id="imPl" checked> Put each scene’s characters in the scene, ready to block</label>
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="imGo">Import ${plural(ps.scenes.length,'scene')}</button></div>`,card=>{
   const sel=card.querySelector('#imP');sel.value=cur&&fById(cur)?cur:'';
   card.querySelector('.imch').addEventListener('click',e=>{const b=e.target.closest('[data-act]'),r=e.target.closest('[data-i]');if(!r)return;const c=chars[+r.dataset.i];
    if(b&&b.dataset.act==='g'){c.g=b.dataset.v;c.guess=false;}else c.on=!c.on;r.outerHTML=row(c,+r.dataset.i);});
   card.querySelector('#imGo').onclick=()=>{
-   const name=card.querySelector('#imN').value.trim()||ps.title,par=sel.value||null,place=card.querySelector('#imPl').checked;
+   const name=card.querySelector('#imN').value.trim()||ps.title,par=sel.value||null,place=card.querySelector('#imPl').checked,useTpl=!!(card.querySelector('#imTp')||{}).checked;
    const fo={id:uid(),name,parent:par};P.folders.push(fo);
    const ids={};let ci=0;for(const c of chars)if(c.on){const ch={id:uid(),name:c.name,color:CHAR_COLORS[ci++%CHAR_COLORS.length]};if(c.g)ch.g=c.g;P.characters.push(ch);ids[c.name]=ch.id;}
    let first=null;
    ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.synopsis=sc.synopsis||'';s.folder=fo.id;
     if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of sc.present.filter(n=>ids[n])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}}
+    if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
     P.scenes.push(s);if(!first)first=s;});
    P.sceneId=first.id;noteRecent(first.id);sel0();commit();fit();closeModal();openBrowser(fo.id);
    toast(`Imported ${plural(ps.scenes.length,'scene')} and ${plural(ci,'character')} into “${name}”. Undo takes it all back.`);
@@ -1997,12 +2059,12 @@ function menu(){
  const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
  openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
   <button data-m="open">Open scene… <span class="kb">⌘O</span></button><button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><div class="hd">Export</div><button data-m="pdf">Download PDF (diagrams + shot list)</button><button data-m="list">Download shot list PDF</button><button data-m="png">Download this page as an image</button>
+  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><div class="hd">Export</div><button data-m="pdf">Download PDF (diagrams + shot list)</button><button data-m="list">Download shot list PDF</button><button data-m="png">Download this page as an image</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}</div></div>`,b,p=>{
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
    ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:()=>exportPDF('all'),list:()=>exportPDF('list'),png:exportPNG,backup,restore:()=>$('#fJson').click(),
-     open:()=>openBrowser(),keys:keysDialog,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
+     open:()=>openBrowser(),keys:keysDialog,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
  });
 }
 
