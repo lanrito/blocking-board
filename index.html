@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ShotMap</title>
+<title>The Director’s Notebook</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
 <meta name="theme-color" content="#1e1f22">
-<meta name="apple-mobile-web-app-title" content="ShotMap">
+<meta name="apple-mobile-web-app-title" content="Director’s Notebook">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <style>
@@ -314,9 +314,9 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <body>
 <div id="app">
  <header id="top">
-  <div class="brand">ShotMap</div>
+  <div class="brand">The Director’s Notebook</div>
   <button id="sceneBtn" aria-label="Open a scene" title="Open a scene (⌘O)"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#e9c46a" stroke="#b8902f" stroke-width="1.2"/></svg><span id="sceneBtnT"></span><svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
-  <div class="seg" id="tabs"><button id="mNb">Notebook</button><button id="mSt">Strategy</button><button id="mDia" class="on">Floor Plan</button><button id="mList">Shot List</button></div>
+  <div class="seg" id="tabs"><button id="mNb">Breakdown</button><button id="mSt">Strategy</button><button id="mDia" class="on">Floor Plan</button><button id="mList">Shot List</button></div>
   <span class="sp"></span>
   <span id="status"></span>
  </header>
@@ -371,7 +371,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116205230';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116210813';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -754,7 +754,7 @@ function authMsg(e){const c=(e&&e.code)||'';return ({'auth/invalid-credential':'
 function accountDialog(){
  if(!fbAuth)return;
  if(fbUser){modal(`<h3>Sync</h3><p>Signed in as <b>${esc(fbUser.email||'')}</b>. Your scenes sync to every device where you sign in with this account, and anything you do offline is sent when you’re back online.</p><div class="btns end"><button class="danger" id="so">Sign out</button><button class="pri" data-x>Done</button></div>`,c=>{c.querySelector('#so').onclick=async()=>{try{await fbAuth.signOut();}catch(e){}closeModal();toast('Signed out. Your work stays saved on this device.');};});return;}
- modal(`<h3>Sign in to sync</h3><p class="mut">Use the same email and password on your Mac and your iPad. The very first time, tap Create account. This is ShotMap’s own account, separate from GitHub and Claude.</p><label class="fld">Email<input id="em" type="email" autocomplete="username" autocapitalize="off"></label><label class="fld">Password<input id="pw" type="password" autocomplete="current-password"></label><p id="aerr" class="danger" style="min-height:1.3em;margin-top:10px"></p><div class="btns"><button id="fp">Forgot password</button></div><div class="btns end"><button id="ca">Create account</button><button class="pri" id="si">Sign in</button></div>`,c=>{
+ modal(`<h3>Sign in to sync</h3><p class="mut">Use the same email and password on your Mac and your iPad. The very first time, tap Create account. This is the app’s own account, separate from GitHub and Claude.</p><label class="fld">Email<input id="em" type="email" autocomplete="username" autocapitalize="off"></label><label class="fld">Password<input id="pw" type="password" autocomplete="current-password"></label><p id="aerr" class="danger" style="min-height:1.3em;margin-top:10px"></p><div class="btns"><button id="fp">Forgot password</button></div><div class="btns end"><button id="ca">Create account</button><button class="pri" id="si">Sign in</button></div>`,c=>{
   const em=()=>c.querySelector('#em').value.trim(),pw=()=>c.querySelector('#pw').value,err=m=>{c.querySelector('#aerr').textContent=m;};
   const run=async f=>{err('');try{await f();closeModal();toast('Signed in. Syncing your scenes…');}catch(e){err(authMsg(e));}};
   c.querySelector('#si').onclick=()=>run(()=>fbAuth.signInWithEmailAndPassword(em(),pw()));
@@ -2131,7 +2131,7 @@ let listKey='';
 function refreshLists(){const used={type:new Set(),angle:new Set(),move:new Set()};for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks)for(const k in used)if(m[k]&&!PRESET[k].includes(m[k].trim()))used[k].add(m[k].trim());const key=JSON.stringify([...used.type,'|',...used.angle,'|',...used.move]);if(key===listKey)return;listKey=key;for(const k in used)document.getElementById('dl-'+k).innerHTML=[...PRESET[k],...[...used[k]].sort()].map(v=>`<option value="${esc(v)}">`).join('');}
 function renderList(){
  const s=scene(),rows=rowsOf(s),lv=$('#listView');
- const head=`<div class="lvh"><div style="flex:1"><h2>${esc((s.number?s.number+'  ':'')+(s.title||'Untitled scene'))}</h2>${s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}${s.synopsis?`<p class="syn">${esc(s.synopsis)}</p>`:''}</div><button class="sm" id="lvMenu">Shot list ▾</button><button class="sm" id="lvInfo">Scene info</button></div>`;
+ const lo=prodOpts(s),head=`<div class="lvh"><div style="flex:1"><div class="dvk">${esc(lo.listT||'')}<i>${esc(lo.listS||'')}</i></div><h2>${esc((s.number?s.number+'  ':'')+(s.title||'Untitled scene'))}</h2>${s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}${s.synopsis?`<p class="syn">${esc(s.synopsis)}</p>`:''}</div><button class="sm" id="lvMenu">Shot list ▾</button><button class="sm" id="lvInfo">Scene info</button></div>`;
  if(!rows.length){lv.innerHTML=head+'<div class="lv-empty">No shots yet. Add a camera on the diagram; each camera, and each version along its move, becomes a row here.</div>';}
  else lv.innerHTML=head+`<table class="sl"><thead><tr><th>Storyboard</th><th>Shot #</th><th>Version</th><th>Shot size</th><th>Shot type</th><th>Shot angle</th><th>Movement</th><th>Description</th></tr></thead><tbody>${rows.map(r=>{const k=`data-id="${r.it.id}" data-v="${r.vi}"`,on=sel&&sel.id===r.it.id&&(sel.mark||0)===r.vi;
   return `<tr class="${r.first?'ss':''}${on?' on':''}" data-id="${r.it.id}" data-v="${r.vi}"><td style="width:166px">${sbHTML(r.it.id,r.vi,r.m)}</td><td style="width:84px"><button class="shotno" data-act="goShot" ${k} title="Show on diagram"><i style="background:${r.st.color}"></i>${esc(shotCode(s,r.it))}</button><span class="grip" title="Drag to reorder">⠿</span></td><td style="width:64px"><div class="ver">${verCode(s,r.vi)}</div></td>
@@ -2335,7 +2335,7 @@ function labelMenu(btn,col){
  docPop(btn,items);
 }
 function docHead(s,kind){
- const D=Object.assign({},PROD_DEF,prodFor(s)||{}),T=kind==='nb'?[D.nbT,D.nbS]:[D.stT,D.stS];
+ const D=prodOpts(s),T=kind==='nb'?[D.nbT,D.nbS]:[D.stT,D.stS];
  return `<div class="dvh"><div class="dvt"><div class="dvk">${esc(T[0]||'')}<i>${esc(T[1]||'')}</i></div><h2>${esc((s.number?'Sc. '+s.number+'  ':'')+(s.title||s.heading||'Untitled scene'))}</h2>${s.title&&s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}</div><div class="dvb">${kind==='nb'?'<button class="sm" data-d="docx">Import from Word…</button>':''}<button class="sm" data-d="info">Scene info</button><button class="sm" data-d="pdf">Export PDF…</button></div></div>`;
 }
 const FMT_BAR='<div class="fmt"><button data-f="bold" title="Bold (⌘B)"><b>B</b></button><button data-f="insertUnorderedList" title="Bullets">• List</button><button data-f="insertOrderedList" title="Numbered list">1. List</button></div>';
@@ -2463,7 +2463,7 @@ function rtDraw(doc,K,lines,x0,y0,fs){
   let x=x0+l.x;for(const g of l.segs){K.font(g.b,g.i,g.sym);doc.text(g.t,x,base);x+=g.w;}}
 }
 async function pdfTextPages(doc,s,o,np){
- const port=!!o.port,W=port?612:792,H=port?792:612,M=23,U=port?1275:1650,k=W/U,K=pdfKit(doc),pr=prodFor(s),D=Object.assign({},PROD_DEF,pr||{}),strips={},bot=H-27;let added=0;
+ const port=!!o.port,W=port?612:792,H=port?792:612,M=23,U=port?1275:1650,k=W/U,K=pdfKit(doc),pr=prodFor(s),D=prodNorm(pr),strips={},bot=H-27;let added=0;
  const strip=async kind=>{if(!strips[kind]){const L=letterhead(s,kind,U),h=Math.ceil(L.y)+3,c=await rasterize(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${U}" height="${h}" viewBox="0 0 ${U} ${h}"><style>${SVG_CSS}${SHEET_CSS}</style><rect width="${U}" height="${h}" fill="#fff"/>${L.h}</svg>`,U,h,1.6);strips[kind]={d:c.toDataURL('image/jpeg',.88),h:h*k};}return strips[kind];};
  const head=async kind=>{const S=await strip(kind);doc.addImage(S.d,'JPEG',0,0,W,S.h,`lh-${s.id}-${kind}-${port?1:0}`,'FAST');doc.setFont('helvetica','normal');doc.setFontSize(6);try{doc.text(pdfStr(`Scene ${s.number||''}: ${s.heading||''} ${s.title?'- '+s.title:''} | ${kind==='nb'?D.nbT:D.stT}`),M,12,{renderingMode:'invisible'});}catch(e){}return S.h;};
  const foot=label=>{doc.setDrawColor('#e2e2de');doc.setLineWidth(.5);doc.line(M,H-20.2,W-M,H-20.2);doc.setFont('helvetica','normal');doc.setFontSize(6.8);doc.setTextColor(154,155,160);if(pr&&pr.name)doc.text(pdfStr(pr.name),M,H-9.6);doc.text(pdfStr(label),W-M,H-9.6,{align:'right'});};
@@ -2485,7 +2485,7 @@ async function pdfTextPages(doc,s,o,np){
     doc.setFont('helvetica','bold');doc.setFontSize(G.fs*1.04);doc.setTextColor(255,255,255);for(const c of cols)doc.text(pdfStr(c.name),c.x+c.w/2,top+G.hh/2+G.fs*.36,{align:'center'});
     doc.setDrawColor('#c4c4bf');doc.setLineWidth(.5);for(const c of cols.slice(1))doc.line(c.x,top,c.x,top+G.hh+bh);doc.rect(M,top,tw,G.hh+bh,'S');
     ink();for(const c of cols)rtDraw(doc,K,c.L.filter(l=>l.pg===p),c.x+pad,top+G.hh+pad,G.fs);
-    foot([s.number?'Sc. '+s.number:'',(D.nbT||'Notebook')+(pages>1?` ${p+1} of ${pages}`:'')].filter(Boolean).join('  ·  '));}
+    foot([s.number?'Sc. '+s.number:'',(D.nbT||'Breakdown')+(pages>1?` ${p+1} of ${pages}`:'')].filter(Boolean).join('  ·  '));}
   }
  }
  if(o.st){
@@ -2629,7 +2629,10 @@ $('#fDocx').addEventListener('change',e=>{const f=e.target.files[0];e.target.val
 
 /* ---------- export / backup ---------- */
 /* ---------- productions: letterhead on every exported page ---------- */
-const PROD_DEF={name:'',note:'',contacts:[],accent:'#2F6FD6',floorT:'Floor Plan',floorS:'Where does everything go?',listT:'Shot List',listS:'What specific camera set-ups capture the vision',nbT:'Director’s Notebook',nbS:'What does this scene mean?',stT:'Scene Strategy',stS:'How do we make the meaning of the scene visible?'};
+const PROD_DEF={name:'',note:'',contacts:[],accent:'#2F6FD6',floorT:'Floor Plan',floorS:'Where does everything go?',listT:'Shot List',listS:'What camera set-ups capture the vision?',nbT:'Scene Breakdown',nbS:'What does the scene mean?',stT:'Scene Strategy',stS:'How do we make the meaning visible?'};
+const PROD_OLD={nbT:['Director’s Notebook'],nbS:['What does this scene mean?'],stS:['How do we make the meaning of the scene visible?'],listS:['What specific camera set-ups capture the vision']};
+function prodNorm(pr){const o=Object.assign({},PROD_DEF,pr||{});for(const k in PROD_OLD)if(PROD_OLD[k].includes(o[k]))o[k]=PROD_DEF[k];return o;}
+function prodOpts(s){return prodNorm(prodFor(s));}
 function prodById(id){return id?(P.productions||[]).find(p=>p.id===id)||null:null;}
 function folderProd(s){let f=fById(sFolder(s));while(f){if(f.prod&&prodById(f.prod))return f.prod;f=f.parent?fById(f.parent):null;}return null;}
 function topFolder(fid){let f=fById(fid);while(f&&f.parent&&fById(f.parent))f=fById(f.parent);return f;}
@@ -2637,7 +2640,7 @@ let expProd;
 function prodFor(s){return prodById(expProd!==undefined?expProd:folderProd(s));}
 function fitFs(str,max,min,avail,k){return Math.max(min,Math.min(max,avail/(Math.max(1,str.length)*(k||.64))));}
 function letterhead(s,kind,W,pageLbl){
- const pr=prodFor(s),o=Object.assign({},PROD_DEF,pr||{}),M=48,acc=o.accent||PROD_DEF.accent,top=M-8;let h='',ly=top,ry=top;
+ const pr=prodFor(s),o=prodNorm(pr),M=48,acc=o.accent||PROD_DEF.accent,top=M-8;let h='',ly=top,ry=top;
  if(pr&&pr.logo&&images[pr.logo]&&pr.lw){const r=Math.min(380/pr.lw,96/pr.lh),w=pr.lw*r,hh=pr.lh*r;h+=`<image href="${images[pr.logo]}" xlink:href="${images[pr.logo]}" x="${M}" y="${top}" width="${w}" height="${hh}" preserveAspectRatio="xMinYMin meet"/>`;ly=top+hh;}
  else if(pr&&pr.name){h+=`<text x="${M}" y="${top+34}" style="font-size:34px;font-weight:800;letter-spacing:.04em;fill:#141414">${esc(pr.name.toUpperCase())}</text>`;ly=top+44;}
  const meta=[s.code,s.day,s.date].map(x=>String(x||'').trim()).filter(Boolean).join('   ·   ');
@@ -2661,12 +2664,12 @@ function pageFooter(s,W,H,label){const pr=prodFor(s),M=48;
 
 function wrapText(t,max){const ws=String(t||'').split(/\s+/).filter(Boolean),out=[];let l='';for(const w of ws){if((l+' '+w).trim().length>max){if(l)out.push(l);l=w;}else l=(l+' '+w).trim();}if(l)out.push(l);return out;}
 function sheetSVG(s,pid,port,full,opt){opt=opt||{};
- const W=port?1275:1650,H=port?1650:1275,M=48,LH=letterhead(s,'floor',W,opt.label),syn=wrapText(s.synopsis,port?100:140).slice(0,2),BOT=H-58,R=rowsOf(s,pid),sum=!full&&R.length>0,acc=Object.assign({},PROD_DEF,prodFor(s)||{}).accent||PROD_DEF.accent;
+ const W=port?1275:1650,H=port?1650:1275,M=48,LH=letterhead(s,'floor',W,opt.label),syn=wrapText(s.synopsis,port?100:140).slice(0,2),BOT=H-58,R=rowsOf(s,pid),sum=!full&&R.length>0,acc=prodOpts(s).accent||PROD_DEF.accent;
  const LW=port?W-M*2:440,dx0=M,dy0=LH.y+(syn.length?syn.length*24+14:0)+22,dW=port||!sum?W-M*2:W-M*2-LW-44,dH=port&&sum?Math.round((BOT-dy0)*.64):BOT-dy0;
  const bb=opt.box||bbox(s,pid)||{x:-300,y:-200,w:600,h:400},pad=24,k=Math.min(dW/(bb.w+pad*2),dH/(bb.h+pad*2),3);
  const tx=dx0+dW/2-(bb.x+bb.w/2)*k,ty=dy0+dH/2-(bb.y+bb.h/2)*k;
  let bg='';if(s.bgId&&s.bg&&images[s.bgId]){const b=s.bg;bg=`<image href="${images[s.bgId]}" xlink:href="${images[s.bgId]}" x="${b.x}" y="${b.y}" width="${b.w*b.s}" height="${b.h*b.s}" opacity="${b.op}" preserveAspectRatio="none"/>`;}
- let hd=LH.h+syn.map((l,i)=>`<text x="${W/2}" y="${LH.y+26+i*24}" text-anchor="middle" style="font-size:18px;font-style:italic;fill:#5b5c61">${esc(l)}</text>`).join('')+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',(o=>o.floorT)(Object.assign({},PROD_DEF,prodFor(s)||{}))||'Floor plan',s.pages.length>1?(pid==='all'?'Master':pageName(s,pid)):''].filter(Boolean).join('  ·  '));
+ let hd=LH.h+syn.map((l,i)=>`<text x="${W/2}" y="${LH.y+26+i*24}" text-anchor="middle" style="font-size:18px;font-style:italic;fill:#5b5c61">${esc(l)}</text>`).join('')+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',(o=>o.floorT)(prodOpts(s))||'Floor plan',s.pages.length>1?(pid==='all'?'Master':pageName(s,pid)):''].filter(Boolean).join('  ·  '));
  const lx=W-M-LW;let y=port?dy0+dH+26:dy0,sl=!sum?'':(port?`<line x1="${M}" x2="${W-M}" y1="${y}" y2="${y}" stroke="#1c1c1e" stroke-width="1.5"/><text x="${M}" y="${y+32}" style="font-size:14px;font-weight:800;letter-spacing:.24em;fill:${acc}">SHOTS</text>`:`<line x1="${lx-22}" x2="${lx-22}" y1="${dy0}" y2="${BOT}" stroke="#d2d2cd" stroke-width="1.5"/><text x="${lx}" y="${y+14}" style="font-size:14px;font-weight:800;letter-spacing:.24em;fill:${acc}">SHOTS</text>`);y+=port?46:28;if(sum)sl+=`<rect x="${lx}" y="${y}" width="${LW}" height="40" fill="#f1f1ef"/><text x="${lx+52}" y="${y+26}" class="x-lh">SHOT</text><text x="${lx+118}" y="${y+26}" class="x-lh">VER</text><text x="${lx+170}" y="${y+26}" class="x-lh">SIZE · TYPE</text>${port?`<text x="${lx+520}" y="${y+26}" class="x-lh">DESCRIPTION</text>`:''}`;y+=40;
  let prev=null;
  for(const r of sum?R:[]){if(y>BOT-46)break;if(prev&&prev!==r.st)sl+=`<line x1="${lx}" x2="${lx+LW}" y1="${y}" y2="${y}" stroke="#9a9a96" stroke-width="2"/>`;prev=r.st;
@@ -2685,7 +2688,7 @@ function listPagesSVG(s,o){
  const LH=letterhead(s,'list',W),top0=LH.y+22+42,BOT=H-58,pages=[];let cur=[],y=top0;for(const q of prep){if(cur.length&&y+q.h>BOT){pages.push(cur);cur=[];y=top0;}cur.push(q);y+=q.h;}if(cur.length)pages.push(cur);
  const txt=(n,y,arr)=>arr.map((l,j)=>`<text x="${M+cols[C(n)][1]+10}" y="${y+30+j*24}" class="x-lt">${esc(l)}</text>`).join('');
  pages.forEach((pg,p)=>{
-  const lt=Object.assign({},PROD_DEF,prodFor(s)||{}).listT||'Shot list';let y=LH.y+22,h=LH.h+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',lt+(pages.length>1?` ${p+1} of ${pages.length}`:'')].filter(Boolean).join('  ·  '));
+  const lt=prodOpts(s).listT||'Shot list';let y=LH.y+22,h=LH.h+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',lt+(pages.length>1?` ${p+1} of ${pages.length}`:'')].filter(Boolean).join('  ·  '));
   h+=`<rect x="${M}" y="${y}" width="${TW}" height="42" fill="#2b3445"/>`+cols.map(c=>`<text x="${M+c[1]+10}" y="${y+27}" class="x-th">${c[0]}</text>`).join('');const top=y;y+=42;
   for(const {r,t,h:RH} of pg){
    if(sb){const src=r.m.sb&&images[r.m.sb];h+=src?`<image href="${src}" xlink:href="${src}" x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`:`<rect x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;}
@@ -2724,7 +2727,7 @@ function diagramTile(s,pid,x,y,w,h,box,cid){
  return `<clipPath id="${cid}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath><g clip-path="url(#${cid})"><g transform="translate(${tx},${ty}) scale(${k})">${bg}${itemsMarkup(s,pid)}</g></g><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="none" stroke="#d9d9d4" stroke-width="1.5"/>`;
 }
 function compactPagesSVG(s,o){
- const port=!!o.port,W=port?1275:1650,H=port?1650:1275,M=48,TW=W-2*M,BOT=H-58,acc=Object.assign({},PROD_DEF,prodFor(s)||{}).accent||PROD_DEF.accent;
+ const port=!!o.port,W=port?1275:1650,H=port?1650:1275,M=48,TW=W-2*M,BOT=H-58,acc=prodOpts(s).accent||PROD_DEF.accent;
  const n=s.pages.length,tiles=[];
  if(o.dia){if(n<2)tiles.push({pid:s.pages[0].id,cap:''});else{if(o.master||!o.split)tiles.push({pid:'all',cap:'MASTER  ·  every move'});if(o.split)s.pages.forEach((pg,i)=>{const nm=String(pg.name||'').trim();tiles.push({pid:pg.id,cap:`PAGE ${i+1}`+(nm&&!/^page\s*\d+$/i.test(nm)?`  ·  ${nm}`:'')});});}}
  const K=listKit(s,Object.assign({},o,{dense:true}),W),hasList=o.list&&K.rows.length;if(!tiles.length&&!hasList)return [];
@@ -2785,9 +2788,9 @@ async function exportPDF(o){
    for(const sv of svgs){const c=await rasterize(sv,W,H,1.4);np();doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,o.port?612:792,o.port?792:612);}
    if(folder&&list.length>2)toast(`Building PDF… scene ${si+1} of ${list.length}`);
   }
-  expProd=undefined;if(!n){toast(o.dia?'Nothing to export yet.':o.list?'No shots to put in the shot list yet.':'Nothing is written in the Notebook or Strategy yet.');return;}
+  expProd=undefined;if(!n){toast(o.dia?'Nothing to export yet.':o.list?'No shots to put in the shot list yet.':'Nothing is written in the Breakdown or Strategy yet.');return;}
   const base=folder?(fById(fid).name||'Folder').replace(/[^\w\- ]+/g,'').trim()||'Folder':fname(cur);
-  await save(base+(o.dia?'':o.list?' shot list':' notebook')+'.pdf',doc.output('blob'));
+  {const pk=[['nb','Breakdown'],['st','Strategy'],['dia','Floor Plan'],['list','Shot List']].filter(([k])=>o[k]);await save(base+(pk.length===1?' - '+pk[0][1]:'')+'.pdf',doc.output('blob'));}
  }catch(e){toast('PDF export failed. Try the image instead.');}finally{expProd=undefined;}
 }
 function prodSaved(){commit();detectChanges();saveLocal();schedulePush();}
@@ -2805,6 +2808,7 @@ function productionsDialog(after){const L=P.productions||[];
  },'numcard');}
 function prodEdit(pr0,back){const isNew=!pr0,pr=Object.assign({id:uid()},PROD_DEF,{contacts:[{label:'Director',value:''},{label:'Phone',value:''},{label:'Email',value:''}]},pr0?JSON.parse(JSON.stringify(pr0)):{});
  if(isNew&&!pr0)pr.note='';
+ for(const k in PROD_OLD)if(PROD_OLD[k].includes(pr[k]))pr[k]=PROD_DEF[k];
  const fl=P.folders.slice().sort((a,b)=>natCmp(folderPathName(a),folderPathName(b)));
  const crow=(c,i)=>`<div class="pc" data-i="${i}" style="display:flex;gap:6px;margin-top:6px"><input data-c="label" value="${esc(c.label||'')}" placeholder="Label" style="width:34%"><input data-c="value" value="${esc(c.value||'')}" placeholder="What it says" style="flex:1"><button class="sm" data-rm="${i}" title="Remove line" style="flex:none;width:38px;padding:0">✕</button></div>`;
  if(!Array.isArray(pr.stories)||!pr.stories.length)pr.stories=clone(STORIES);
@@ -2816,8 +2820,8 @@ function prodEdit(pr0,back){const isNew=!pr0,pr=Object.assign({id:uid()},PROD_DE
   <label class="fld">Note line (top right, in red)<input id="pnNote" value="${esc(pr.note||'')}" placeholder="*The following blocking and shot list is subject to last minute inspiration!*"></label>
   <div class="lbl">Contact lines (top right)</div><div id="pnC">${(pr.contacts||[]).map(crow).join('')}</div><button class="sm" id="pnAdd" style="margin-top:8px">Add a line</button>
   <div class="lbl">Accent color</div><input type="color" id="pnAcc" value="${esc(pr.accent||PROD_DEF.accent)}" style="width:64px;height:34px;padding:0;border:0;background:none">
-  <div class="lbl">Page titles</div><div style="display:flex;gap:6px"><input id="pnFT" value="${esc(pr.floorT||'')}" placeholder="Floor Plan" style="width:38%"><input id="pnFS" value="${esc(pr.floorS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnLT" value="${esc(pr.listT||'')}" placeholder="Shot List" style="width:38%"><input id="pnLS" value="${esc(pr.listS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnNT" value="${esc(pr.nbT||'')}" placeholder="Director’s Notebook" style="width:38%"><input id="pnNS" value="${esc(pr.nbS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnST" value="${esc(pr.stT||'')}" placeholder="Scene Strategy" style="width:38%"><input id="pnSS" value="${esc(pr.stS||'')}" placeholder="Subtitle" style="flex:1"></div>
-  <div class="lbl">Stories (the Notebook’s color code)</div><div id="pnS">${pr.stories.map(srow).join('')}</div><button class="sm" id="pnSAdd" style="margin-top:8px">Add a story</button>
+  <div class="lbl">Page titles</div><div style="display:flex;gap:6px"><input id="pnFT" value="${esc(pr.floorT||'')}" placeholder="Floor Plan" style="width:38%"><input id="pnFS" value="${esc(pr.floorS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnLT" value="${esc(pr.listT||'')}" placeholder="Shot List" style="width:38%"><input id="pnLS" value="${esc(pr.listS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnNT" value="${esc(pr.nbT||'')}" placeholder="Scene Breakdown" style="width:38%"><input id="pnNS" value="${esc(pr.nbS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnST" value="${esc(pr.stT||'')}" placeholder="Scene Strategy" style="width:38%"><input id="pnSS" value="${esc(pr.stS||'')}" placeholder="Subtitle" style="flex:1"></div>
+  <div class="lbl">Stories (the Breakdown’s color code)</div><div id="pnS">${pr.stories.map(srow).join('')}</div><button class="sm" id="pnSAdd" style="margin-top:8px">Add a story</button>
   <div class="lbl">Folders that use it</div>${fl.length?`<div class="rgrp" style="max-height:180px;overflow:auto">${fl.map(f=>{const other=f.prod&&f.prod!==pr.id&&prodById(f.prod);return `<label class="rrow"><span><b>${esc(folderPathName(f))}</b>${other?`<small>Now uses ${esc(other.name||'another production')}</small>`:''}</span><input type="checkbox" data-f="${f.id}"${f.prod===pr.id?' checked':''}></label>`;}).join('')}</div>`:'<p class="mut">Make folders in Open scene… and you can give them a production here.</p>'}
   <div class="btns end">${isNew?'':'<button class="danger" id="pnDel" style="margin-right:auto">Delete</button>'}<button id="pnCancel">Cancel</button><button class="pri" id="pnOk">Save</button></div>`,card=>{card.classList.add('prodcard');
   const q=x=>card.querySelector(x);
@@ -2843,17 +2847,18 @@ function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts(),mp=s.pages.le
  const nF=fid?folderScenes(fid).length:0;
  const radio=(g,v,l,sub,on,dis)=>`<button class="rrow" data-g="${g}" data-v="${v}"${dis?' disabled style="opacity:.45"':''}><span><b>${l}</b>${sub?`<small>${sub}</small>`:''}</span><i class="rad${on?' on':''}"></i></button>`;
  modal(`<h3>Export PDF</h3><div class="lbl">Export</div><div class="rgrp">${radio('scope','scene','This scene',esc(sceneLabel(s)),o.scope==='scene')}${radio('scope','folder','The whole folder',fid?`${esc(fById(fid).name)} · ${nF} scene${nF===1?'':'s'}`:'This scene isn’t in a folder',o.scope==='folder',!fid)}</div>
-  <div class="lbl">Include</div><label class="imopt"><input type="checkbox" id="xNb"${o.nb?' checked':''}> Director’s Notebook</label><label class="imopt" id="xQRow" style="margin-left:24px"><input type="checkbox" id="xQ"${o.q?' checked':''}> Questions column</label><label class="imopt"><input type="checkbox" id="xSt"${o.st?' checked':''}> Scene Strategy</label><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Diagrams</label><div id="xPgOpts" style="margin-left:24px"><label class="imopt"><input type="checkbox" id="xMaster"${o.master?' checked':''}> Master page with every move${mp?'':' <span class="mut">(for scenes with more than one page)</span>'}</label><label class="imopt"><input type="checkbox" id="xSplit"${o.split?' checked':''}> Each page on its own</label><label class="imopt"><input type="checkbox" id="xZoom"${o.zoom?' checked':''}> Zoom each page to its action</label></div><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot list</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label>
-  <div class="lbl">Layout</div><div class="rgrp">${radio('layout','full','Full','Every diagram and the shot list on their own pages',o.layout!=='compact')}${radio('layout','compact','Compact','Diagrams side by side, shot list underneath. Fewest pages',o.layout==='compact')}</div>
+  <div class="lbl" style="display:flex;align-items:center;gap:8px">Include<button class="sm" id="xAll" style="margin-left:auto;min-height:30px;padding:0 10px;font-size:13px">Select all</button></div><label class="imopt"><input type="checkbox" id="xNb"${o.nb?' checked':''}> Scene Breakdown</label><label class="imopt" id="xQRow" style="margin-left:24px"><input type="checkbox" id="xQ"${o.q?' checked':''}> Questions column</label><label class="imopt"><input type="checkbox" id="xSt"${o.st?' checked':''}> Scene Strategy</label><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Floor Plan</label><div id="xPgOpts" style="margin-left:24px"><label class="imopt"><input type="checkbox" id="xMaster"${o.master?' checked':''}> Master page with every move${mp?'':' <span class="mut">(for scenes with more than one page)</span>'}</label><label class="imopt"><input type="checkbox" id="xSplit"${o.split?' checked':''}> Each page on its own</label><label class="imopt"><input type="checkbox" id="xZoom"${o.zoom?' checked':''}> Zoom each page to its action</label></div><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot List</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label>
+  <div class="lbl">Layout</div><div class="rgrp">${radio('layout','full','Full','Each floor plan and the shot list on their own pages',o.layout!=='compact')}${radio('layout','compact','Compact','Floor plans side by side, shot list underneath. Fewest pages',o.layout==='compact')}</div>
   <div class="lbl">Letterhead</div><div style="display:flex;gap:8px;align-items:center"><select id="xProd" style="flex:1;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--chip);padding:0 8px;font-size:15px;color:var(--ink)"><option value="">None</option>${PL.map(pr=>`<option value="${pr.id}"${pr.id===fp?' selected':''}>${esc(pr.name||'Untitled production')}</option>`).join('')}</select><button class="sm" id="xProds">${PL.length?'Edit…':'Set up…'}</button></div>${fid?`<p class="mut" style="font-size:12.5px;margin:6px 0 0">Remembered for ${esc(folderPathName(topFolder(fid)))}.</p>`:''}
   <div class="lbl">Header details</div><div class="hdrf" style="display:flex;gap:6px">${[['code','Episode','e.g. Ep. 110'],['day','Shoot day','e.g. Shoot Day 8'],['date','Shoot date','e.g. April 17']].map(([k,l,ph])=>`<label class="fld" style="flex:1;margin:0">${l}<input data-h="${k}" data-ph="${ph}" placeholder="${ph}" autocomplete="off"></label>`).join('')}</div><p class="mut" id="xHnote" style="font-size:12.5px;margin:6px 0 0"></p>
   <div class="lbl">Page orientation</div><div class="rgrp">${radio('port','0','Landscape','Wide pages',!o.port)}${radio('port','1','Portrait','Traditional, tall pages',o.port)}</div>
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="xOk">Export</button></div>`,card=>{
   const cur={scope:o.scope,port:o.port,layout:o.layout==='compact'?'compact':'full'};
   const sync=()=>{const on=card.querySelector('#xList').checked,d=card.querySelector('#xDia').checked,sp=card.querySelector('#xSplit').checked;card.querySelector('#xSb').disabled=!on;card.querySelector('#xSbRow').style.opacity=on?1:.45;
-   ['#xMaster','#xSplit'].forEach(x=>card.querySelector(x).disabled=!d);card.querySelector('#xZoom').disabled=!d||!sp;card.querySelector('#xPgOpts').style.opacity=d?1:.45;card.querySelector('#xZoom').parentNode.style.opacity=d&&sp?1:.45;{const nb=card.querySelector('#xNb').checked;card.querySelector('#xQ').disabled=!nb;card.querySelector('#xQRow').style.opacity=nb?1:.45;card.querySelector('#xOk').disabled=!on&&!d&&!nb&&!card.querySelector('#xSt').checked;}};
+   ['#xMaster','#xSplit'].forEach(x=>card.querySelector(x).disabled=!d);card.querySelector('#xZoom').disabled=!d||!sp;card.querySelector('#xPgOpts').style.opacity=d?1:.45;card.querySelector('#xZoom').parentNode.style.opacity=d&&sp?1:.45;{const nb=card.querySelector('#xNb').checked;card.querySelector('#xQ').disabled=!nb;card.querySelector('#xQRow').style.opacity=nb?1:.45;card.querySelector('#xOk').disabled=!on&&!d&&!nb&&!card.querySelector('#xSt').checked;}{const all=['#xNb','#xSt','#xDia','#xList'].every(x=>card.querySelector(x).checked);card.querySelector('#xAll').textContent=all?'Clear all':'Select all';}};
   card.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b||b.disabled)return;cur[b.dataset.g]=b.dataset.g==='port'?b.dataset.v==='1':b.dataset.v;card.querySelectorAll(`[data-g="${b.dataset.g}"] .rad`).forEach(x=>x.classList.toggle('on',x.parentNode===b));});
   card.addEventListener('change',sync);sync();
+  card.querySelector('#xAll').onclick=()=>{const ids=['#xNb','#xSt','#xDia','#xList'],all=ids.every(x=>card.querySelector(x).checked);ids.forEach(x=>{card.querySelector(x).checked=!all;});sync();};
   let hOrig={};const hList=()=>cur.scope==='folder'&&fid?folderScenes(fid):[s];
   const fillHdr=()=>{const L=hList();hOrig={};card.querySelectorAll('[data-h]').forEach(inp=>{const k=inp.dataset.h,v=[...new Set(L.map(x=>String(x[k]||'')))];hOrig[k]=v.length===1?v[0]:null;inp.value=v.length===1?v[0]:'';inp.placeholder=v.length===1?inp.dataset.ph:'Varies by scene';});
    card.querySelector('#xHnote').textContent=cur.scope==='folder'&&fid?`Changes here apply to all ${L.length} scene${L.length===1?'':'s'} in ${fById(fid).name}. Leave a box alone to keep each scene’s own.`:'For this scene. Also in Scene info (⌘I).';};
@@ -2865,7 +2870,7 @@ function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts(),mp=s.pages.le
    saveLocal();closeModal();exportPDF(v);};
  },'numcard');}
 async function exportPNG(){const s=scene();try{const c=await rasterize(sheetSVG(s,s.pageId),1650,1275,1.5);const blob=await new Promise(r=>c.toBlob(r,'image/png'));await save(fname(s)+(s.pages.length>1?' '+(s.pageId==='all'?'all pages':pageName(s,s.pageId)):'')+'.png',blob);}catch(e){toast('Image export failed.');}}
-async function backup(){const d=new Date().toISOString().slice(0,10);await save(`ShotMap backup ${d}.json`,JSON.stringify({app:'blocking-board',v:3,characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},text:P.text||{},scenes:P.scenes.map(stripScene),images}));}
+async function backup(){const d=new Date().toISOString().slice(0,10);await save(`The Director’s Notebook backup ${d}.json`,JSON.stringify({app:'blocking-board',v:3,characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},text:P.text||{},scenes:P.scenes.map(stripScene),images}));}
 $('#fJson').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f)return;
  try{const o=JSON.parse(await f.text());if(o.app!=='blocking-board'||!Array.isArray(o.scenes)||!o.scenes.length)throw 0;
@@ -2873,13 +2878,13 @@ $('#fJson').addEventListener('change',async e=>{
    P.characters=o.characters||[];P.folders=o.folders||[];if(o.productions)P.productions=o.productions;if(o.labels)P.labels=o.labels;P.scenes=o.scenes;txAdopt(o.text||{});migrate();P.sceneId=P.scenes[0].id;ensureLive();
    for(const k in (o.images||{})){if(!images[k]){images[k]=o.images[k];sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}}imgDirty=true;sel=null;commit();txFlush();renderDocs(true);fit();
   });
- }catch(err){toast('That file isn’t a ShotMap backup.');}
+ }catch(err){toast('That file isn’t a backup from The Director’s Notebook.');}
 });
 function menu(){
  const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
  openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
   <button data-m="open">Open scene… <span class="kb">⌘O</span></button><button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><button data-m="docx">Import a notebook from Word (.docx)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button>
+  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><button data-m="docx">Import a breakdown and strategy from Word (.docx)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}</div></div>`,b,p=>{
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();

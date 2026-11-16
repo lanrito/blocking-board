@@ -1,6 +1,6 @@
 {
- "name": "ShotMap",
- "short_name": "ShotMap",
+ "name": "The Director\u2019s Notebook",
+ "short_name": "Director\u2019s Notebook",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
