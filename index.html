@@ -324,7 +324,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116143401';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116145242';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1565,7 +1565,7 @@ modalEl.addEventListener('pointerdown',e=>{if(e.target===modalEl)closeModal();})
 function confirmBox(title,msg,ok,fn){modal(`<h3>${esc(title)}</h3><p>${esc(msg)}</p><div class="btns end"><button data-x>Cancel</button><button class="pri danger" id="ok">${esc(ok)}</button></div>`,c=>{c.querySelector('#ok').onclick=()=>{closeModal();fn();};});}
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400);}
 function sceneInfo(s0,after){
- const s=s0||scene(),F=[['number','Scene number','7'],['title','Title','NOBEL PRIZE'],['heading','Scene heading','INT. LOCATION - DAY'],['code','Episode / code','Ep. 110'],['day','Shoot day','Shoot Day 8'],['date','Shoot date','April 17, 2026']];
+ const s=s0||scene(),F=[['number','Scene number','7'],['title','Title','NOBEL PRIZE'],['heading','Scene heading','INT. LOCATION - DAY'],['code','Episode / code','e.g. Ep. 110'],['day','Shoot day','e.g. Shoot Day 8'],['date','Shoot date','e.g. April 17, 2026']];
  modal(`<h3>Scene info</h3>${F.map(([k,l,p])=>`<label class="fld">${l}<input data-k="${k}" value="${esc(s[k]||'')}" placeholder="${p}" autocomplete="off"></label>`).join('')}<label class="fld">Synopsis<textarea data-k="synopsis" rows="3">${esc(s.synopsis||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{
   card.querySelector('#ok').onclick=()=>{card.querySelectorAll('[data-k]').forEach(el=>{s[el.dataset.k]=el.value;});closeModal();commit();if(after)after();};
  });
@@ -2238,14 +2238,20 @@ function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts();if(!fid)o.sco
  modal(`<h3>Export PDF</h3><div class="lbl">Export</div><div class="rgrp">${radio('scope','scene','This scene',esc(sceneLabel(s)),o.scope==='scene')}${radio('scope','folder','The whole folder',fid?`${esc(fById(fid).name)} · ${nF} scene${nF===1?'':'s'}`:'This scene isn’t in a folder',o.scope==='folder',!fid)}</div>
   <div class="lbl">Include</div><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Diagrams</label><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot list</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label>
   <div class="lbl">Letterhead</div><div style="display:flex;gap:8px;align-items:center"><select id="xProd" style="flex:1;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--chip);padding:0 8px;font-size:15px;color:var(--ink)"><option value="">None</option>${PL.map(pr=>`<option value="${pr.id}"${pr.id===fp?' selected':''}>${esc(pr.name||'Untitled production')}</option>`).join('')}</select><button class="sm" id="xProds">${PL.length?'Edit…':'Set up…'}</button></div>${fid?`<p class="mut" style="font-size:12.5px;margin:6px 0 0">Remembered for ${esc(folderPathName(topFolder(fid)))}.</p>`:''}
+  <div class="lbl">Header details</div><div class="hdrf" style="display:flex;gap:6px">${[['code','Episode','e.g. Ep. 110'],['day','Shoot day','e.g. Shoot Day 8'],['date','Shoot date','e.g. April 17']].map(([k,l,ph])=>`<label class="fld" style="flex:1;margin:0">${l}<input data-h="${k}" data-ph="${ph}" placeholder="${ph}" autocomplete="off"></label>`).join('')}</div><p class="mut" id="xHnote" style="font-size:12.5px;margin:6px 0 0"></p>
   <div class="lbl">Page orientation</div><div class="rgrp">${radio('port','0','Landscape','Wide pages',!o.port)}${radio('port','1','Portrait','Traditional, tall pages',o.port)}</div>
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="xOk">Export</button></div>`,card=>{
   const cur={scope:o.scope,port:o.port};
   const sync=()=>{const on=card.querySelector('#xList').checked;card.querySelector('#xSb').disabled=!on;card.querySelector('#xSbRow').style.opacity=on?1:.45;card.querySelector('#xOk').disabled=!on&&!card.querySelector('#xDia').checked;};
   card.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b||b.disabled)return;cur[b.dataset.g]=b.dataset.g==='port'?b.dataset.v==='1':b.dataset.v;card.querySelectorAll(`[data-g="${b.dataset.g}"] .rad`).forEach(x=>x.classList.toggle('on',x.parentNode===b));});
   card.addEventListener('change',sync);sync();
+  let hOrig={};const hList=()=>cur.scope==='folder'&&fid?folderScenes(fid):[s];
+  const fillHdr=()=>{const L=hList();hOrig={};card.querySelectorAll('[data-h]').forEach(inp=>{const k=inp.dataset.h,v=[...new Set(L.map(x=>String(x[k]||'')))];hOrig[k]=v.length===1?v[0]:null;inp.value=v.length===1?v[0]:'';inp.placeholder=v.length===1?inp.dataset.ph:'Varies by scene';});
+   card.querySelector('#xHnote').textContent=cur.scope==='folder'&&fid?`Changes here apply to all ${L.length} scene${L.length===1?'':'s'} in ${fById(fid).name}. Leave a box alone to keep each scene’s own.`:'For this scene. Also in Scene info (⌘I).';};
+  fillHdr();card.addEventListener('click',e=>{if(e.target.closest('[data-g=scope]'))setTimeout(fillHdr,0);});
   card.querySelector('#xProds').onclick=()=>productionsDialog(exportDialog);
-  card.querySelector('#xOk').onclick=()=>{const pv=card.querySelector('#xProd').value||null,v={scope:cur.scope,port:cur.port,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked,prod:pv};P.ui.exp=v;
+  card.querySelector('#xOk').onclick=()=>{let hch=false;card.querySelectorAll('[data-h]').forEach(inp=>{const k=inp.dataset.h,v=inp.value.trim();if(hOrig[k]===null&&!v)return;if(v!==(hOrig[k]||''))for(const x of hList()){x[k]=v;hch=true;}});if(hch)commit();
+   const pv=card.querySelector('#xProd').value||null,v={scope:cur.scope,port:cur.port,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked,prod:pv};P.ui.exp=v;
    if(fid&&pv!==fp){let f=fById(fid),tgt=null;while(f){if(f.prod){tgt=f;break;}f=f.parent?fById(f.parent):null;}tgt=tgt||topFolder(fid);if(pv)tgt.prod=pv;else delete tgt.prod;prodSaved();}
    saveLocal();closeModal();exportPDF(v);};
  },'numcard');}
