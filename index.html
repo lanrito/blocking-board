@@ -372,7 +372,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116220959';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116222529';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -975,11 +975,14 @@ function cornerLines(sc,members){const out=[];
  return out;}
 /* drag a wall: neighbours stretch, and the drag locks on when their corners are square */
 function wallDrag(g,it,dx,dy){const sc=scene();
- if(!g.w0){g.w0={x1:it.x1,y1:it.y1,x2:it.x2,y2:it.y2};g.acc={x:0,y:0};g.links=g.detach?[[],[]]:[wallJoint(sc,it,1),wallJoint(sc,it,2)];g.lines=[];
+ if(!g.w0){g.w0={x1:it.x1,y1:it.y1,x2:it.x2,y2:it.y2};g.acc={x:0,y:0};{const j0=[wallJoint(sc,it,1),wallJoint(sc,it,2)];g.links=g.detach?[[],[]]:j0;g.ex=j0[0].concat(j0[1]);if(g.detach&&g.ex.length){it.uh=it.uh||{};j0.forEach((j,i)=>{if(j.length)it.uh[i+1]=uhNote(j);});}}g.lines=[];
   const G=wallGeo(it),u={x:G.ux,y:G.uy},mine=g.links[0].concat(g.links[1]);
   g.links.forEach((L,i)=>{const E=wEnd(it,i+1);for(const q of L){const fe=q.e===1?2:1,F=wEnd(q.w,fe),ad=n=>g.lines.push({n,c:(F.x-E.x)*n.x+(F.y-E.y)*n.y});
    ad(u);ad({x:0,y:1});ad({x:1,y:0});for(const nb of wallJoint(sc,q.w,fe)){if(nb.w===it||mine.some(z=>z.w===nb.w))continue;const N=wallGeo(nb.w);ad({x:N.ux,y:N.uy});}}});}
- g.acc.x+=dx;g.acc.y+=dy;const o=snapLines(g.acc,g.lines,10/view.k);
+ g.acc.x+=dx;g.acc.y+=dy;let o=snapLines(g.acc,g.lines,10/view.k);
+ for(const i of [0,1]){if(g.links[i].length)continue;const E={x:(i?g.w0.x2:g.w0.x1)+o.x,y:(i?g.w0.y2:g.w0.y1)+o.y};let best=null,bd=14/view.k;
+  for(const w of pageItems(sc)){if(w.type!=='wall'||w===it||g.ex.some(z=>z.w===w))continue;for(const e of [1,2]){const q=wEnd(w,e),d=Math.hypot(q.x-E.x,q.y-E.y);if(d<bd){bd=d;best=q;}}}
+  if(best){o={x:o.x+best.x-E.x,y:o.y+best.y-E.y};break;}}
  it.x1=g.w0.x1+o.x;it.y1=g.w0.y1+o.y;it.x2=g.w0.x2+o.x;it.y2=g.w0.y2+o.y;
  g.links.forEach((L,i)=>{const p=wEnd(it,i+1);for(const q of L)wSet(q.w,q.e,p);});}
 /* the wall tool: land on a corner if one is near; otherwise square up with the last corner and with the first */
@@ -992,6 +995,11 @@ function wallToolPoint(w){let p=snapWall(w);if(p!==w)return {p,hit:true};
  else if(A||B){const L=A||B,d=w.x*L.n.x+w.y*L.n.y-L.c;p={x:w.x-L.n.x*d,y:w.y-L.n.y*d};}
  return {p,hit:false};}
 let unhook=null; /* a wall told, from its menu, to come away alone on the next drag */
+const uhNote=j=>j.map(q=>({id:q.w.id,e:q.e}));
+/* true when the wall remembers a corner it was unhooked from and is not on it now */
+function wallAway(it){if(!it.uh)return false;return [1,2].some(e=>(it.uh[e]||[]).some(p=>{const o=itemById(p.id);if(!o||o.type!=='wall')return false;const a=wEnd(it,e),b=wEnd(o,p.e);return Math.abs(a.x-b.x)>.6||Math.abs(a.y-b.y)>.6;}));}
+/* an end that is joined again no longer needs remembering */
+function uhTidy(sc,it){if(!it||it.type!=='wall'||!it.uh)return;for(const e of [1,2])if(it.uh[e]&&wallJoint(sc,it,e).length)delete it.uh[e];if(!it.uh[1]&&!it.uh[2])delete it.uh;}
 function wallRun(sc,w){const seen=new Set([w]),q=[w];while(q.length){const c=q.pop();for(const e of [1,2])for(const j of wallJoint(sc,c,e))if(!seen.has(j.w)){seen.add(j.w);q.push(j.w);}}return [...seen];}
 function wallGeo(w){const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1;return {L,ux:dx/L,uy:dy/L,nx:-dy/L,ny:dx/L,th:Math.atan2(dy,dx)*180/Math.PI};}
 function syncPiece(it,w){const g=wallGeo(w),half=Math.min(it.w/2,g.L/2),d=clamp((it.wt||0)*g.L,half,g.L-half),wy=WALLK[it.kind]*it.h,sd=it.ws||1;
@@ -1545,7 +1553,7 @@ function objPop(cx,cy){
   else if(it.type==='axis'){title='Axis Line';h=sec('Object',B('del','Delete',IC.x));}
   else{const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';title='Edit '+name;
    const isBox=BOX(it.type)&&it.type!=='mask',ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;
-   h=(it.type==='wall'&&!it.locked?sec('Wall',(wallJoined(s,it)?B('selrun','Move All Joined Walls')+B('wunhook',unhook===it.id?'Keep It Joined':'Unhook This Wall'):'')+B('wcorner','Add a Corner Here')+B('wextrude','Extrude')):'')+(MOVABLE(it.type)?sec('Actions',B('walkto','Move To…')+(sel.mark?'':B('movefrom','Move From…'))):'')
+   h=(it.type==='wall'&&!it.locked?sec('Wall',(wallJoined(s,it)?B('selrun','Move All Joined Walls')+(unhook===it.id?'':B('wunhook','Unhook This Wall')):'')+(unhook===it.id||wallAway(it)?B('wrehook','Rehook This Wall'):'')+B('wcorner','Add a Corner Here')+([1,2].some(e=>wallJoint(s,it,e).length===1)?B('wuncorner','Remove Nearest Corner'):'')+B('wextrude','Extrude')):'')+(MOVABLE(it.type)?sec('Actions',B('walkto','Move To…')+(sel.mark?'':B('movefrom','Move From…'))):'')
     +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')+sec('Object',B('del','Delete',IC.x)+(sel.mark?B('delmark','Remove This Position'):'')+B('dup','Duplicate',IC.dup)+(it.type==='prop'||it.type==='set'||it.type==='light'?B('label',it.label?'Edit Label…':'Add Label…',IC.lbl):'')+lk+B('front','Bring to Front')+B('back','Send to Back'))
     +sec('Settings',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+ck('scal','Scalable',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Edit…'))
     +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#2B2D33'],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages;}
@@ -1581,7 +1589,15 @@ function objAct(o){
   case 'keepar':it.ar=!it.ar;if(!it.ar)delete it.ar;commit();objPop(popAt.x,popAt.y);break;
   case 'selrun':{const ids=wallRun(s,it).map(i=>i.id);sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();toast(`${ids.length} walls selected. Drag any of them to move them all.`);break;}
   case 'selgroup':{const ids=pageItems(s).filter(i=>i.type==='char'&&i.charId===it.charId).map(i=>i.id);sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();multiPop(popAt.x,popAt.y);break;}
-  case 'wunhook':{unhook=unhook===it.id?null:it.id;renderUI();if(unhook)toast('Unhooked. Drag it away from the others.');break;}
+  case 'wunhook':{unhook=it.id;renderUI();toast('Unhooked. Drag it away from the others.');break;}
+  case 'wrehook':{if(unhook===it.id){unhook=null;renderUI();toast('Hooked again.');break;}
+   let n=0;for(const e of [1,2])for(const p of ((it.uh||{})[e]||[])){const o=itemById(p.id);if(o&&o.type==='wall'){wSet(it,e,wEnd(o,p.e));n++;break;}}
+   delete it.uh;commit();toast(n?'Rehooked to its corners.':'The walls it was joined to are gone.');break;}
+  case 'wuncorner':{const pw=popAt?toWorld(popAt.x,popAt.y):{x:(it.x1+it.x2)/2,y:(it.y1+it.y2)/2},far=e=>{const q=wEnd(it,e);return Math.hypot(q.x-pw.x,q.y-pw.y);},c=[1,2].filter(e=>wallJoint(s,it,e).length===1).sort((a,b)=>far(a)-far(b));if(!c.length)break;
+   const e=c[0],j=wallJoint(s,it,e)[0],o=j.w,k=j.e,F=wEnd(o,k===1?2:1),L1=wallGeo(it).L,L2=wallGeo(o).L,T=(L1+L2)||1;
+   for(const pc of s.items){if(pc.wall===it.id){const sp=e===2?(pc.wt||0)*L1:(1-(pc.wt||0))*L1,f=sp/T;pc.wt=e===2?f:1-f;}
+    else if(pc.wall===o.id){const sp=L1+(k===1?(pc.wt||0)*L2:(1-(pc.wt||0))*L2),f=sp/T;pc.wall=it.id;pc.wt=e===2?f:1-f;if((k===1)!==(e===2))pc.ws=-(pc.ws||1);}}
+   wSet(it,e,F);s.items.splice(s.items.indexOf(o),1);delete it.uh;commit();toast('Corner removed. The two walls are one again.');break;}
   case 'wcorner':{const G=wallGeo(it),pw=popAt?toWorld(popAt.x,popAt.y):null;let d=pw?(pw.x-it.x1)*G.ux+(pw.y-it.y1)*G.uy:G.L/2;if(!(d>12&&d<G.L-12))d=G.L/2;
    const m={x:it.x1+G.ux*d,y:it.y1+G.uy*d},nw={id:uid(),type:'wall',x1:m.x,y1:m.y,x2:it.x2,y2:it.y2,t:it.t||WALL_T,pgs:it.pgs?it.pgs.slice():null,locked:false};
    for(const pc of s.items)if(pc.wall===it.id){const pd=(pc.wt||0)*G.L;if(pd>d){pc.wall=nw.id;pc.wt=(pd-d)/(G.L-d);}else pc.wt=pd/d;}
@@ -3279,6 +3295,7 @@ function endPointer(e){
  if(g.tool&&!g.moved&&tool){toolTap(g.w);flushRemote();return;}
  if(g.type==='track'){trackPop(g.id,g.i,e.clientX,e.clientY,g.w0);flushRemote();return;}
  if(g.type==='handle'&&g.h==='rot'&&!g.moved&&sel){const it=itemById(sel.id);if(it&&!it.locked&&(it.type==='char'||it.type==='cam')){objAct(it.type==='char'?'turn':'pan');flushRemote();return;}}
+ if(g.moved&&(g.type==='drag'||g.type==='handle'))uhTidy(scene(),itemById(g.type==='drag'?g.id:(sel&&sel.id)));
  if(g.type!=='pan'&&g.type!=='pinch'&&g.moved)commit({insp:false});
  else if(g.type==='pan'&&!g.moved&&g.empty&&sel){select(null);}
  else if(!g.moved&&sel&&(g.type==='drag'||g.type==='badge'||g.type==='label'||g.type==='frame'||(g.type==='pan'&&!g.empty))&&!inspOpen&&g.type==='badge'){objPop(e.clientX,e.clientY);}
@@ -3297,8 +3314,8 @@ function dragHandle(h,w,shift){
  else if(h==='size'&&it.kind==='dollytrack'){const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y,lx=Math.abs(dx*Math.cos(a)-dy*Math.sin(a)),k=Math.abs(trackK(it));
   let L=k<1e-7?lx*2:(lx*k>=1?Math.PI/k:2*Math.asin(lx*k)/k);it.w=Math.max(4,Math.round(L/FT/4)*4)*FT;it.h=TRACK_H;if(it.bend)it.bend=clamp(it.bend,-Math.PI/it.w,Math.PI/it.w);}
  else if(h==='size'){if(it.fixed)return;const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y,nw=Math.max(6,Math.abs(dx*Math.cos(a)-dy*Math.sin(a))*2),nh=Math.max(6,Math.abs(dx*Math.sin(a)+dy*Math.cos(a))*2);if(it.ar){const r=it.w/it.h,sc=Math.max(nw/it.w,nh/it.h);it.w=Math.max(6,it.w*sc);it.h=it.w/r;}else{it.w=nw;it.h=nh;}}
- else if(h==='p1'||h==='p2'){const e=h==='p1'?1:2,o=wEnd(it,e===1?2:1),g=gesture&&gesture.type==='handle'?gesture:null;if(g&&!g.joint)g.joint=g.detach?[]:wallJoint(s,it,e);
-  const jn=g?g.joint:[],mem=[{w:it,e},...jn];let p=snapWall(w,mem);if(p===w){if(g&&!g.plines)g.plines=cornerLines(s,mem);const q=snapLines(w,g?g.plines:[],10/view.k);p=q!==w?q:(jn.length?w:snapAngle(o,w));}wSet(it,e,p);for(const q of jn)wSet(q.w,q.e,p);}
+ else if(h==='p1'||h==='p2'){const e=h==='p1'?1:2,o=wEnd(it,e===1?2:1),g=gesture&&gesture.type==='handle'?gesture:null;if(g&&!g.joint){const j0=wallJoint(s,it,e);g.joint=g.detach?[]:j0;if(g.detach&&j0.length){it.uh=it.uh||{};it.uh[e]=uhNote(j0);g.exj=j0;}}
+  const jn=g?g.joint:[],mem=[{w:it,e},...jn];let p=snapWall(w,g&&g.exj?mem.concat(g.exj):mem);if(p===w){if(g&&!g.plines)g.plines=cornerLines(s,mem);const q=snapLines(w,g?g.plines:[],10/view.k);p=q!==w?q:(jn.length?w:snapAngle(o,w));}wSet(it,e,p);for(const q of jn)wSet(q.w,q.e,p);}
 }
 svg.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey||e.metaKey)zoomAt(e.clientX,e.clientY,Math.exp(-e.deltaY*.01));else{view.x-=e.deltaX;view.y-=e.deltaY;applyView();}},{passive:false});
 let gs=1;svg.addEventListener('gesturestart',e=>{e.preventDefault();gs=1;});
