@@ -324,7 +324,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116142422';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116143401';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -2116,16 +2116,16 @@ function pageFooter(s,W,H,label){const pr=prodFor(s),M=48;
  return `<line x1="${M}" x2="${W-M}" y1="${H-42}" y2="${H-42}" stroke="#e2e2de"/><text x="${M}" y="${H-20}" style="font-size:14px;fill:#9a9ba0;letter-spacing:.06em">${esc(pr&&pr.name?pr.name:'')}</text><text x="${W-M}" y="${H-20}" text-anchor="end" style="font-size:14px;fill:#9a9ba0;letter-spacing:.04em">${esc(label)}</text>`;}
 
 function wrapText(t,max){const ws=String(t||'').split(/\s+/).filter(Boolean),out=[];let l='';for(const w of ws){if((l+' '+w).trim().length>max){if(l)out.push(l);l=w;}else l=(l+' '+w).trim();}if(l)out.push(l);return out;}
-function sheetSVG(s,pid,port){
- const W=port?1275:1650,H=port?1650:1275,M=48,LH=letterhead(s,'floor',W),syn=wrapText(s.synopsis,port?100:140).slice(0,2),BOT=H-58;
- const LW=port?W-M*2:440,dx0=M,dy0=LH.y+(syn.length?syn.length*24+14:0)+22,dW=port?W-M*2:W-M*2-LW-32,dH=port?Math.round((BOT-dy0)*.64):BOT-dy0;
+function sheetSVG(s,pid,port,full){
+ const W=port?1275:1650,H=port?1650:1275,M=48,LH=letterhead(s,'floor',W),syn=wrapText(s.synopsis,port?100:140).slice(0,2),BOT=H-58,R=rowsOf(s,pid),sum=!full&&R.length>0,acc=Object.assign({},PROD_DEF,prodFor(s)||{}).accent||PROD_DEF.accent;
+ const LW=port?W-M*2:440,dx0=M,dy0=LH.y+(syn.length?syn.length*24+14:0)+22,dW=port||!sum?W-M*2:W-M*2-LW-44,dH=port&&sum?Math.round((BOT-dy0)*.64):BOT-dy0;
  const bb=bbox(s,pid)||{x:-300,y:-200,w:600,h:400},pad=24,k=Math.min(dW/(bb.w+pad*2),dH/(bb.h+pad*2),3);
  const tx=dx0+dW/2-(bb.x+bb.w/2)*k,ty=dy0+dH/2-(bb.y+bb.h/2)*k;
  let bg='';if(s.bgId&&s.bg&&images[s.bgId]){const b=s.bg;bg=`<image href="${images[s.bgId]}" xlink:href="${images[s.bgId]}" x="${b.x}" y="${b.y}" width="${b.w*b.s}" height="${b.h*b.s}" opacity="${b.op}" preserveAspectRatio="none"/>`;}
  let hd=LH.h+syn.map((l,i)=>`<text x="${W/2}" y="${LH.y+26+i*24}" text-anchor="middle" style="font-size:18px;font-style:italic;fill:#5b5c61">${esc(l)}</text>`).join('')+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',(o=>o.floorT)(Object.assign({},PROD_DEF,prodFor(s)||{}))||'Floor plan',s.pages.length>1?(pid==='all'?'All pages':pageName(s,pid)):''].filter(Boolean).join('  ·  '));
- const lx=W-M-LW;let y=port?dy0+dH+28:dy0,sl=`<rect x="${lx}" y="${y}" width="${LW}" height="40" fill="#f1f1ef"/><text x="${lx+52}" y="${y+26}" class="x-lh">SHOT</text><text x="${lx+118}" y="${y+26}" class="x-lh">VER</text><text x="${lx+170}" y="${y+26}" class="x-lh">SIZE · TYPE</text>${port?`<text x="${lx+520}" y="${y+26}" class="x-lh">DESCRIPTION</text>`:''}`;y+=40;
+ const lx=W-M-LW;let y=port?dy0+dH+26:dy0,sl=!sum?'':(port?`<line x1="${M}" x2="${W-M}" y1="${y}" y2="${y}" stroke="#1c1c1e" stroke-width="1.5"/><text x="${M}" y="${y+32}" style="font-size:14px;font-weight:800;letter-spacing:.24em;fill:${acc}">SHOTS</text>`:`<line x1="${lx-22}" x2="${lx-22}" y1="${dy0}" y2="${BOT}" stroke="#d2d2cd" stroke-width="1.5"/><text x="${lx}" y="${y+14}" style="font-size:14px;font-weight:800;letter-spacing:.24em;fill:${acc}">SHOTS</text>`);y+=port?46:28;if(sum)sl+=`<rect x="${lx}" y="${y}" width="${LW}" height="40" fill="#f1f1ef"/><text x="${lx+52}" y="${y+26}" class="x-lh">SHOT</text><text x="${lx+118}" y="${y+26}" class="x-lh">VER</text><text x="${lx+170}" y="${y+26}" class="x-lh">SIZE · TYPE</text>${port?`<text x="${lx+520}" y="${y+26}" class="x-lh">DESCRIPTION</text>`:''}`;y+=40;
  let prev=null;
- for(const r of rowsOf(s,pid)){if(y>BOT-46)break;if(prev&&prev!==r.st)sl+=`<line x1="${lx}" x2="${lx+LW}" y1="${y}" y2="${y}" stroke="#9a9a96" stroke-width="2"/>`;prev=r.st;
+ for(const r of sum?R:[]){if(y>BOT-46)break;if(prev&&prev!==r.st)sl+=`<line x1="${lx}" x2="${lx+LW}" y1="${y}" y2="${y}" stroke="#9a9a96" stroke-width="2"/>`;prev=r.st;
   sl+=`<rect x="${lx+14}" y="${y+12}" width="22" height="22" rx="4" fill="${r.st.color}"/><text x="${lx+52}" y="${y+31}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${lx+118}" y="${y+31}" class="x-lt">${verCode(s,r.vi)}</text><text x="${lx+170}" y="${y+31}" class="x-lt">${esc(trunc(vlabel(r.m),port?30:24))}</text>${port?`<text x="${lx+520}" y="${y+31}" class="x-lt">${esc(trunc(r.m.desc||'',58))}</text>`:''}<line x1="${lx}" x2="${lx+LW}" y1="${y+46}" y2="${y+46}" stroke="#e3e3df"/>`;y+=46;}
  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${SHEET_CSS}${layerCss(s,true)}</style><rect width="${W}" height="${H}" fill="#fff"/>${hd}<clipPath id="cp"><rect x="${dx0}" y="${dy0}" width="${dW}" height="${dH}"/></clipPath><g clip-path="url(#cp)"><g transform="translate(${tx},${ty}) scale(${k})">${bg}${itemsMarkup(s,pid)}</g></g>${sl}</svg>`;
 }
@@ -2179,7 +2179,7 @@ async function exportPDF(o){
   expProd=o.prod===undefined?undefined:(o.prod||null);
   for(let si=0;si<list.length;si++){const sc=list[si];if(folder&&!sc.items.length)continue;
    const keep=P.sceneId;P.sceneId=sc.id;let svgs=[];
-   try{if(o.dia)for(const pg of sc.pages)svgs.push(sheetSVG(sc,pg.id,o.port));if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}finally{P.sceneId=keep;}
+   try{if(o.dia)for(const pg of sc.pages)svgs.push(sheetSVG(sc,pg.id,o.port,o.list));if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}finally{P.sceneId=keep;}
    if(svgs.length)used++;
    for(const sv of svgs){const c=await rasterize(sv,W,H,1.4);if(n++)doc.addPage('letter',o.port?'portrait':'landscape');doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,o.port?612:792,o.port?792:612);}
    if(folder&&list.length>2)toast(`Building PDF… scene ${si+1} of ${list.length}`);
