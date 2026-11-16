@@ -322,7 +322,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116070010';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116135418';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1519,7 +1519,7 @@ function trackPop(id,i,cx,cy,w){
  const wr=$('#wrap').getBoundingClientRect();pop.style.bottom='auto';
  pop.style.left=clamp(cx-wr.left+14,8,Math.max(8,wr.width-pop.offsetWidth-8))+'px';pop.style.top=clamp(cy-wr.top-30,8,Math.max(8,wr.height-pop.offsetHeight-8))+'px';
  pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-t]');if(!x)return;const t=x.dataset.t,a=positions(it)[i-1];
-  if(t==='add'){b.cp=b.cp||[];b.cp.push(toTD(a,b,w));closePop();commit({insp:false});toast('Drag the dot to bend the path. Double-tap a dot to remove it.');}
+  if(t==='add'){b.cp=b.cp||[];b.cp.push(toTD(a,b,w));closePop();commit({insp:false});toast('Drag the dot to bend the path. Tap a dot for its options.');}
   else if(t==='straight'){b.cp=[];closePop();commit({insp:false});}
   else if(t==='del'){if(it.marks)it.marks.splice(i,1);else it.mv.splice(i-1,1);sel={id:it.id,mark:it.marks?Math.min(i,it.marks.length)-1:null};closePop();commit();}
   else if(t==='soft'){it.hard=!it.hard;commit({insp:false});trackPop(id,i,cx,cy,w);}};
@@ -2316,10 +2316,28 @@ function drawLayers(){const s=scene(),L=lay(s),all=LAYERS.every(([k])=>L.lock[k]
   commit({insp:false});drawLayers();});}
 function setLayerVal(s,k,v){if(k==='bg'){if(s.bg)s.bg.op=v/100;return;}s.layers=s.layers||{};if(k==='lk'||k==='desc'){s.layers[k]=v;return;}s.layers.op=Object.assign({},s.layers.op||{},{[k]:v});}
 
+
+/* ---------- opening the menu: right-click / two-finger tap, or Shift ---------- */
+let firstDown=null,shiftSolo=false;
+function menuFor(el,x,y){if(tool||mode==='list')return;if(!el||!el.dataset||!el.dataset.id){closePop();return;}
+ const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0;
+ if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;renderUI();objPop(x,y);}
+function selScreenPos(){const it=sel&&sel.id!=='__bg'?itemById(sel.id):null,r=svg.getBoundingClientRect();let w={x:0,y:0};
+ if(it){if(it.marks){const m=it.marks[sel.mark||0]||it.marks[0];w={x:m.x,y:m.y};}else if(it.type==='wall')w={x:(it.x1+it.x2)/2,y:(it.y1+it.y2)/2};else w={x:it.x,y:it.y};}else return {x:r.left+r.width/2,y:r.top+r.height/2};
+ return {x:r.left+view.x+w.x*view.k,y:r.top+view.y+w.y*view.k};}
+svg.addEventListener('contextmenu',e=>{e.preventDefault();menuFor(e.target.closest('[data-id]'),e.clientX,e.clientY);});
+addEventListener('keydown',e=>{if(e.key==='Shift'){if(!e.repeat)shiftSolo=true;}else shiftSolo=false;},true);
+addEventListener('pointerdown',()=>{shiftSolo=false;},true);
+addEventListener('keyup',e=>{if(e.key!=='Shift'||!shiftSolo)return;shiftSolo=false;const a=document.activeElement;
+ if(a&&(/INPUT|TEXTAREA|SELECT/.test(a.tagName)||a.isContentEditable))return;if(!modalEl.hidden||tool||mode==='list')return;
+ if(pop.classList.contains('on')){closePop();return;}
+ if(msel){const r=svg.getBoundingClientRect();multiPop(r.left+r.width/2,r.top+r.height/2);return;}
+ if(!sel)return;const p=selScreenPos();objPop(p.x,p.y);});
+
 /* ---------- keyboard shortcuts ---------- */
 const KEYS=[['Scenes',[['⌘O','Open a scene (folders, search)'],['⌘F','Search all scenes'],['⌘I','Scene info'],['⌘S','Saves happen automatically. This just confirms it'],['⌘P','Download PDF (diagrams + shot list)']]],
  ['Add',[['C','Character'],['A','Camera'],['P','Prop'],['S','Set piece'],['L','Lighting'],['T','Annotation']]],
- ['Selected character or camera',[['W','Walk to / move to (tap where)'],['F','Walk from (character)'],['R','Add a turn (character) / pan (camera)'],['X','Axis line to (character)'],['E','Edit'],['⌘D','Duplicate'],['← ↑ → ↓','Nudge (hold Shift for bigger steps)'],['Delete','Delete'],['Esc','Deselect, or cancel a tool']]],
+ ['Selected character or camera',[['W','Walk to / move to (tap where)'],['F','Walk from (character)'],['R','Add a turn (character) / pan (camera)'],['X','Axis line to (character)'],['Shift (by itself)','Open the menu for what’s selected. Or right-click / two-finger tap it'],['E','Edit'],['⌘D','Duplicate'],['← ↑ → ↓','Nudge (hold Shift for bigger steps)'],['Delete','Delete'],['Esc','Deselect, or cancel a tool']]],
  ['Select',[['G','Lasso: draw around things to select them together'],['⌘A','Select everything on this page'],['⌘Z  /  ⇧⌘Z','Undo / redo']]],
  ['View',[['[  ]','Previous / next page'],['N','New page'],['V','Switch Diagram / Shot list'],['B','Show or hide storyboard frames'],['0','Fit to screen'],['+  −','Zoom in / out'],['Space','Play / pause the animation'],['?','This list']]]];
 function keysDialog(){const mac=/Mac|iPad|iPhone/.test(navigator.platform||navigator.userAgent),k=t=>mac?t:t.replace(/⌘/g,'Ctrl+').replace(/⇧/g,'Shift+');
@@ -2409,8 +2427,8 @@ $('#bLasso').onclick=()=>{setLasso(!lassoArmed);if(lassoArmed){endTool();closePo
 /* ---------- pointer input (mouse, Pencil, fingers) ---------- */
 const pointers=new Map();let gesture=null,lastTap={id:null,t:0};
 svg.addEventListener('pointerdown',e=>{
- if(e.button>0)return;closePop();svg.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
- if(pointers.size===2){if(gesture&&gesture.moved&&gesture.type!=='pan'&&gesture.type!=='pinch')commit({insp:false});dragging=false;const [a,b]=[...pointers.values()];gesture={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},v0:Object.assign({},view)};return;}
+ if(e.button>0)return;if(!pointers.size)firstDown={el:e.target.closest&&e.target.closest('[data-id]'),x:e.clientX,y:e.clientY,t:Date.now()};closePop();svg.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(pointers.size===2){if(gesture&&gesture.moved&&gesture.type!=='pan'&&gesture.type!=='pinch')commit({insp:false});dragging=false;const [a,b]=[...pointers.values()];gesture={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},v0:Object.assign({},view),start:[a,b].map(p=>({x:p.x,y:p.y})),t0:firstDown?firstDown.t:Date.now(),far:0,tapEl:firstDown?firstDown.el:null};return;}
  if(pointers.size>2)return;
  const w=toWorld(e.clientX,e.clientY);
  const hEl=e.target.closest('[data-handle]');
@@ -2439,7 +2457,7 @@ svg.addEventListener('pointerdown',e=>{
 svg.addEventListener('pointermove',e=>{
  if(tool&&tool.t==='wall'&&tool.last&&!pointers.size&&e.pointerType==='mouse'){let p=snapWall(toWorld(e.clientX,e.clientY));tool.hover=p;$('#ui').innerHTML=uiMarkup();return;}
  if(!pointers.has(e.pointerId)||!gesture)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const g=gesture;
- if(g.type==='pinch'){if(pointers.size<2)return;const [a,b]=[...pointers.values()],d=Math.hypot(a.x-b.x,a.y-b.y),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2},r=svg.getBoundingClientRect(),k=clamp(g.v0.k*d/g.d0,.04,8),wx=(g.m0.x-r.left-g.v0.x)/g.v0.k,wy=(g.m0.y-r.top-g.v0.y)/g.v0.k;view={k,x:m.x-r.left-wx*k,y:m.y-r.top-wy*k};applyView();$('#ui').innerHTML=uiMarkup();return;}
+ if(g.type==='pinch'){if(pointers.size<2)return;{const pts=[...pointers.values()];g.far=Math.max(g.far,...pts.map((q,i)=>g.start[i]?Math.hypot(q.x-g.start[i].x,q.y-g.start[i].y):0));}const [a,b]=[...pointers.values()],d=Math.hypot(a.x-b.x,a.y-b.y),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2},r=svg.getBoundingClientRect(),k=clamp(g.v0.k*d/g.d0,.04,8),wx=(g.m0.x-r.left-g.v0.x)/g.v0.k,wy=(g.m0.y-r.top-g.v0.y)/g.v0.k;view={k,x:m.x-r.left-wx*k,y:m.y-r.top-wy*k};applyView();$('#ui').innerHTML=uiMarkup();return;}
  if(g.type==='pan'){const dx=e.clientX-g.sx,dy=e.clientY-g.sy;if(!g.moved&&Math.hypot(dx,dy)<6)return;g.moved=true;view.x=g.vx+dx;view.y=g.vy+dy;applyView();return;}
  const w=toWorld(e.clientX,e.clientY);
  if(g.type==='lasso'){const l=g.pts[g.pts.length-1];if(Math.hypot((w.x-l.x)*view.k,(w.y-l.y)*view.k)>4){g.pts.push(w);g.moved=true;$('#ui').innerHTML=uiMarkup();}return;}
@@ -2455,7 +2473,7 @@ svg.addEventListener('pointermove',e=>{
 });
 function endPointer(e){
  if(!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);const g=gesture;if(!g)return;
- if(g.type==='pinch'){if(!pointers.size){gesture=null;flushRemote();}return;}
+ if(g.type==='pinch'){if(!pointers.size){gesture=null;if(g.far<14&&Date.now()-g.t0<450){view=Object.assign({},g.v0);applyView();menuFor(g.tapEl,g.m0.x,g.m0.y);}flushRemote();}return;}
  if(pointers.size)return;gesture=null;const wasDrag=dragging;dragging=false;
  if(g.type==='lasso'){if(g.pts.length>2)finishLasso(g.pts,e.clientX,e.clientY);else{setLasso(lassoArmed);renderUI();}flushRemote();return;}
  if(g.type==='mdrag'){if(g.moved)commit({insp:false});else multiPop(e.clientX,e.clientY);renderUI();flushRemote();return;}
@@ -2464,7 +2482,7 @@ function endPointer(e){
  if(g.type==='handle'&&g.h==='rot'&&!g.moved&&sel){const it=itemById(sel.id);if(it&&!it.locked&&(it.type==='char'||it.type==='cam')){objAct(it.type==='char'?'turn':'pan');flushRemote();return;}}
  if(g.type!=='pan'&&g.type!=='pinch'&&g.moved)commit({insp:false});
  else if(g.type==='pan'&&!g.moved&&g.empty&&sel){select(null);}
- else if(!g.moved&&sel&&(g.type==='drag'||g.type==='badge'||g.type==='label'||g.type==='frame'||(g.type==='pan'&&!g.empty))&&!inspOpen&&(g.dbl||g.type==='badge')){objPop(e.clientX,e.clientY);}
+ else if(!g.moved&&sel&&(g.type==='drag'||g.type==='badge'||g.type==='label'||g.type==='frame'||(g.type==='pan'&&!g.empty))&&!inspOpen&&g.type==='badge'){objPop(e.clientX,e.clientY);}
  else if(wasDrag)renderUI();
  flushRemote();
 }
