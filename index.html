@@ -89,6 +89,8 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .rrow{display:flex;align-items:center;width:100%;min-height:46px;padding:6px 14px;border:0;border-bottom:1px solid var(--line);background:none;text-align:left}.rrow:last-child{border-bottom:0}
 .rrow span{flex:1}.rrow b{font-weight:600}.rrow small{display:block;color:var(--mut);font-size:12px}
 .rrow .rad{width:20px;height:20px;border-radius:50%;border:2px solid #9a9ba1;flex:none;box-sizing:border-box}.rrow .rad.on{border:6px solid var(--accent)}
+.bgrip{font-size:17px;padding:8px 6px}.brr.droptgt,.brcr button.droptgt,.brb.droptgt{background:rgba(47,111,222,.16);outline:2px solid var(--accent);outline-offset:-2px;border-radius:6px}
+.brghost{position:fixed;z-index:90;pointer-events:none;background:#232427;color:#fff;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seg{display:flex;background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
 .seg button{height:30px;padding:0 12px;border:0;border-radius:7px;background:none;font-size:14px;color:var(--mut);white-space:nowrap}
 .seg button.on{background:var(--panel);color:var(--ink);font-weight:650;box-shadow:0 1px 2px rgba(0,0,0,.14)}
@@ -302,7 +304,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116051816';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116052438';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1512,12 +1514,12 @@ function openBrowser(at){
  br={at:at||null,q:'',pick:null,sub:null};
  modal(`<div id="br"><div id="brTop"></div><div class="brsearch">${BIC.find}<input id="brq" type="search" placeholder="Search scenes, folders, characters, shots" autocomplete="off" autocapitalize="off" spellcheck="false"></div><div id="brTools"></div><div id="brL"></div><div id="brFoot"></div><div id="brSub"></div></div>`,card=>{
   const q=card.querySelector('#brq');q.addEventListener('input',()=>{br.q=q.value;brRender();});
-  card.querySelector('#br').addEventListener('click',brClick);brRender();
+  card.querySelector('#br').addEventListener('click',brClick);bindBrDrag(card.querySelector('#br'));brRender();
  },'brcard');
 }
-function rowF(f,sub){const n=countIn(f.id),k=fKids(f.id).length;return `<div class="brr" data-f="${f.id}"><span class="bri">${BIC.fold}</span><span class="brt"><b>${esc(f.name)}</b><small>${sub?esc(sub)+' · ':''}${plural(n,'scene')}${k?' · '+plural(k,'folder'):''}</small></span><button class="brm" data-fm="${f.id}" aria-label="Folder options">•••</button><span class="chev">›</span></div>`;}
+function rowF(f,sub){const n=countIn(f.id),k=fKids(f.id).length;return `<div class="brr" data-f="${f.id}"><span class="bri">${BIC.fold}</span><span class="brt"><b>${esc(f.name)}</b><small>${sub?esc(sub)+' · ':''}${plural(n,'scene')}${k?' · '+plural(k,'folder'):''}</small></span><button class="brm" data-fm="${f.id}" aria-label="Folder options">•••</button><span class="grip bgrip" title="Drag into a folder">⠿</span><span class="chev">›</span></div>`;}
 function rowS(s,sub,pickable){const cur=s.id===P.sceneId&&!s.trashed,picked=br.pick&&br.pick.has(s.id),n=shotCount(s),meta=sub!=null?sub:[s.heading,n?plural(n,'shot'):''].filter(Boolean).join(' · ');
- return `<div class="brr${cur?' cur':''}${picked?' picked':''}" data-s="${s.id}"><span class="bri">${br.pick&&pickable?'<i class="ck"></i>':BIC.scene}</span><span class="brt"><b>${esc(sceneLabel(s))}${cur?'<em>Open now</em>':''}</b><small>${meta?esc(meta):'&nbsp;'}</small></span><button class="brm" data-sm="${s.id}" aria-label="Scene options">•••</button></div>`;}
+ return `<div class="brr${cur?' cur':''}${picked?' picked':''}" data-s="${s.id}"><span class="bri">${br.pick&&pickable?'<i class="ck"></i>':BIC.scene}</span><span class="brt"><b>${esc(sceneLabel(s))}${cur?'<em>Open now</em>':''}</b><small>${meta?esc(meta):'&nbsp;'}</small></span><button class="brm" data-sm="${s.id}" aria-label="Scene options">•••</button>${s.trashed?'':'<span class="grip bgrip" title="Drag into a folder">⠿</span>'}</div>`;}
 function brFolder(id){
  const kids=fKids(id),scs=fScenes(id),secs=[];
  if(!id&&!br.pick){const rec=(P.ui.recentScenes||[]).map(x=>P.scenes.find(s=>s.id===x&&!s.trashed)).filter(Boolean).slice(0,4);if(rec.length>1&&liveScenes().length>4)secs.push(['Recent',rec.map(s=>rowS(s,pathTxt(sFolder(s))||'Not in a folder')).join('')]);}
@@ -1561,6 +1563,7 @@ function brRender(){
 }
 function brGo(id){br.at=id||null;br.q='';br.pick=null;br.sub=null;const q=$('#brq');if(q)q.value='';brRender();$('#brL').scrollTop=0;}
 function brClick(e){
+ if(Date.now()-brDragEnd<400)return;
  const t=e.target;if(t.closest('#brSub')){const b=t.closest('[data-b],[data-dest]');if(b)brSubAct(b.dataset.b||'dest',b.dataset.dest);return;}
  const fm=t.closest('[data-fm]'),sm=t.closest('[data-sm]'),go=t.closest('[data-go]'),a=t.closest('[data-a]');
  if(fm){br.sub={k:'fact',id:fm.dataset.fm};brRender();return;}
@@ -1812,6 +1815,36 @@ function importReview(ps,chars,fname){
  },'imcard');
 }
 function sel0(){sel=null;msel=null;inspOpen=false;endTool();}
+let brDrag=null,brDragEnd=0,brDragBound=false;
+function bindBrDrag(root){
+ root.addEventListener('pointerdown',e=>{if(br.sub||e.button>0)return;const row=e.target.closest('.brr[data-s],.brr[data-f]');if(!row||e.target.closest('.brm'))return;
+  const onGrip=!!e.target.closest('.bgrip');if(!onGrip&&e.pointerType!=='mouse')return;
+  const sc=row.dataset.s?P.scenes.find(x=>x.id===row.dataset.s):null;if(sc&&sc.trashed)return;
+  brDrag={row,sx:e.clientX,sy:e.clientY,on:false,pid:e.pointerId,folder:row.dataset.f||null,ids:sc?(br.pick&&br.pick.has(sc.id)?[...br.pick]:[sc.id]):null,tgt:null};
+  if(onGrip)e.preventDefault();
+ });
+ if(brDragBound)return;brDragBound=true;
+ const valid=(d,t)=>{if(!t)return null;let dest;
+  if(t.dataset.f)dest=t.dataset.f;else if(t.dataset.go!=null)dest=t.dataset.go||null;else if(t.dataset.a==='up'){const f=fById(br.at);dest=f?fParent(f):null;}else if(t.dataset.a==='trash')return d.ids?{trash:true}:null;else return null;
+  if(d.folder){if(dest&&fDesc(d.folder).has(dest))return null;if(fParent(fById(d.folder))===dest)return null;}
+  else if(d.ids.every(id=>sFolder(P.scenes.find(x=>x.id===id))===dest))return null;
+  return {dest};};
+ addEventListener('pointermove',e=>{const d=brDrag;if(!d||e.pointerId!==d.pid)return;
+  if(!d.on){if(Math.hypot(e.clientX-d.sx,e.clientY-d.sy)<7)return;d.on=true;try{d.row.setPointerCapture(e.pointerId);}catch(_){}d.row.classList.add('dragging');
+   const g=document.createElement('div');g.className='brghost';g.textContent=d.folder?fById(d.folder).name:d.ids.length>1?plural(d.ids.length,'scene'):sceneLabel(P.scenes.find(x=>x.id===d.ids[0]));document.body.appendChild(g);d.g=g;}
+  e.preventDefault();d.g.style.left=(e.clientX+14)+'px';d.g.style.top=(e.clientY+10)+'px';
+  const el=document.elementFromPoint(e.clientX,e.clientY),t=el&&el.closest&&el.closest('#br [data-f],#br [data-go],#br [data-a="trash"],#br [data-a="up"]');
+  if(d.tgt&&d.tgt!==t)d.tgt.classList.remove('droptgt');d.tgt=null;d.res=null;
+  const v=valid(d,t);if(v&&t!==d.row){d.tgt=t;d.res=v;t.classList.add('droptgt');}
+  const L=$('#brL');if(L){const r=L.getBoundingClientRect();if(e.clientY<r.top+30)L.scrollTop-=10;else if(e.clientY>r.bottom-30)L.scrollTop+=10;}
+ },{passive:false});
+ const end=e=>{const x=brDrag;if(!x||(e&&e.pointerId!==x.pid))return;brDrag=null;if(!x.on)return;brDragEnd=Date.now();setTimeout(()=>{brDragEnd=0;},60);
+  x.row.classList.remove('dragging');if(x.g)x.g.remove();if(x.tgt)x.tgt.classList.remove('droptgt');
+  if(!x.res)return;
+  if(x.res.trash){const n=x.ids.length;trashScenes(x.ids);br.pick=null;commit();brRender();toast(`${plural(n,'scene')} moved to Trash.`);return;}
+  moveTo(x.folder?{folder:x.folder}:{ids:x.ids},x.res.dest);};
+ addEventListener('pointerup',end);addEventListener('pointercancel',end);
+}
 function moveTo(u,dest){
  const name=dest?fById(dest).name:'the top level';
  if(u.folder){const f=fById(u.folder);if(dest&&fDesc(f.id).has(dest))return;f.parent=dest;}
