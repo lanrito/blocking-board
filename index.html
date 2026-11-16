@@ -319,7 +319,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116062241';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116063311';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -929,12 +929,16 @@ function trackShape(it){
  return g;
 }
 function trackRadiusTxt(it){const k=trackK(it);if(Math.abs(k)<1e-7)return 'Straight';const ft=1/Math.abs(k)/FT;return `Curved · radius about ${ft<10?ft.toFixed(1):Math.round(ft)} ft`;}
+const PCOL={"sqtable": "#B7834D", "ovaltable": "#A9703F", "roundtable": "#C08A55", "coffeetable": "#8B5A33", "cafetable": "#C9A27A", "conftable": "#7A4E2D", "desk": "#9C6B3F", "chair": "#8C6239", "armchair": "#B0563F", "sofa": "#4F6D8F", "bench": "#9A7B4F", "barstool": "#5B4636", "bedsingle": "#A9C4E0", "beddouble": "#C7B2D6", "nightstand": "#8B5A33", "dresser": "#7E5233", "bookshelf": "#6E4527", "tv": "#26282D", "floorlamp": "#E8C468", "rug": "#B5534A", "plant": "#4E9A4A", "piano": "#2B2D33", "grandpiano": "#1F1F23", "counter": "#D9D2C5", "island": "#CFC6B5", "fridge": "#E6E8EB", "stove": "#C9CDD2", "sink": "#DCE6EE", "toilet": "#F4F6F8", "bathtub": "#EEF3F7", "shower": "#CFE3F0", "cubicle": "#9AA7B5", "filing": "#8A96A3", "whiteboard": "#F7F8FA", "copier": "#BFC5CC", "cooler": "#8EC5EA", "laptop": "#A8AFB8", "keyboard": "#3A3D44", "monitor": "#2E3138", "phone": "#1F2125", "paper": "#FAFAF7", "hospbed": "#D6E6F2", "gurney": "#C5D0DA", "ivpole": "#A9B2BC", "wheelchair": "#3F4650", "patientmon": "#2E3138", "booth": "#8E2F35", "barcounter": "#6B4226", "plate": "#F4F1EA", "cup": "#E9E2D0", "glass": "#CDE7F2", "bottle": "#3E7A4C", "candle": "#F3E3B3", "car": "#3E63DD", "suv": "#2F3A4A", "taxi": "#F5C518", "police": "#1E2A44", "ambulance": "#F4F5F7", "minibus": "#F0A23B", "bus": "#3D7EA6", "semi": "#C2412D", "trailer": "#D5D9DE", "moto": "#B42318", "bicycle": "#1F8A70", "boat": "#A8693A", "tank": "#5E6B3A", "helicopter": "#3B4A5A", "plane": "#E9ECEF", "fighter": "#7D8793", "jet": "#F2F4F6", "streetlamp": "#3A3D44", "hydrant": "#D62828", "cone": "#F77F00", "trashcan": "#4A6B52", "dumpster": "#2F6B3E", "mailbox": "#2B4C9B", "busstop": "#8FA8B8", "crosswalk": "#F4F4F4", "stroller": "#5A6E8C", "tree": "#6BAA4F", "bush": "#5E9E50", "hedge": "#3F7D3A", "rock": "#8E8A84", "pond": "#79B8E0", "dog": "#B08055", "cat": "#E39A4F", "horse": "#7B4A2D", "book": "#8E2F35", "briefcase": "#4A3324", "suitcase": "#2F4858", "bag": "#B5523B", "box": "#C9A26B", "keys": "#C9A227", "cash": "#6FA36B", "flashlight": "#2E3138", "camprop": "#2B2D33", "knife": "#A9B2BC", "bat": "#C49A6C", "gun": "#1F2125", "rifle": "#3B2E25", "shotgun": "#5A3E2B", "sword": "#B8C0C8", "actormark": "#F5C518", "dolly": "#4A4F57", "crane": "#F2A900", "cstand": "#8C949D", "lightstand": "#3A3D44", "flag": "#1F1F23", "silk": "#F2F2EE", "applebox": "#C9A26B", "dirchair": "#3A3D44", "boom": "#6B7280", "village": "#2B2D33", "soundcart": "#4B5563", "generator": "#E6B800", "tent": "#2F5D8C", "equipment": "#5B6573", "bars": "#5B6573", "stairs": "#BFA27A", "column": "#D9D4CA", "pillar": "#CFC8BB", "railing": "#7A5C3E", "fence": "#A57C52", "curtain": "#8E2F35", "elevator": "#A9B2BC"};
+function lum(h){const [r,g,b]=rgbOf(h);return (r*299+g*587+b*114)/255000;}
+const _mc={};function mainCls(k){if(_mc[k])return _mc[k];const src=(LIB[k]||{}).s||'';if(/class="pf"/.test(src))return _mc[k]='pf';let best='pf',n=0;for(const c of ['pd','pgr','pbl','pbx','pgf','pw','pred','pblue','por','pyl','pbk']){const m=(src.match(new RegExp(`class="${c}"`,'g'))||[]).length;if(m>n){n=m;best=c;}}return _mc[k]=best;}
 function boxShape(it){
  if(it.kind==='dollytrack')return trackShape(it);
  const L=LIB[it.kind]||LIB.sqtable;let s=L.s;
  if(it.kind==='image'&&it.img&&images[it.img])s=`<image href="${images[it.img]}" width="100" height="100" preserveAspectRatio="none"/><rect class="pl" width="100" height="100"/>`;
  else if(it.type==='mask')s=`<rect width="100" height="100" fill="${it.color||'#fff'}" fill-opacity="${it.op==null?1:it.op}"/>`;
- else if(it.fill&&it.type==='prop')s=s.replace(/class="pf"/g,`class="pf" style="fill:${it.fill}"`);
+ else{const main=it.fill||PCOL[it.kind];if(main&&(it.type==='prop'||it.type==='set')){const dk=lum(main)<.3,st=dk?'#000':shade(main,-.45),det=dk?shade(main,.35):shade(main,-.3),mc=mainCls(it.kind);
+  s=s.replace(new RegExp(`class="${mc}"`,'g'),`class="${mc}" style="fill:${main};stroke:${st}"`);if(mc==='pf')s=s.replace(/class="pd"/g,`class="pd" style="fill:${det};stroke:${st}"`);}}
  return `<g transform="translate(${-it.w/2},${-it.h/2}) scale(${it.w/100},${it.h/100})"><rect width="100" height="100" fill="transparent"/>${s}</g>`;
 }
 function itemsMarkup(sc,pid){
@@ -1115,7 +1119,7 @@ function inspHTML(){
  let h=x+`<div class="ph">${esc(name)}</div>`;
  if(it.type==='prop'||it.type==='set'||it.type==='light')h+=`<label class="fld">Label<input data-f="it.label" value="${esc(it.label||'')}" placeholder="Optional" autocomplete="off"></label>`;
  if(it.kind==='dollytrack')h+=`<label class="fld">Length in feet<input type="number" inputmode="numeric" min="4" step="4" data-f="it.trackft" value="${trackFt(it)}"></label><p class="mut" id="tpcs" style="margin-top:6px">${trackPieces(trackFt(it))} · drag the end handle to add or remove track</p><label class="row">Curve<input type="range" min="-100" max="100" step="1" value="${Math.round(trackK(it)/(Math.PI/it.w)*100)}" data-f="it.trackbend"></label><p class="mut" id="tcrv" style="margin-top:4px">${trackRadiusTxt(it)} · or drag the ◆ in the middle of the track</p>${Math.abs(trackK(it))>1e-7?'<div class="btns"><button data-act="tstraight">Straighten</button></div>':''}`;
- if(it.type==='prop'&&it.kind!=='image'&&it.kind!=='dollytrack')h+=`<div class="lbl">Fill</div>${swatches('it.fill',FILL_COLORS,it.fill||'#CFD8E3',true)}`;
+ if(it.type==='prop'&&it.kind!=='image'&&it.kind!=='dollytrack')h+=`<div class="lbl">Fill</div>${swatches('it.fill',FILL_COLORS,it.fill||PCOL[it.kind]||'#CFD8E3',true)}`;
  if(it.type==='light'&&LIB[it.kind].beam)h+=`<label class="row">Beam<input type="range" min="0" max="600" step="10" value="${it.beam===false?0:(it.reach||220)}" data-f="it.reach"></label>`;
  if(it.type==='mask')h+=`<div class="lbl">Color</div>${swatches('it.color',MASK_COLORS,it.color,true)}<label class="row">Opacity<input type="range" min="0.1" max="1" step="0.05" value="${it.op}" data-f="it.op"></label>`;
  if(it.type==='text')h+=`<label class="fld">Text<input data-f="it.text" value="${esc(it.text)}" autocomplete="off"></label><label class="row">Size<input type="range" min="8" max="96" step="1" value="${it.size||16}" data-f="it.size"></label><div class="lbl">Color</div>${swatches('it.color',TEXT_COLORS,it.color||'#2B2B2B',true)}`;
@@ -2390,12 +2394,13 @@ svg.addEventListener('pointerdown',e=>{
   if(el.dataset.track){const id=el.dataset.id,i=+el.dataset.track,it=itemById(id);sel={id,mark:it&&it.marks?i:i,track:i};renderUI();renderInsp();renderShotSel();
    if(it&&!it.locked){gesture={type:'track',id,i,w0:w,sx:e.clientX,sy:e.clientY,moved:false};return;}}
   const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0,same=sel&&sel.id===id&&sel.mark===mk&&!sel.track&&(sel.pan||0)===pj,now=Date.now();
-  const tk=id+':'+mk+':'+pj+(el.dataset.badge!=null?':b':'');if(same&&lastTap.id===tk&&now-lastTap.t<380){openInsp();}lastTap={id:tk,t:now};
+  const tk=id+':'+mk+':'+pj+(el.dataset.badge!=null?':b':''),dbl=same&&lastTap.id===tk&&now-lastTap.t<420;lastTap={id:tk,t:dbl?0:now};
   if(!same){sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};renderUI();renderInsp();renderShotSel();}
   const locked=id==='__bg'?(scene().bg||{}).locked:((itemById(id)||{}).locked||(itemById(id)||{}).type==='axis');
   if(sel&&sel.id===id)sel.badge=el.dataset.badge!=null;
-  if(!locked&&el.dataset.badge!=null){gesture={type:'badge',id,mk,bj:+el.dataset.badge,moved:false,sx:e.clientX,sy:e.clientY};return;}
-  if(!locked){gesture={type:el.dataset.lab?'label':el.dataset.frame?'frame':'drag',id,mk,last:w,moved:false,sx:e.clientX,sy:e.clientY};const sc0=scene(),it0=itemById(id);if(el.dataset.frame||(it0&&it0.type==='cam'))freezeFrames(sc0);return;}
+  if(locked){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl};return;}
+  if(!locked&&el.dataset.badge!=null){gesture={type:'badge',id,mk,bj:+el.dataset.badge,moved:false,sx:e.clientX,sy:e.clientY,dbl};return;}
+  if(!locked){gesture={type:el.dataset.lab?'label':el.dataset.frame?'frame':'drag',id,mk,last:w,moved:false,sx:e.clientX,sy:e.clientY,dbl};const sc0=scene(),it0=itemById(id);if(el.dataset.frame||(it0&&it0.type==='cam'))freezeFrames(sc0);return;}
  }
  gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:!el};
 });
@@ -2427,7 +2432,7 @@ function endPointer(e){
  if(g.type==='handle'&&g.h==='rot'&&!g.moved&&sel){const it=itemById(sel.id);if(it&&!it.locked&&(it.type==='char'||it.type==='cam')){objAct(it.type==='char'?'turn':'pan');flushRemote();return;}}
  if(g.type!=='pan'&&g.type!=='pinch'&&g.moved)commit({insp:false});
  else if(g.type==='pan'&&!g.moved&&g.empty&&sel){select(null);}
- else if(!g.moved&&sel&&(g.type==='drag'||g.type==='badge'||g.type==='label'||g.type==='frame'||(g.type==='pan'&&!g.empty))&&!inspOpen){objPop(e.clientX,e.clientY);}
+ else if(!g.moved&&sel&&(g.type==='drag'||g.type==='badge'||g.type==='label'||g.type==='frame'||(g.type==='pan'&&!g.empty))&&!inspOpen&&(g.dbl||g.type==='badge')){objPop(e.clientX,e.clientY);}
  else if(wasDrag)renderUI();
  flushRemote();
 }
