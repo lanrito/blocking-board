@@ -373,7 +373,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116230940';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116233010';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3308,7 +3308,7 @@ $('#bLasso').onclick=()=>{setLasso(!lassoArmed);if(lassoArmed){endTool();closePo
 /* ---------- pointer input (mouse, Pencil, fingers) ---------- */
 const pointers=new Map();let gesture=null,lastTap={id:null,t:0};
 svg.addEventListener('pointerdown',e=>{
- if(e.button>0)return;if(!pointers.size)firstDown={el:e.target.closest&&e.target.closest('[data-id]'),x:e.clientX,y:e.clientY,t:Date.now()};closePop();svg.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(e.button>0)return;if(!pointers.size)downAgain=null;if(!pointers.size)firstDown={el:e.target.closest&&e.target.closest('[data-id]'),x:e.clientX,y:e.clientY,t:Date.now()};closePop();svg.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(pointers.size===2){if(gesture&&gesture.moved&&gesture.type!=='pan'&&gesture.type!=='pinch')commit({insp:false});dragging=false;const [a,b]=[...pointers.values()];gesture={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},v0:Object.assign({},view),start:[a,b].map(p=>({x:p.x,y:p.y})),t0:firstDown?firstDown.t:Date.now(),far:0,tapEl:firstDown?firstDown.el:null};return;}
  if(pointers.size>2)return;
  const w=toWorld(e.clientX,e.clientY);
@@ -3326,7 +3326,7 @@ svg.addEventListener('pointerdown',e=>{
   if(el.dataset.track){const id=el.dataset.id,i=+el.dataset.track,it=itemById(id);sel={id,mark:it&&it.marks?i:i,track:i};renderUI();renderInsp();renderShotSel();
    if(it&&!it.locked){gesture={type:'track',id,i,w0:w,sx:e.clientX,sy:e.clientY,moved:false};return;}}
   const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0,same=sel&&sel.id===id&&sel.mark===mk&&!sel.track&&(sel.pan||0)===pj,now=Date.now();
-  const tk=id+':'+mk+':'+pj+(el.dataset.badge!=null?':b':''),dbl=same&&lastTap.id===tk&&now-lastTap.t<420;lastTap={id:tk,t:dbl?0:now};
+  const tk=id+':'+mk+':'+pj+(el.dataset.badge!=null?':b':''),dbl=same&&lastTap.id===tk&&now-lastTap.t<420;lastTap={id:tk,t:dbl?0:now};downAgain=same?el:null;
   if(!same){sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};renderUI();renderInsp();renderShotSel();}
   const locked=id==='__bg'?(scene().bg||{}).locked:((itemById(id)||{}).locked||(itemById(id)||{}).type==='axis');
   if(sel&&sel.id===id)sel.badge=el.dataset.badge!=null;
@@ -3337,7 +3337,10 @@ svg.addEventListener('pointerdown',e=>{
  }
  gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:!el};
 });
-let holdT=null,labHinted=false;
+let holdT=null,labHinted=false,downAgain=null,tapMenuAt=0;
+/* the tap that opened a menu must not also press the row that appears under the finger */
+document.addEventListener('click',e=>{if(Date.now()-tapMenuAt<600&&e.target.closest&&e.target.closest('#pop')){e.stopPropagation();e.preventDefault();}},true);
+ /* pen or finger: tapping what is already selected opens its menu */
 function armHold(g){clearTimeout(holdT);g.hold=true;holdT=setTimeout(()=>{if(gesture!==g||g.moved)return;g.hold=false;g.detach=true;toast('Unhooked. Drag it away from the others.');renderUI();},550);}
 svg.addEventListener('pointermove',e=>{
  if(tool&&tool.t==='wall'&&tool.last&&!pointers.size&&e.pointerType==='mouse'){tool.hover=wallToolPoint(toWorld(e.clientX,e.clientY)).p;$('#ui').innerHTML=uiMarkup();return;}
@@ -3365,6 +3368,7 @@ function endPointer(e){
  if(g.tool&&!g.moved&&tool){toolTap(g.w);flushRemote();return;}
  if(g.type==='track'){trackPop(g.id,g.i,e.clientX,e.clientY,g.w0);flushRemote();return;}
  if(g.type==='handle'&&g.h==='rot'&&!g.moved&&sel){const it=itemById(sel.id);if(it&&!it.locked&&(it.type==='char'||it.type==='cam')){objAct(it.type==='char'?'turn':'pan');flushRemote();return;}}
+ if(!g.moved&&downAgain&&g.type!=='badge'&&!g.detach&&!tool&&(e.pointerType==='pen'||e.pointerType==='touch')){const el=downAgain;downAgain=null;menuFor(el,e.clientX,e.clientY);tapMenuAt=Date.now();flushRemote();return;}
  if(g.moved&&(g.type==='drag'||g.type==='handle'))uhTidy(scene(),itemById(g.type==='drag'?g.id:(sel&&sel.id)));
  if(g.type!=='pan'&&g.type!=='pinch'&&g.moved)commit({insp:false});
  else if(g.type==='pan'&&!g.moved&&g.empty&&sel){select(null);}
