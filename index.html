@@ -96,6 +96,7 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .asteps{display:flex;gap:1px;overflow-x:auto;max-width:min(46vw,620px);scrollbar-width:none}.asteps::-webkit-scrollbar{display:none}
 #bar .ast{min-width:34px;font-weight:700;color:#d6d7dc;padding:0 6px}#bar .ast.dim{color:#6c6d73}#bar .ast.cur{color:#fff;background:#2f6fde;border-radius:8px}
 .stepgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px 14px;width:290px;box-sizing:border-box}.stepgrid button{height:40px;border-radius:8px;border:1px solid #3a3b40;background:#2c2d31;color:#fff;font-weight:700;font-size:15px}.stepgrid button.on{background:#2f7cf6;border-color:#2f7cf6}
+#pop .pgonly{margin-left:8px;font-size:11px;font-weight:700;color:#8fb6ff;text-transform:uppercase}
 .seg{display:flex;background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
 .seg button{height:30px;padding:0 12px;border:0;border-radius:7px;background:none;font-size:14px;color:var(--mut);white-space:nowrap}
 .seg button.on{background:var(--panel);color:var(--ink);font-weight:650;box-shadow:0 1px 2px rgba(0,0,0,.14)}
@@ -309,7 +310,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116053103';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116053912';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1070,7 +1071,7 @@ function swatches(field,colors,current,custom){
  return `<div class="sw">${colors.map(c=>`<button class="swb${hex7(c)===cu?' on':''}" style="--c:${c}" data-act="color" data-f="${field}" data-v="${c}" aria-label="Color ${c}"></button>`).join('')}${custom?`<label class="swc"><input type="color" data-f="${field}" value="${cu}"><span>Custom</span></label>`:''}</div>`;
 }
 function sbHTML(id,vi,m){const src=m.sb&&images[m.sb];return `<div class="sbw"><button class="sb${src?' has':''}" data-act="sbAdd" data-id="${id}" data-v="${vi}">${src?`<img src="${src}" alt="Storyboard frame">`:'+ Add frame'}</button>${src?`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${vi}" aria-label="Remove frame">×</button>`:''}</div>`;}
-function pageSelect(it){const s=scene();return `<div class="lbl">Shows on</div><div class="pgck"><button data-act="pgset" data-v="all" class="${it.pgs?'':'on'}">All pages</button>${s.pages.map((p,i)=>`<button data-act="pgset" data-v="${p.id}" class="${it.pgs&&it.pgs.includes(p.id)?'on':''}">${i+1} · ${esc(p.name)}</button>`).join('')}</div>`;}
+function pageSelect(it){const s=scene();return `<div class="lbl">Shows on <span style="font-weight:400">· tap a page for only that page; Shift-tap to add more</span></div><div class="pgck"><button data-act="pgset" data-v="all" class="${it.pgs?'':'on'}">All pages</button>${s.pages.map((p,i)=>`<button data-act="pgset" data-v="${p.id}" class="${it.pgs&&it.pgs.includes(p.id)?'on':''}">${i+1} · ${esc(p.name)}</button>`).join('')}</div>`;}
 function inspHTML(){
  const s=scene(),x='<button class="x" data-act="closeInsp" aria-label="Close">×</button>';
  if(sel.id==='__bg'){const b=s.bg;if(!b)return '';
@@ -1134,13 +1135,14 @@ bindShotDrag($('#shots'),'.sr[data-id]');bindShotDrag($('#listView'),'tr[data-id
 
 /* ---------- editing ---------- */
 function findCam(id){for(const s of P.scenes){const it=s.items.find(i=>i.id===id);if(it)return {it,s};}return null;}
-function setPage(it,v){
+function setPage(it,v,add){
  const s=scene();
- if(v==='all')it.pgs=it.pgs?null:[s.pageId==='all'?s.pages[0].id:s.pageId];
- else if(!it.pgs)it.pgs=s.pages.map(p=>p.id).filter(id=>id!==v);
+ if(v==='all'){it.pgs=null;return;}
+ if(!add){it.pgs=[v];return;}
+ if(!it.pgs)it.pgs=s.pages.map(p=>p.id).filter(id=>id!==v);
  else if(it.pgs.includes(v)){if(it.pgs.length>1)it.pgs=it.pgs.filter(x=>x!==v);}
- else it.pgs=[...it.pgs,v];
- if(it.pgs&&!it.pgs.length)it.pgs=[s.pages[0].id];
+ else it.pgs=s.pages.map(p=>p.id).filter(id=>id===v||it.pgs.includes(id));
+ if(it.pgs&&it.pgs.length===s.pages.length)it.pgs=null;
 }
 function setField(f,v){
  const s=scene(),it=sel&&sel.id!=='__bg'?itemById(sel.id):null;
@@ -1205,7 +1207,7 @@ function act(a,b){
   case 'newSetup':setupDialog();break;
   case 'tstraight':it.bend=0;commit();break;
   case 'ctype':{const c=charById(it.charId);if(c){if(b.dataset.v)c.g=b.dataset.v;else delete c.g;}commit();break;}
-  case 'pgset':setPage(it,b.dataset.v);if(!vis(it,s)){sel=null;inspOpen=false;}commit();break;
+  case 'pgset':setPage(it,b.dataset.v,!!(window.event&&(event.shiftKey||event.metaKey||event.ctrlKey)));if(!vis(it,s)){sel=null;inspOpen=false;}commit();break;
  }
 }
 
@@ -1395,12 +1397,19 @@ function objAct(o){
   case 'bgRemove':act('bgRemove',fake());break;
  }
 }
-function pagesSub(){
- const s=scene(),it=itemById(sel.id);if(!it)return;
- pop.innerHTML=`<h4><button class="back">‹ Back</button>Pages</h4><div class="ls" style="width:290px"><button data-p="all">All Pages<span class="chk${it.pgs?'':' on'}">${it.pgs?'':'✓'}</span></button>${s.pages.map((p,i)=>{const on=!it.pgs||it.pgs.includes(p.id);return `<button data-p="${p.id}"><b style="width:22px">${i+1}</b>${esc(p.name)}<span class="chk${on&&it.pgs?' on':''}">${on&&it.pgs?'✓':''}</span></button>`;}).join('')}</div>`;
- pop.querySelector('.back').onclick=()=>objPop(popAt.x,popAt.y);
- pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-p]');if(!x)return;setPage(it,x.dataset.p);commit({insp:false});if(!vis(it,s)){sel=null;closePop();renderUI();return;}pagesSub();};
- placePopAt(popAt.x,popAt.y);
+function pagesSub(group){
+ const s=scene(),its=group?mselItems():[itemById(sel&&sel.id)].filter(Boolean);if(!its.length)return;
+ const allOn=its.every(i=>!i.pgs),st=pid=>{const k=its.filter(i=>!i.pgs||i.pgs.includes(pid)).length;return allOn?'':k===its.length?'on':k?'part':'';};
+ const only=pid=>!allOn&&its.every(i=>i.pgs&&i.pgs.length===1&&i.pgs[0]===pid);
+ pop.innerHTML=`<h4><button class="back">‹ Back</button>${group?`Pages · ${its.length} items`:'Pages'}</h4><div class="ls" style="width:310px"><button data-p="all">All Pages<span class="rad${allOn?' on':''}"></span></button>${s.pages.map((p,i)=>{const c=st(p.id);return `<button data-p="${p.id}"><b style="width:22px">${i+1}</b>${esc(p.name)}${only(p.id)?'<small class="pgonly">only</small>':''}<span class="chk${c==='on'?' on':''}" data-add="${p.id}" title="Also show on this page">${c==='on'?'✓':c==='part'?'–':''}</span></button>`;}).join('')}<div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">Tap a page to show ${group?'them':'it'} only there. Tap a checkbox to add or remove one page.</div></div>`;
+ pop.querySelector('.back').onclick=()=>group?multiPop(popAt.x,popAt.y):objPop(popAt.x,popAt.y);
+ pop.querySelector('.ls').onclick=e=>{const ad=e.target.closest('[data-add]'),x=e.target.closest('[data-p]');if(!x)return;
+  for(const it of its)setPage(it,ad?ad.dataset.add:x.dataset.p,!!ad);
+  commit({insp:false});
+  if(group){const keep=its.filter(i=>vis(i,s)).map(i=>i.id);msel=keep.length?new Set(keep):null;renderUI();if(!msel){closePop();return;}}
+  else if(!vis(its[0],s)){sel=null;closePop();renderUI();return;}
+  pagesSub(group);};
+ if(!group)placePopAt(popAt.x,popAt.y);
 }
 function labelDialog(it){
  const isChar=it.type==='char',m=isChar?it.marks[sel.mark||0]:null,cur=isChar?(m.note||''):(it.label||'');
@@ -2184,17 +2193,19 @@ function finishLasso(poly,cx,cy){
  if(hits.length===1){msel=null;sel={id:hits[0].id,mark:hits[0].marks?0:null};renderUI();renderInsp();renderShotSel();objPop(cx,cy);return;}
  sel=null;inspOpen=false;renderInsp();msel=new Set(hits.map(h=>h.id));renderUI();multiPop(cx,cy);
 }
+function groupPgTxt(its){const t=new Set(its.map(i=>pagesSummary(i)));return t.size===1?[...t][0]:'Mixed';}
 function multiPop(cx,cy){
  const its=mselItems();if(!its.length){msel=null;return;}popAt={x:cx,y:cy};
  const n=its.length,allLocked=its.every(i=>i.locked),cnt=t=>its.filter(i=>i.type===t).length,B=(o,l,i)=>`<button data-o="${o}">${i||''}${l}</button>`;
  const kinds=[['cam','Only Cameras'],['char','Only Characters']].filter(([t])=>cnt(t)&&cnt(t)<n);
  const other=its.filter(i=>!ACTOR(i.type)).length;
- pop.innerHTML=`<h4>${n} Items Selected</h4><div class="ls" style="width:290px"><div class="hd">Move</div><button disabled style="opacity:.75;font-size:14px">Drag any selected item to move them all</button><div class="hd">Object</div>${B('mdel','Delete All',IC.x)}${B('mdup','Duplicate All',IC.dup)}${B('mlock',allLocked?'Unlock All':'Lock All')}${kinds.length||(other&&other<n)?'<div class="hd">Narrow selection</div>':''}${kinds.map(([t,l])=>B('only-'+t,l)).join('')}${other&&other<n?B('only-other','Only Props & Set'):''}<div class="hd">Selection</div>${B('mclear','Clear Selection')}</div>`;
+ pop.innerHTML=`<h4>${n} Items Selected</h4><div class="ls" style="width:290px"><div class="hd">Move</div><button disabled style="opacity:.75;font-size:14px">Drag any selected item to move them all</button><div class="hd">Object</div>${B('mdel','Delete All',IC.x)}${B('mdup','Duplicate All',IC.dup)}${B('mlock',allLocked?'Unlock All':'Lock All')}${scene().pages.length>1?`<div class="hd">Pages</div><button data-o="mpages">Pages for All Selected<span class="pgv">${esc(groupPgTxt(its))} ›</span></button>`:''}${kinds.length||(other&&other<n)?'<div class="hd">Narrow selection</div>':''}${kinds.map(([t,l])=>B('only-'+t,l)).join('')}${other&&other<n?B('only-other','Only Props & Set'):''}<div class="hd">Selection</div>${B('mclear','Clear Selection')}</div>`;
  pop.classList.add('on');popFor=null;
  {let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const it of its){const b=msBox(it);if(!b)continue;x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}
   const W=$('#wrap').clientWidth,H=$('#wrap').clientHeight,pw=pop.offsetWidth,ph=pop.offsetHeight,sx0=x0*view.k+view.x,sx1=x1*view.k+view.x,sy0=y0*view.k+view.y;
   let left=sx1+16;if(left+pw>W-8)left=sx0-pw-16;if(left<8)left=W-pw-8;pop.style.bottom='auto';pop.style.left=clamp(left,8,Math.max(8,W-pw-8))+'px';pop.style.top=clamp(sy0,8,Math.max(8,H-ph-8))+'px';}
  pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-o]');if(!x)return;const o=x.dataset.o,s=scene();
+  if(o==='mpages'){pagesSub(true);return;}
   if(o.startsWith('only-')){const t=o.slice(5);msel=new Set(its.filter(i=>t==='other'?!ACTOR(i.type):i.type===t).map(i=>i.id));renderUI();multiPop(cx,cy);return;}
   closePop();
   if(o==='mclear'){clearMsel();return;}
