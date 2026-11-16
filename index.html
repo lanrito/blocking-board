@@ -77,6 +77,8 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .imn{flex:1;min-width:0}.imn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.imn small{color:var(--mut);font-size:12px}
 .imsx{flex:none}.imsx button{min-height:32px;padding:0 10px;font-size:13px}.imq{width:38px;font-style:normal;font-size:11px;color:#b7791f;font-weight:700;flex:none}
 .imopt{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px}
+.card.keycard{width:min(560px,100%)}.kt div{display:flex;gap:12px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kt kbd{flex:none;min-width:92px;font:600 12.5px/1.6 ui-monospace,Menlo,monospace;color:var(--ink)}
 .seg{display:flex;background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
 .seg button{height:30px;padding:0 12px;border:0;border-radius:7px;background:none;font-size:14px;color:var(--mut);white-space:nowrap}
 .seg button.on{background:var(--panel);color:var(--ink);font-weight:650;box-shadow:0 1px 2px rgba(0,0,0,.14)}
@@ -290,7 +292,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116045841';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116050102';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1396,11 +1398,11 @@ function rootOf(s){const p=fPath(sFolder(s));return p.length?p[0].id:null;}
 function countIn(id){const d=fDesc(id);return liveScenes().filter(s=>d.has(sFolder(s))).length;}
 function projectCast(s){const r=rootOf(s),ids=new Set();for(const x of liveScenes().concat([s]))if(x===s||rootOf(x)===r)for(const it of x.items)if(it.type==='char')ids.add(it.charId);return ids;}
 function shotCount(s){return s.items.filter(i=>i.type==='cam').reduce((a,i)=>a+i.marks.length,0);}
-function noteRecent(id){const r=(P.ui.recent||[]).filter(x=>x!==id);r.unshift(id);P.ui.recent=r.slice(0,10);}
+function noteRecent(id){const r=(P.ui.recentScenes||[]).filter(x=>x!==id);r.unshift(id);P.ui.recentScenes=r.slice(0,10);}
 function ensureLive(){
  const c=P.scenes.find(s=>s.id===P.sceneId);if(c&&!c.trashed)return;
  const live=liveScenes(),f=c?sFolder(c):null;
- let n=(P.ui.recent||[]).map(id=>live.find(s=>s.id===id)).find(Boolean)||live.find(s=>sFolder(s)===f)||live[0];
+ let n=(P.ui.recentScenes||[]).map(id=>live.find(s=>s.id===id)).find(Boolean)||live.find(s=>sFolder(s)===f)||live[0];
  if(!n){n=blankScene(1);if(f)n.folder=f;P.scenes.push(n);}
  P.sceneId=n.id;sel=null;
 }
@@ -1431,7 +1433,7 @@ function rowS(s,sub,pickable){const cur=s.id===P.sceneId&&!s.trashed,picked=br.p
  return `<div class="brr${cur?' cur':''}${picked?' picked':''}" data-s="${s.id}"><span class="bri">${br.pick&&pickable?'<i class="ck"></i>':BIC.scene}</span><span class="brt"><b>${esc(sceneLabel(s))}${cur?'<em>Open now</em>':''}</b><small>${meta?esc(meta):'&nbsp;'}</small></span><button class="brm" data-sm="${s.id}" aria-label="Scene options">•••</button></div>`;}
 function brFolder(id){
  const kids=fKids(id),scs=fScenes(id),secs=[];
- if(!id&&!br.pick){const rec=(P.ui.recent||[]).map(x=>P.scenes.find(s=>s.id===x&&!s.trashed)).filter(Boolean).slice(0,4);if(rec.length>1&&liveScenes().length>4)secs.push(['Recent',rec.map(s=>rowS(s,pathTxt(sFolder(s))||'Not in a folder')).join('')]);}
+ if(!id&&!br.pick){const rec=(P.ui.recentScenes||[]).map(x=>P.scenes.find(s=>s.id===x&&!s.trashed)).filter(Boolean).slice(0,4);if(rec.length>1&&liveScenes().length>4)secs.push(['Recent',rec.map(s=>rowS(s,pathTxt(sFolder(s))||'Not in a folder')).join('')]);}
  if(kids.length)secs.push(['Folders',kids.map(f=>rowF(f)).join('')]);
  if(scs.length)secs.push([id?'Scenes':'Not in a folder',scs.map(s=>rowS(s,null,true)).join('')]);
  let h=secs.length>1?secs.map(([t,r])=>`<div class="brsec">${t}</div>${r}`).join(''):secs.length?secs[0][1]:`<div class="brempty">${id?'This folder is empty.<br>Add a scene or a folder above.':'No scenes yet.'}</div>`;
@@ -1858,13 +1860,57 @@ function menu(){
  const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
  openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
   <button data-m="open">Open scene… <span class="kb">⌘O</span></button><button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><div class="hd">Export</div><button data-m="pdf">Download PDF (diagrams + shot list)</button><button data-m="list">Download shot list PDF</button><button data-m="png">Download this page as an image</button>
+  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><div class="hd">Export</div><button data-m="pdf">Download PDF (diagrams + shot list)</button><button data-m="list">Download shot list PDF</button><button data-m="png">Download this page as an image</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}</div></div>`,b,p=>{
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
    ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:()=>exportPDF('all'),list:()=>exportPDF('list'),png:exportPNG,backup,restore:()=>$('#fJson').click(),
-     open:()=>openBrowser(),import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
+     open:()=>openBrowser(),keys:keysDialog,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
  });
+}
+
+
+/* ---------- keyboard shortcuts ---------- */
+const KEYS=[['Scenes',[['⌘O','Open a scene (folders, search)'],['⌘F','Search all scenes'],['⌘I','Scene info'],['⌘S','Saves happen automatically. This just confirms it'],['⌘P','Download PDF (diagrams + shot list)']]],
+ ['Add',[['C','Character'],['A','Camera'],['P','Prop'],['S','Set piece'],['L','Lighting'],['T','Annotation']]],
+ ['Selected character or camera',[['W','Walk to / move to (tap where)'],['F','Walk from (character)'],['R','Turn (character)'],['X','Axis line to (character)'],['E','Edit'],['⌘D','Duplicate'],['← ↑ → ↓','Nudge (hold Shift for bigger steps)'],['Delete','Delete'],['Esc','Deselect, or cancel a tool']]],
+ ['Select',[['G','Lasso: draw around things to select them together'],['⌘A','Select everything on this page'],['⌘Z  /  ⇧⌘Z','Undo / redo']]],
+ ['View',[['[  ]','Previous / next page'],['N','New page'],['V','Switch Diagram / Shot list'],['B','Show or hide storyboard frames'],['0','Fit to screen'],['+  −','Zoom in / out'],['?','This list']]]];
+function keysDialog(){const mac=/Mac|iPad|iPhone/.test(navigator.platform||navigator.userAgent),k=t=>mac?t:t.replace(/⌘/g,'Ctrl+').replace(/⇧/g,'Shift+');
+ modal(`<h3>Keyboard shortcuts</h3>${KEYS.map(([h,rows])=>`<div class="lbl">${h}</div><div class="kt">${rows.map(([a,b])=>`<div><kbd>${esc(k(a))}</kbd><span>${esc(b)}</span></div>`).join('')}</div>`).join('')}<div class="btns end"><button class="pri" data-x>Done</button></div>`,null,'keycard');}
+let nudgeT=null;
+function nudge(dx,dy){const s=scene();
+ if(msel){moveAll(dx,dy);}else{const it=sel&&sel.id!=='__bg'?itemById(sel.id):null;if(!it||it.locked||it.type==='axis')return false;moveItem(it,it.marks?(sel.mark||0):sel.mark?sel.mark:'all',dx,dy);}
+ renderCanvas();renderUI();clearTimeout(nudgeT);nudgeT=setTimeout(()=>commit(),450);return true;}
+function shortcut(e){
+ const k=e.key,lk=k.length===1?k.toLowerCase():k,mod=e.metaKey||e.ctrlKey,s=scene(),it=sel&&sel.id!=='__bg'?itemById(sel.id):null;
+ if(mod&&!e.altKey){
+  if(lk==='f'){openBrowser(null);return true;}
+  if(lk==='i'){sceneInfo();return true;}
+  if(lk==='s'){toast(localOk?'Everything is saved automatically.':'Not saving here. Back up from the menu.');return true;}
+  if(lk==='p'){exportPDF('all');return true;}
+  if(lk==='d'&&it&&it.type!=='axis'){act('dup',{dataset:{}});return true;}
+  return false;}
+ if(e.altKey)return false;
+ if(k==='?'){keysDialog();return true;}
+ if(k.startsWith('Arrow')&&(it||msel)&&mode!=='list'){const st=(e.shiftKey?40:8)/Math.max(view.k,.25);return nudge(k==='ArrowLeft'?-st:k==='ArrowRight'?st:0,k==='ArrowUp'?-st:k==='ArrowDown'?st:0);}
+ if(k==='['||k===']'){const ids=s.pages.map(p=>p.id);if(s.pages.length<2)return true;let i=ids.indexOf(s.pageId);if(i<0)i=k===']'?-1:ids.length;i=clamp(i+(k===']'?1:-1),0,ids.length-1);gotoPage(ids[i]);fit();return true;}
+ if(k==='0'){fit();return true;}
+ if(k==='='||k==='+'||k==='-'||k==='_'){const r=svg.getBoundingClientRect();zoomAt(r.left+r.width/2,r.top+r.height/2,k==='-'||k==='_'?1/1.25:1.25);return true;}
+ if(e.shiftKey&&!/[?]/.test(k))return false;
+ if(lk==='v'){setMode(mode==='list'?'diagram':'list');return true;}
+ if(mode==='list')return false;
+ const add={c:()=>charDialog(),a:()=>cameraDialog(),p:()=>gridMenu('prop'),s:()=>gridMenu('set'),l:()=>gridMenu('light'),t:()=>gridMenu('note')}[lk];
+ if(add){if(!$('#bAdd'))return false;closePop();if(lk==='p'||lk==='s'||lk==='l'||lk==='t')openPop('',$('#bAdd'));add();const q=$('#gsq');if(q&&matchMedia('(pointer:fine)').matches)q.focus();return true;}
+ if(lk==='g'){setLasso(!lassoArmed);return true;}
+ if(lk==='n'){newPageDialog();return true;}
+ if(lk==='b'){$('#bFr').click();return true;}
+ if(it&&!it.locked){
+  if(lk==='w'&&(it.marks||MOVABLE(it.type))){startTool({t:'move',id:it.id});return true;}
+  if(it.type==='char'){if(lk==='f'){objAct('walkfrom');return true;}if(lk==='r'){objAct('turn');return true;}if(lk==='x'){objAct('axis');return true;}}
+ }
+ if(it&&lk==='e'){openInsp();return true;}
+ return false;
 }
 
 /* ---------- multi-select (lasso) ---------- */
@@ -2005,6 +2051,7 @@ addEventListener('keydown',e=>{
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='o'){e.preventDefault();openBrowser();return;}
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&!typing){e.preventDefault();e.shiftKey?redo():undo();return;}
  if(typing)return;
+ if(shortcut(e)){e.preventDefault();return;}
  if(msel&&(e.key==='Delete'||e.key==='Backspace')){e.preventDefault();const s=scene(),ids=new Set(mselItems().filter(i=>!i.locked).map(i=>i.id));s.items=s.items.filter(i=>!ids.has(i.id)&&!(i.type==='axis'&&(ids.has(i.a)||ids.has(i.b))));msel=null;commit();return;}
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();const s=scene(),ids=pageItems(s).filter(i=>i.type!=='axis').map(i=>i.id);if(ids.length){sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();}return;}
  if(e.key==='Escape'){if(lassoArmed){setLasso(false);return;}if(msel){clearMsel();return;}if(tool)endTool();else if(pop.classList.contains('on'))closePop();else if(sel)select(null);return;}
