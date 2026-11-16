@@ -155,7 +155,7 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 #pop .chk{margin-left:auto;width:28px;height:28px;border-radius:4px;border:2px solid #9a9ba1;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;flex:none}#pop .chk.on{background:#2f7cf6;border-color:#2f7cf6}
 #pop .dupi{width:26px;height:26px;position:relative;flex:none}#pop .dupi::before,#pop .dupi::after{content:"";position:absolute;width:16px;height:16px;border-radius:2px}#pop .dupi::before{left:2px;top:2px;background:#6b7280}#pop .dupi::after{left:9px;top:9px;background:#dfe7f1}
 #pop .lbli{width:28px;height:20px;border-radius:50%;background:#e8eda8;flex:none}
-#pop .pgv{margin-left:auto;color:#d6d7db}
+#pop .pgv{margin-left:auto;color:#d6d7db}#pop .ls i{font-style:normal;color:#8d8e94}#pop .sv2{display:flex;border-bottom:1px solid #34353a}#pop .sv2 button{flex:1;border-bottom:0}#pop .sv2 button+button{border-left:1px solid #34353a}#pop .ls button:disabled{opacity:.55;cursor:default}#pop .ls button:disabled .pgv{visibility:hidden}#pop .sdesc{white-space:normal;line-height:1.35;padding-top:12px;padding-bottom:12px;color:#cfd0d4;font-size:15px}#pop .sdesc span:first-child{flex:1}
 #pop h4 .back{position:absolute;left:8px;top:8px}#pop h4{position:relative}
 #pop .hd{padding:6px 18px;background:#3a3b40;font-weight:700;font-size:14px}
 #pop .back{position:absolute;left:8px;top:8px;height:32px;padding:0 10px;border:0;border-radius:7px;background:#34353a;color:#fff;font-size:14px}
@@ -372,7 +372,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116222529';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116223610';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1546,7 +1546,7 @@ function objPop(cx,cy){
    h=sec('Actions',B('pbefore','Insert Turn Before')+B('pafter','Insert Turn After')+B('pdel','Delete Turn',IC.x))+sec('Settings',ck('tiltup','Tilt Up',q.tilt==='up')+ck('tiltdown','Tilt Down',q.tilt==='down')+(animOn?stB:''));}
   else if(it.type==='cam'&&sel.badge&&!sel.pan){title='Edit Turn';h=sec('Actions',B('pbefore','Insert Turn Before')+B('pafter','Insert Turn After'));}
   else if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?'};title=`Edit Camera ${esc(shotCode(s,it))}`;
-   h=sec('Actions',B('walkto','Move To…')+B('pan','Add Pan')+B('edit','Shot Details…')+B('frame',(it.marks[sel.mark||0]||{}).sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
+   h=sec('Actions',B('walkto','Move To…')+B('pan','Add Pan')+B('shotdesc','Edit Shot Description…')+B('frame',(it.marks[sel.mark||0]||{}).sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+(it.marks.length>1?B('delmark','Remove This Version'):'')+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
     +(s.setups.length>1?sec('Shot Order',(s.setups[0].id!==it.setupId?B('shotUp','Move Shot Earlier'):'')+(s.setups[s.setups.length-1].id!==it.setupId?B('shotDown','Move Shot Later'):'')):'')
     +sec('Settings',B('edit','Edit Color…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages;}
@@ -1623,6 +1623,7 @@ function objAct(o){
   case 'edit':openInsp();break;
   case 'tstraight':it.bend=0;commit();break;
   case 'regallery':for(const o of s.items)if(o.type==='cam')for(const m of o.marks){delete m.sbp;delete m.sba;}freezeFrames(s);commit();break;
+  case 'shotdesc':shotPop(popAt.x,popAt.y);break;
   case 'frame':act('sbAdd',fake({id:it.id,v:String(sel.mark||0)}));break;
   case 'bgReplace':act('bgReplace',fake());break;
   case 'bgRemove':act('bgRemove',fake());break;
@@ -3130,15 +3131,60 @@ function drawLayers(){const s=scene(),L=lay(s),all=LAYERS.every(([k])=>L.lock[k]
 function setLayerVal(s,k,v){if(k==='bg'){if(s.bg)s.bg.op=v/100;return;}s.layers=s.layers||{};if(k==='lk'||k==='desc'){s.layers[k]=v;return;}s.layers.op=Object.assign({},s.layers.op||{},{[k]:v});}
 
 
+/* ---------- Edit Shot Description: right-click / two-finger tap a shot label ---------- */
+const SHOT_F={size:'Shot Size',type:'Shot Type',angle:'Shot Angle',move:'Movement'};
+function shotOptions(k){const used=new Set();for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){const v=String(m[k]||'').trim();if(v&&!PRESET[k].includes(v))used.add(v);}return [...PRESET[k],...[...used].sort()];}
+function shotPop(cx,cy){
+ if(!sel||tool||offCanvas())return;const s=scene(),it=itemById(sel.id);if(!it||it.type!=='cam'){objPop(cx,cy);return;}
+ popAt={x:cx,y:cy};const n=it.marks.length,vi=clamp(sel.mark||0,0,n-1),m=it.marks[vi],many=rowsOf(s).filter(r=>r.vi===0).length>1;
+ const val=v=>v?esc(trunc(String(v),24)):'<i>Not Set</i>',row=(k,v)=>`<button data-sf="pick" data-k="${k}">${SHOT_F[k]}<span class="pgv">${val(v)} ›</span></button>`;
+ pop.innerHTML=`<h4>Edit Shot Description</h4><div class="ls shotls" style="width:320px">
+  <div class="hd">Shot / Version</div><div class="sv2"><button data-sf="shots"${many?'':' disabled'}>Shot ${esc(shotCode(s,it))}<span class="pgv">›</span></button><button data-sf="vers"${n>1?'':' disabled'}>Version ${verCode(s,vi)}<span class="pgv">›</span></button></div>
+  <div class="hd">This Version</div>${row('size',m.size)}${row('type',m.type)}${row('angle',m.angle)}${row('move',m.move)}
+  <div class="hd">Description</div><button data-sf="desc" class="sdesc"><span>${m.desc?esc(trunc(String(m.desc),120)):'<i>Not Set</i>'}</span><span class="pgv">›</span></button>
+  <div class="hd">Storyboard</div><button data-sf="frame">${m.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…'}</button>
+  <div class="hd">Settings</div><button data-sf="camdesc">Show Descriptions on the Floor Plan<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button>${it.lab?'<button data-sf="labreset">Put the Label Back by the Camera</button>':''}
+  <div class="hd">Add / Remove</div><button data-sf="addver">Add Version…</button>${n>1?`<button data-sf="delver">${IC.x}Remove This Version</button>`:''}<button data-sf="del">${IC.x}Delete From Shot List</button></div>`;
+ pop.classList.add('on');popFor=null;placePopAt(cx,cy);
+ pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-sf]');if(!b||b.disabled)return;const a=b.dataset.sf,back=()=>shotPop(popAt.x,popAt.y);
+  if(a==='pick')shotPick(b.dataset.k);
+  else if(a==='shots')shotList(false);
+  else if(a==='vers')shotList(true);
+  else if(a==='desc'){const at=popAt;modal(`<h3>Description</h3><p class="mut">Shot ${esc(shotCode(s,it))}${n>1?' · version '+verCode(s,vi):''}</p><label class="fld"><textarea id="sdT" rows="5">${esc(m.desc||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const t=card.querySelector('#sdT');t.focus();t.setSelectionRange(t.value.length,t.value.length);card.querySelector('#ok').onclick=()=>{m.desc=t.value;closeModal();commit();shotPop(at.x,at.y);};});}
+  else if(a==='frame'){closePop();act('sbAdd',{dataset:{id:it.id,v:String(vi)}});}
+  else if(a==='camdesc'){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();back();}
+  else if(a==='labreset'){delete it.lab;commit();back();}
+  else if(a==='addver'){closePop();startTool({t:'move',id:it.id});}
+  else if(a==='delver'){closePop();act('delMark',{dataset:{}});}
+  else if(a==='del'){closePop();deleteSel(true);}
+ };
+}
+function shotPick(k){const it=itemById(sel.id);if(!it)return;const m=it.marks[sel.mark||0],cur=String(m[k]||''),T=SHOT_F[k];
+ const opt=v=>`<button data-v="${esc(v)}">${esc(v)}${k==='size'&&ABBR[v]?`<small class="pgonly">${ABBR[v]}</small>`:''}<span class="rad${v===cur?' on':''}"></span></button>`;
+ const list=k==='size'?null:shotOptions(k),body=k==='size'?SIZE_GROUPS.map(([g,l])=>`<div class="hd">${g}</div>`+l.map(([nm])=>opt(nm)).join('')).join('')+(cur&&!(cur in ABBR)?'<div class="hd">Yours</div>'+opt(cur):''):list.map(opt).join('')+(cur&&!list.includes(cur)?opt(cur):'');
+ pop.innerHTML=`<h4><button class="back">‹ Back</button>${T}</h4><div class="ls" style="width:320px">${body}<div class="hd">Or</div><button data-v="__own">Type Your Own…</button><button data-v="">Not Set<span class="rad${cur?'':' on'}"></span></button></div>`;
+ const at=popAt,back=()=>shotPop(at.x,at.y);pop.querySelector('.back').onclick=back;placePopAt(at.x,at.y);
+ pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;const v=b.dataset.v;
+  if(v==='__own'){askText(T,'Your own '+T.toLowerCase(),cur||'',nv=>{m[k]=nv;commit();back();});return;}
+  m[k]=v;commit();back();};
+}
+function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;const at=popAt,back=()=>shotPop(at.x,at.y),R=rowsOf(s).filter(r=>versions?r.it===it:r.vi===0);
+ pop.innerHTML=`<h4><button class="back">‹ Back</button>${versions?'Version':'Shot'}</h4><div class="ls" style="width:320px">${R.map(r=>{const on=r.it===it&&(versions?r.vi===(sel.mark||0):true);return `<button data-id="${r.it.id}" data-v="${r.vi}"><b style="min-width:34px">${versions?verCode(s,r.vi):esc(shotCode(s,r.it))}</b><span style="color:#cfd0d4">${esc(trunc(capOf(r.m)||'No details yet',26))}</span><span class="rad${on?' on':''}"></span></button>`;}).join('')}</div>`;
+ pop.querySelector('.back').onclick=back;placePopAt(at.x,at.y);
+ pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-id]');if(!b)return;sel={id:b.dataset.id,mark:+b.dataset.v||0};renderUI();renderShotSel();back();};
+}
+
 /* ---------- opening the menu: right-click / two-finger tap, or Shift ---------- */
 let firstDown=null,shiftSolo=false;
 function menuFor(el,x,y){if(tool||offCanvas())return;if(!el||!el.dataset||!el.dataset.id){closePop();return;}
  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0;
- if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;renderUI();objPop(x,y);}
+ if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;renderUI();
+ if(el.dataset.lab&&itemById(id).type==='cam'){renderShotSel();shotPop(x,y);return;}objPop(x,y);}
 function selScreenPos(){const it=sel&&sel.id!=='__bg'?itemById(sel.id):null,r=svg.getBoundingClientRect();let w={x:0,y:0};
  if(it){if(it.marks){const m=it.marks[sel.mark||0]||it.marks[0];w={x:m.x,y:m.y};}else if(it.type==='wall')w={x:(it.x1+it.x2)/2,y:(it.y1+it.y2)/2};else w={x:it.x,y:it.y};}else return {x:r.left+r.width/2,y:r.top+r.height/2};
  return {x:r.left+view.x+w.x*view.k,y:r.top+view.y+w.y*view.k};}
 svg.addEventListener('contextmenu',e=>{e.preventDefault();menuFor(e.target.closest('[data-id]'),e.clientX,e.clientY);});
+$('#shots').addEventListener('contextmenu',e=>{const r=e.target.closest('.sr[data-id]');if(!r)return;e.preventDefault();if(tool||offCanvas())return;msel=null;sel={id:r.dataset.id,mark:+r.dataset.v||0};renderUI();renderShotSel();shotPop(e.clientX,e.clientY);});
 addEventListener('keydown',e=>{if(e.key==='Shift'){if(!e.repeat)shiftSolo=true;}else shiftSolo=false;},true);
 addEventListener('pointerdown',()=>{shiftSolo=false;},true);
 addEventListener('keyup',e=>{if(e.key!=='Shift'||!shiftSolo)return;shiftSolo=false;const a=document.activeElement;
