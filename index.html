@@ -246,7 +246,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_VERSION='20261116043406';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_VERSION='20261116043608';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -799,14 +799,22 @@ function framePos(m,vi){if(m.sbp)return m.sbp;const L=behind(m.rot,160),k=(vi||0
 const FT=18.29,TRACK_H=46;
 const trackFt=it=>Math.max(4,Math.round(it.w/FT/4)*4);
 function trackPieces(ft){const n8=Math.floor(ft/8),n4=(ft%8)/4;return [n8?`${n8} × 8 ft`:'',n4?`${n4} × 4 ft`:''].filter(Boolean).join(' + ');}
+function trackK(it){const L=it.w;return clamp(it.bend||0,-Math.PI/L,Math.PI/L);}
+function trackSag(L,k){return Math.abs(k)<1e-7?0:(1-Math.cos(k*L/2))/k;}
+function trackP(it,s){const L=it.w,k=trackK(it),h=trackSag(L,k);if(Math.abs(k)<1e-7)return {x:s,y:0,a:0};const t=k*s;return {x:Math.sin(t)/k,y:(1-Math.cos(t))/k-h,a:t};}
+const tOff=(p,d)=>({x:p.x-Math.sin(p.a)*d,y:p.y+Math.cos(p.a)*d});
+function trackBox(it){const L=it.w,k=trackK(it),h=trackSag(L,k),e=trackP(it,L/2),pad=24*Math.abs(Math.sin(e.a))+4;return {x0:-Math.abs(e.x)-pad,x1:Math.abs(e.x)+pad,y0:Math.min(-h,0)-24,y1:Math.max(-h,0)+24};}
 function trackShape(it){
- const L=it.w,x0=-L/2,ry=18.5;let h=`<rect x="${x0}" y="${-TRACK_H/2}" width="${L}" height="${TRACK_H}" fill="transparent"/>`;
- for(let x=x0+FT;x<x0+L-FT*0.5;x+=FT*2)h+=`<rect x="${x-2.5}" y="-23" width="5" height="46" rx="1" fill="#9aa3ad" stroke="#5b6170" stroke-width="0.8"/>`;
- h+=`<line x1="${x0}" y1="${-ry}" x2="${x0+L}" y2="${-ry}" stroke="#26282d" stroke-width="3.2"/><line x1="${x0}" y1="${ry}" x2="${x0+L}" y2="${ry}" stroke="#26282d" stroke-width="3.2"/>`;
- for(let x=x0+FT*4;x<x0+L-1;x+=FT*4)h+=`<rect x="${x-1.2}" y="${-ry-3}" width="2.4" height="6" fill="#fff"/><rect x="${x-1.2}" y="${ry-3}" width="2.4" height="6" fill="#fff"/>`;
- h+=`<rect x="${x0-3}" y="-24" width="4" height="48" fill="#26282d"/><rect x="${x0+L-1}" y="-24" width="4" height="48" fill="#26282d"/>`;
- return h;
+ const L=it.w,N=Math.max(2,Math.ceil(L/6)),cl=[],r1=[],r2=[],poly=a=>'M'+a.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join('L'),ln=(a,b,c,w,cap)=>`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${c}" stroke-width="${w}"${cap?' stroke-linecap="round"':''}/>`;
+ for(let i=0;i<=N;i++){const p=trackP(it,-L/2+L*i/N);cl.push(p);r1.push(tOff(p,-18.5));r2.push(tOff(p,18.5));}
+ let g=`<path d="${poly(cl)}" fill="none" stroke="transparent" stroke-width="50"/>`;
+ for(let x=-L/2+FT;x<L/2-FT*0.5;x+=FT*2){const p=trackP(it,x),a=tOff(p,-23),b=tOff(p,23);g+=ln(a,b,'#5b6170',6.6,1)+ln(a,b,'#9aa3ad',5,1);}
+ g+=`<path d="${poly(r1)}" fill="none" stroke="#26282d" stroke-width="3.2"/><path d="${poly(r2)}" fill="none" stroke="#26282d" stroke-width="3.2"/>`;
+ for(let x=-L/2+FT*4;x<L/2-1;x+=FT*4){const p=trackP(it,x);for(const d of [-18.5,18.5]){const q=tOff(p,d);g+=`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="1.8" fill="#fff"/>`;}}
+ for(const x of [-L/2,L/2]){const p=trackP(it,x);g+=ln(tOff(p,-24),tOff(p,24),'#26282d',4);}
+ return g;
 }
+function trackRadiusTxt(it){const k=trackK(it);if(Math.abs(k)<1e-7)return 'Straight';const ft=1/Math.abs(k)/FT;return `Curved · radius about ${ft<10?ft.toFixed(1):Math.round(ft)} ft`;}
 function boxShape(it){
  if(it.kind==='dollytrack')return trackShape(it);
  const L=LIB[it.kind]||LIB.sqtable;let s=L.s;
@@ -821,7 +829,7 @@ function itemsMarkup(sc,pid){
   if(BOX(it.type)){
    const L=LIB[it.kind]||{};
    if(it.type==='light'&&L.beam&&it.beam!==false){const a=rad(it.rot||0),fx=it.x+Math.cos(a)*it.w/2,fy=it.y+Math.sin(a)*it.w/2,h=rad(22),R=it.reach||220;fov+=`<path class="deco" d="M${fx},${fy}L${fx+Math.cos(a-h)*R},${fy+Math.sin(a-h)*R}A${R},${R} 0 0 1 ${fx+Math.cos(a+h)*R},${fy+Math.sin(a+h)*R}Z" fill="#ffd75e" fill-opacity=".16"/>`;}
-   const lbl=it.kind==='dollytrack'?`<text class="sl" y="${TRACK_H/2+14}" text-anchor="middle">${esc((it.label?it.label.toUpperCase()+' · ':'')+trackFt(it)+' FT TRACK')}</text>`:it.label?`<text class="sl" y="${it.type==='light'?it.h/2+14:4}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${esc(it.label.toUpperCase())}</text>`:'';
+   const lbl=it.kind==='dollytrack'?`<text class="sl" y="${trackBox(it).y1+12}" text-anchor="middle">${esc((it.label?it.label.toUpperCase()+' · ':'')+trackFt(it)+' FT TRACK'+(Math.abs(trackK(it))>1e-7?' (CURVED)':''))}</text>`:it.label?`<text class="sl" y="${it.type==='light'?it.h/2+14:4}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${esc(it.label.toUpperCase())}</text>`:'';
    const mv=it.mv||[],shp=boxShape(it);
    sh+=`<g data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
    const ps=positions(it);for(let i=1;i<ps.length;i++){const q=ps[i];paths+=arrow(ps[i-1],q,'#5b6170',true,Math.min(it.w,it.h)/2+4,!it.hard,`data-id="${it.id}" data-track="${i}"`);
@@ -886,6 +894,9 @@ function uiMarkup(){
   return h;}
  if(it.type==='axis'){const A=itemById(it.a),B=itemById(it.b);if(A&&B){const p=A.marks[Math.min(it.am||0,A.marks.length-1)],q=B.marks[Math.min(it.bm||0,B.marks.length-1)];h+=`<line class="ring" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"/>`;}return h;}
  if(it.type==='wall'){h+=`<line class="ring" x1="${it.x1}" y1="${it.y1}" x2="${it.x2}" y2="${it.y2}"/>`;return h+(it.locked?lockBadge((it.x1+it.x2)/2,(it.y1+it.y2)/2):hnd('p1',it.x1,it.y1)+hnd('p2',it.x2,it.y2));}
+ if(it.kind==='dollytrack'&&!(sel.mark>0)){const b=trackBox(it),cs=[rp(it,b.x0,b.y0),rp(it,b.x1,b.y0),rp(it,b.x1,b.y1),rp(it,b.x0,b.y1)];h+=`<polygon class="ring" points="${cs.map(p=>p.x+','+p.y).join(' ')}"/>`;if(it.locked)return h+lockBadge(cs[1].x,cs[1].y);
+  const top=rp(it,0,b.y0),rt=rp(it,0,b.y0-34/k);h+=`<line class="ring" x1="${top.x}" y1="${top.y}" x2="${rt.x}" y2="${rt.y}"/>`+hnd('rot',rt.x,rt.y);
+  const e=trackP(it,it.w/2),ep=rp(it,e.x,e.y),mp=trackP(it,0),mw=rp(it,mp.x,mp.y);h+=hnd('size',ep.x,ep.y)+`<g data-handle="tbend" transform="translate(${mw.x},${mw.y}) scale(${1/k})"><circle r="16" fill="transparent"/><rect x="-6" y="-6" width="12" height="12" transform="rotate(45)" fill="${Math.abs(trackK(it))>1e-7?'#2f6fde':'#fff'}" stroke="#2f6fde" stroke-width="2"/></g>`;return h;}
  const w=it.type==='text'?textW(it):it.w,hh=it.type==='text'?(it.size||16)*1.5:it.h,gi=sel.mark||0,g=gi&&it.mv&&it.mv[gi-1]?Object.assign({},it,it.mv[gi-1]):it;
  const cs=[rp(g,-w/2,-hh/2),rp(g,w/2,-hh/2),rp(g,w/2,hh/2),rp(g,-w/2,hh/2)];
  h+=`<polygon class="ring" points="${cs.map(p=>p.x+','+p.y).join(' ')}"/>`;
@@ -978,7 +989,7 @@ function inspHTML(){
  const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';
  let h=x+`<div class="ph">${esc(name)}</div>`;
  if(it.type==='prop'||it.type==='set'||it.type==='light')h+=`<label class="fld">Label<input data-f="it.label" value="${esc(it.label||'')}" placeholder="Optional" autocomplete="off"></label>`;
- if(it.kind==='dollytrack')h+=`<label class="fld">Length in feet<input type="number" inputmode="numeric" min="4" step="4" data-f="it.trackft" value="${trackFt(it)}"></label><p class="mut" id="tpcs" style="margin-top:6px">${trackPieces(trackFt(it))} · drag the corner handle to add or remove track</p>`;
+ if(it.kind==='dollytrack')h+=`<label class="fld">Length in feet<input type="number" inputmode="numeric" min="4" step="4" data-f="it.trackft" value="${trackFt(it)}"></label><p class="mut" id="tpcs" style="margin-top:6px">${trackPieces(trackFt(it))} · drag the end handle to add or remove track</p><label class="row">Curve<input type="range" min="-100" max="100" step="1" value="${Math.round(trackK(it)/(Math.PI/it.w)*100)}" data-f="it.trackbend"></label><p class="mut" id="tcrv" style="margin-top:4px">${trackRadiusTxt(it)} · or drag the ◆ in the middle of the track</p>${Math.abs(trackK(it))>1e-7?'<div class="btns"><button data-act="tstraight">Straighten</button></div>':''}`;
  if(it.type==='prop'&&it.kind!=='image'&&it.kind!=='dollytrack')h+=`<div class="lbl">Fill</div>${swatches('it.fill',FILL_COLORS,it.fill||'#CFD8E3',true)}`;
  if(it.type==='light'&&LIB[it.kind].beam)h+=`<label class="row">Beam<input type="range" min="0" max="600" step="10" value="${it.beam===false?0:(it.reach||220)}" data-f="it.reach"></label>`;
  if(it.type==='mask')h+=`<div class="lbl">Color</div>${swatches('it.color',MASK_COLORS,it.color,true)}<label class="row">Opacity<input type="range" min="0.1" max="1" step="0.05" value="${it.op}" data-f="it.op"></label>`;
@@ -1027,7 +1038,8 @@ function setField(f,v){
   case 'it.label':case 'it.fill':case 'it.color':case 'it.text':it[f.slice(3)]=v;break;
   case 'it.op':case 'it.size':case 'it.t':it[f.slice(3)]=+v;break;
   case 'it.reach':if(+v===0)it.beam=false;else{it.beam=true;it.reach=+v;}break;
-  case 'it.trackft':{const f=Math.max(4,Math.round((+v||4)/4)*4);it.w=f*FT;it.h=TRACK_H;const t=$('#tpcs');if(t)t.textContent=trackPieces(f)+' · drag the corner handle to add or remove track';break;}
+  case 'it.trackbend':{it.bend=Math.abs(+v)<2?0:(+v)/100*Math.PI/it.w;const t=$('#tcrv');if(t)t.textContent=trackRadiusTxt(it)+' · or drag the ◆ in the middle of the track';break;}
+  case 'it.trackft':{const f=Math.max(4,Math.round((+v||4)/4)*4);it.w=f*FT;it.h=TRACK_H;if(it.bend)it.bend=clamp(it.bend,-Math.PI/it.w,Math.PI/it.w);const t=$('#tpcs');if(t)t.textContent=trackPieces(f)+' · drag the corner handle to add or remove track';break;}
   case 'bg.op':s.bg.op=+v;break;
  }
  renderCanvas();
@@ -1073,6 +1085,7 @@ function act(a,b){
   case 'sbDel':{const c=findCam(b.dataset.id);if(c){delete c.it.marks[+b.dataset.v].sb;commit();}break;}
   case 'labReset':delete it.lab;commit();break;
   case 'newSetup':setupDialog();break;
+  case 'tstraight':it.bend=0;commit();break;
   case 'ctype':{const c=charById(it.charId);if(c){if(b.dataset.v)c.g=b.dataset.v;else delete c.g;}commit();break;}
   case 'pgset':setPage(it,b.dataset.v);if(!vis(it,s)){sel=null;inspOpen=false;}commit();break;
  }
@@ -1203,7 +1216,7 @@ function objPop(cx,cy){
   else if(it.type==='axis'){title='Axis Line';h=sec('Object',B('del','Delete',IC.x));}
   else{const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';title='Edit '+name;
    h=(MOVABLE(it.type)?sec('Actions',B('walkto','Move To…')):'')
-    +sec('Object',B('del','Delete',IC.x)+(sel.mark?B('delmark','Remove This Position'):'')+B('dup','Duplicate',IC.dup)+(it.type==='prop'||it.type==='set'||it.type==='light'?B('label',it.label?'Edit Label…':'Add Label…',IC.lbl):'')+lk+B('front','Bring to Front')+B('back','Send to Back'))
+    +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+sec('Object',B('del','Delete',IC.x)+(sel.mark?B('delmark','Remove This Position'):'')+B('dup','Duplicate',IC.dup)+(it.type==='prop'||it.type==='set'||it.type==='light'?B('label',it.label?'Edit Label…':'Add Label…',IC.lbl):'')+lk+B('front','Bring to Front')+B('back','Send to Back'))
     +sec('Settings',B('edit','Edit…'))+pages;}
  }
  pop.innerHTML=`<h4>${title}</h4><div class="ls" style="width:290px">${h}</div>`;pop.classList.add('on');popFor=null;placePopAt(cx,cy);
@@ -1228,6 +1241,7 @@ function objAct(o){
   case 'front':act('front',fake());break;
   case 'back':act('back',fake());break;
   case 'edit':openInsp();break;
+  case 'tstraight':it.bend=0;commit();break;
   case 'regallery':for(const o of s.items)if(o.type==='cam')for(const m of o.marks){delete m.sbp;delete m.sba;}freezeFrames(s);commit();break;
   case 'frame':act('sbAdd',fake({id:it.id,v:String(sel.mark||0)}));break;
   case 'bgReplace':act('bgReplace',fake());break;
@@ -1559,7 +1573,10 @@ function dragHandle(h,w,shift){
  const it=itemById(sel.id);if(!it)return;const snap=a=>{const st=shift?15:5;return Math.round(a/st)*st;};
  if(h.startsWith('cp:')){const [,i,j]=h.split(':').map(Number),a=positions(it)[i-1],b=posAt(it,i);if(a&&b&&b.cp&&b.cp[j])b.cp[j]=toTD(a,b,w);return;}
  if(h==='rot'){if(it.marks){const m=it.marks[sel.mark];m.rot=snap(Math.atan2(w.y-m.y,w.x-m.x)*180/Math.PI);}else{const q=sel.mark&&it.mv?it.mv[sel.mark-1]:it;q.rot=snap(Math.atan2(w.y-q.y,w.x-q.x)*180/Math.PI+90);}}
- else if(h==='size'&&it.kind==='dollytrack'){const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y,lx=Math.abs(dx*Math.cos(a)-dy*Math.sin(a))*2;it.w=Math.max(4,Math.round(lx/FT/4)*4)*FT;it.h=TRACK_H;}
+ else if(h==='tbend'&&it.kind==='dollytrack'){const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y,ly=dx*Math.sin(a)+dy*Math.cos(a),L=it.w,hs=-ly,mx=L/Math.PI,t=Math.min(Math.abs(hs),mx);
+  if(t<6/view.k){it.bend=0;return;}let lo=0,hi=Math.PI/L;for(let i=0;i<40;i++){const m=(lo+hi)/2;if(trackSag(L,m)<t)lo=m;else hi=m;}it.bend=Math.sign(hs)*(lo+hi)/2;}
+ else if(h==='size'&&it.kind==='dollytrack'){const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y,lx=Math.abs(dx*Math.cos(a)-dy*Math.sin(a)),k=Math.abs(trackK(it));
+  let L=k<1e-7?lx*2:(lx*k>=1?Math.PI/k:2*Math.asin(lx*k)/k);it.w=Math.max(4,Math.round(L/FT/4)*4)*FT;it.h=TRACK_H;if(it.bend)it.bend=clamp(it.bend,-Math.PI/it.w,Math.PI/it.w);}
  else if(h==='size'){const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y;it.w=Math.max(6,Math.abs(dx*Math.cos(a)-dy*Math.sin(a))*2);it.h=Math.max(6,Math.abs(dx*Math.sin(a)+dy*Math.cos(a))*2);}
  else if(h==='p1'||h==='p2'){const o=h==='p1'?{x:it.x2,y:it.y2}:{x:it.x1,y:it.y1};let p=snapWall(w);if(p===w)p=snapAngle(o,w);if(h==='p1'){it.x1=p.x;it.y1=p.y;}else{it.x2=p.x;it.y2=p.y;}}
 }
