@@ -373,7 +373,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116224835';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116230940';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1031,6 +1031,16 @@ function turnArc(m,dk){
  return `<g class="deco"><path d="M${x0},${y0}A${R},${R} 0 ${lg} ${sw} ${x1-tx*4},${y1-ty*4}" fill="none" stroke="${dk}" stroke-width="2.2"/><path d="M${x1+tx*5},${y1+ty*5}L${x1-tx*5+nx*4.5},${y1-ty*5+ny*4.5}L${x1-tx*5-nx*4.5},${y1-ty*5-ny*4.5}Z" fill="${dk}"/><g transform="rotate(${m.turn})" opacity=".45"><path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g></g>`;
 }
 function behind(rot,dist){const a=rad((rot||0)+180),c=Math.cos(a),s=Math.sin(a);return {x:c*dist,y:s*dist,c,s};}
+/* a label that has been detached keeps its own spot: cameras and props on the item, characters on the mark it belongs to */
+function labHost(it,mk){if(!it)return null;if(it.type==='char'){const a=runOf(it,mk||0)[0];return it.marks[a];}return it;}
+function labIsFree(it,mk){const h=labHost(it,mk);return !!(h&&h.lab);}
+function labDetach(it,mk){const h=labHost(it,mk);if(!h)return;
+ if(it.type==='cam'){const p0=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);h.lab={x:p0.x,y:p0.y};}
+ else if(it.type==='char'){const [a,b]=runOf(it,mk||0),L=behind(effFacing(it,b),44);h.lab={x:L.x,y:L.y};}
+ else h.lab={x:0,y:-(Math.min(it.w||40,it.h||40)/2+18)};}
+function labCan(it){return !!it&&(it.type==='cam'||it.type==='char'||((it.type==='prop'||it.type==='set'||it.type==='light')&&!!it.label&&it.kind!=='dollytrack'));}
+/* right-click on a name that is still attached (it is drawn, not a piece): find whose it is */
+function labelAt(x,y){for(const t of document.querySelectorAll('#items text.nm, #items text.nt')){const r=t.getBoundingClientRect();if(x>=r.left-3&&x<=r.right+3&&y>=r.top-2&&y<=r.bottom+2){const g=t.closest('[data-id]');if(g)return g;}}return null;}
 function capOf(m){return [m.size?(ABBR[m.size]||m.size):'',m.angle||'',m.type||''].filter(Boolean).join(' ');}
 function labLines(m,i,n){const cap=capOf(m),d=P.ui.camDesc?String(m.desc||'').split('\n')[0]:'';let l=[...wrapText(cap,24).slice(0,2),...wrapText(d,26).slice(0,2)];if(n>1||i>0){const vc=verCode(scene(),i);if(l.length)l[0]=`V${vc}: `+l[0];else if(i===0)l=['V'+vc];}return l;}
 function camLabelPos(it,m,nl){if(it.lab)return it.lab;const L=behind(m.rot,46);return {x:L.x,y:L.y+(L.s<-.35?-6-(nl||0)*11:L.s>.35?6:0)};}
@@ -1081,7 +1091,10 @@ function itemsMarkup(sc,pid){
    if(it.type==='light'&&L.beam&&it.beam!==false){const a=rad(it.rot||0),fx=it.x+Math.cos(a)*it.w/2,fy=it.y+Math.sin(a)*it.w/2,h=rad(22),R=it.reach||220;fov+=`<path class="deco L-light" d="M${fx},${fy}L${fx+Math.cos(a-h)*R},${fy+Math.sin(a-h)*R}A${R},${R} 0 0 1 ${fx+Math.cos(a+h)*R},${fy+Math.sin(a+h)*R}Z" fill="#ffd75e" fill-opacity=".16"/>`;}
    const lbl=it.kind==='dollytrack'?`<text class="sl" y="${trackBox(it).y1+12}" text-anchor="middle">${esc((it.label?it.label.toUpperCase()+' · ':'')+trackFt(it)+' FT TRACK'+(Math.abs(trackK(it))>1e-7?' (CURVED)':''))}</text>`:it.label?`<text class="sl" y="${it.type==='light'?it.h/2+14:4}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${esc(it.label.toUpperCase())}</text>`:'';
    const mv=it.mv||[],shp=boxShape(it);
-   sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
+   const fl=it.lab&&it.label&&it.kind!=='dollytrack'?it.lab:null,lt=fl?esc(String(it.label).toUpperCase()):'',lhw=fl?it.label.length*3.6+9:0;
+   if(fl&&Math.hypot(fl.x,fl.y)>Math.max(it.w,it.h)/2+12)sh+=`<line class="deco L-${layerOf(it)}" x1="${it.x}" y1="${it.y}" x2="${it.x+fl.x}" y2="${it.y+fl.y}" stroke="#4b4d53" stroke-opacity=".45" stroke-width="1"/>`;
+   sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${fl?'':lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
+   if(fl)sh+=`<g class="L-${layerOf(it)} L-free${it.locked?' L-lk':''}" data-id="${it.id}" data-lab="1" transform="translate(${it.x+fl.x},${it.y+fl.y})"><rect x="${-lhw}" y="-11" width="${lhw*2}" height="18" fill="transparent"/><text class="sl" y="3" text-anchor="middle">${lt}</text></g>`;
    const ps=positions(it);for(let i=1;i<ps.length;i++){const q=ps[i];paths+=arrow(ps[i-1],q,'#5b6170',true,Math.min(it.w,it.h)/2+4,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     sh+=`<g class="L-${layerOf(it)}" data-id="${it.id}" data-mark="${i}" transform="translate(${q.x},${q.y}) rotate(${q.rot||0})" opacity=".55">${shp}<g transform="rotate(${-(q.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">${i+1}</text></g></g>`;}
   }else if(it.type==='wall'){
@@ -1107,7 +1120,10 @@ function itemsMarkup(sc,pid){
      turns+=turnArc2(r0,q.rot,dk,26+(j-a-1)*7,q.back,`data-id="${it.id}" data-mark="${j}" class="turnhit"`);}
     let nums='';
     const nPos=it.marks.filter(q=>!q.t).length,pb=nPos>1||off>0?posBadge(dk,posNum(sc,it,a)):'';
-    chars+=`<g class="L-char${it.locked?' L-lk':''}" transform="translate(${m.x},${m.y})${c.extra?' scale(.78)':''}"><g data-id="${it.id}" data-mark="${a}"><circle r="26" fill="transparent"/><g transform="rotate(${f})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${ghosts}<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}${pb}</g>${turns}${nums}</g>`;
+    const cf=m.lab||null,chw=cf?Math.max(nm.length*7.4,(m.note||'').length*5.2)/2+7:0;
+    const cl=cf?`<g class="L-free" data-id="${it.id}" data-mark="${a}" data-lab="1" transform="translate(${cf.x},${cf.y})"><rect x="${-chw}" y="-12" width="${chw*2}" height="${m.note?31:18}" fill="transparent"/><text class="nm" y="3" text-anchor="middle">${nm}</text>${m.note?`<text class="nt" y="16" text-anchor="middle">${esc(m.note)}</text>`:''}</g>`:`<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}`;
+    const cld=cf&&Math.hypot(cf.x,cf.y)>46?`<line class="deco" x1="0" y1="0" x2="${cf.x}" y2="${cf.y}" stroke="#24252a" stroke-opacity=".4" stroke-width="1"/>`:'';
+    chars+=`<g class="L-char${it.locked?' L-lk':''}" transform="translate(${m.x},${m.y})${c.extra?' scale(.78)':''}"><g data-id="${it.id}" data-mark="${a}"><circle r="26" fill="transparent"/>${cld}<g transform="rotate(${f})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${ghosts}${cl}${pb}</g>${turns}${nums}</g>`;
     a=b+1;}
   }else if(it.type==='cam'){
    const st=setupIn(sc,it.setupId);const col=st?st.color:'#999',dk=shade(col,-.42),lab=`Cam ${shotCode(sc,it)}`,n=it.marks.length;
@@ -1542,6 +1558,7 @@ function objPop(cx,cy){
   else if(it.type==='char'){const c=charById(it.charId)||{},m=it.marks[sel.mark||0]||it.marks[0],runs=it.marks.filter(q=>!q.t).length;title='Edit Character';
    h=sec('Actions',(c.extra?B('selgroup','Select All '+esc(String(c.name).toUpperCase())):'')+B('walkto','Walk To…')+B('walkfrom','Walk From…')+B('turn','Add Turn')+B('axis','Axis Line To…'))
     +sec('Object',B('del','Delete',IC.x)+(runs>1?B('delmark','Remove This Mark'):'')+B('dup','Duplicate',IC.dup)+B('label',m.note?'Edit Label…':'Add Label…',IC.lbl)+lk)
+    +sec('Label',labIsFree(it,sel.mark||0)?B('labback','Reattach Label'):B('labfree','Detach Label'))
     +sec('Settings',B('edit','Edit Color/Type…')+stB)+colorGrid(['#E5484D','#F76B15','#FFC53D','#30A46C','#12A594','#3E63DD','#8E4EC6','#D6409F'],c.color,'char')+pages;}
   else if(it.type==='cam'&&sel.pan&&((it.marks[sel.mark||0]||{}).pans||[])[sel.pan-1]){const q=it.marks[sel.mark||0].pans[sel.pan-1],ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;title='Edit Turn';
    h=sec('Actions',B('pbefore','Insert Turn Before')+B('pafter','Insert Turn After')+B('pdel','Delete Turn',IC.x))+sec('Settings',ck('tiltup','Tilt Up',q.tilt==='up')+ck('tiltdown','Tilt Down',q.tilt==='down')+(animOn?stB:''));}
@@ -1556,6 +1573,7 @@ function objPop(cx,cy){
    const isBox=BOX(it.type)&&it.type!=='mask',ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;
    h=(it.type==='wall'&&!it.locked?sec('Wall',(wallJoined(s,it)?B('selrun','Move All Joined Walls')+(unhook===it.id?'':B('wunhook','Unhook This Wall')):'')+(unhook===it.id||wallAway(it)?B('wrehook','Rehook This Wall'):'')+B('wcorner','Add a Corner Here')+([1,2].some(e=>wallJoint(s,it,e).length===1)?B('wuncorner','Remove Nearest Corner'):'')+B('wextrude','Extrude')):'')+(MOVABLE(it.type)?sec('Actions',B('walkto','Move To…')+(sel.mark?'':B('movefrom','Move From…'))):'')
     +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')+sec('Object',B('del','Delete',IC.x)+(sel.mark?B('delmark','Remove This Position'):'')+B('dup','Duplicate',IC.dup)+(it.type==='prop'||it.type==='set'||it.type==='light'?B('label',it.label?'Edit Label…':'Add Label…',IC.lbl):'')+lk+B('front','Bring to Front')+B('back','Send to Back'))
+    +(labCan(it)?sec('Label',labIsFree(it)?B('labback','Reattach Label'):B('labfree','Detach Label')):'')
     +sec('Settings',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+ck('scal','Scalable',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Edit…'))
     +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#2B2D33'],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages;}
  }
@@ -1618,6 +1636,8 @@ function objAct(o){
   case 'tiltup':case 'tiltdown':{const q=it.marks[sel.mark||0].pans[sel.pan-1],v=o==='tiltup'?'up':'down';if(q.tilt===v)delete q.tilt;else q.tilt=v;commit();objPop(popAt.x,popAt.y);break;}
   case 'shotUp':case 'shotDown':{const i=s.setups.findIndex(x=>x.id===it.setupId);if(moveSetup(s,it.setupId,o==='shotUp'?i-1:i+2))afterShotMove(s,it);break;}
   case 'label':labelDialog(it);break;
+  case 'labfree':labDetach(it,sel.mark||0);commit();toast('Label detached. Drag it where you want it.');break;
+  case 'labback':{const h=labHost(it,sel.mark||0);if(h)delete h.lab;commit();toast(it.type==='char'?'Label is back with its character.':'Label is back in place.');break;}
   case 'lock':act('lock',fake());break;
   case 'front':act('front',fake());break;
   case 'back':act('back',fake());break;
@@ -3155,7 +3175,7 @@ function shotPop(cx,cy){
   else if(a==='frame'){closePop();act('sbAdd',{dataset:{id:it.id,v:String(vi)}});}
   else if(a==='camdesc'){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();back();}
   else if(a==='labreset'){delete it.lab;closePop();commit();toast('Label is back with its camera.');}
-  else if(a==='labfree'){const p0=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,n).length);it.lab={x:p0.x,y:p0.y};closePop();commit();toast('Label detached. Drag it where you want it.');}
+  else if(a==='labfree'){labDetach(it,0);closePop();commit();toast('Label detached. Drag it where you want it.');}
   else if(a==='addver'){closePop();startTool({t:'move',id:it.id});}
   else if(a==='delver'){closePop();act('delMark',{dataset:{}});}
   else if(a==='del'){closePop();deleteSel(true);}
@@ -3178,7 +3198,7 @@ function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;co
 
 /* ---------- opening the menu: right-click / two-finger tap, or Shift ---------- */
 let firstDown=null,shiftSolo=false;
-function menuFor(el,x,y){if(tool||offCanvas())return;if(!el||!el.dataset||!el.dataset.id){closePop();return;}
+function menuFor(el,x,y){if(tool||offCanvas())return;if(!el||!el.dataset||!el.dataset.id)el=labelAt(x,y);if(!el||!el.dataset||!el.dataset.id){closePop();return;}
  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0;
  if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;renderUI();
  if(el.dataset.lab&&itemById(id).type==='cam'){renderShotSel();shotPop(x,y);return;}objPop(x,y);}
@@ -3296,8 +3316,8 @@ svg.addEventListener('pointerdown',e=>{
  if(tool&&!(hEl&&hEl.dataset.handle.startsWith('cp:'))){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,tool:true,w};return;}
  if(hEl){const hn=hEl.dataset.handle,now=Date.now();if(hn.startsWith('cp:')&&lastTap.id===hn&&now-lastTap.t<380){const [,i,j]=hn.split(':').map(Number),it=itemById(sel.id),b=it&&posAt(it,i);if(b&&b.cp){b.cp.splice(j,1);commit({insp:false});}lastTap={id:null,t:0};return;}lastTap={id:hn,t:now};gesture={type:'handle',h:hn,sx:e.clientX,sy:e.clientY,moved:false};if(hn==='p1'||hn==='p2'){const hw=sel&&itemById(sel.id);if(hw&&hw.type==='wall'&&unhook===hw.id)gesture.detach=true;else if(hw&&hw.type==='wall'&&wallJoint(scene(),hw,hn==='p1'?1:2).length)armHold(gesture);}return;}
  const el=e.target.closest('[data-id]');
+ if(e.shiftKey&&!msel&&!lassoArmed){const le=el&&el.dataset.lab?el:(!el?labelAt(e.clientX,e.clientY):null);if(le){pointers.delete(e.pointerId);gesture=null;menuFor(le,e.clientX,e.clientY);return;}}
  if(lassoArmed||(e.shiftKey&&!el)){gesture={type:'lasso',pts:[w],moved:false};return;}
- if(el&&el.dataset.lab&&e.shiftKey&&!msel){pointers.delete(e.pointerId);gesture=null;menuFor(el,e.clientX,e.clientY);return;}
  if(msel&&el&&msel.has(el.dataset.id)){gesture={type:'mdrag',last:w,sx:e.clientX,sy:e.clientY,moved:false};return;}
  if(msel&&el&&e.shiftKey&&el.dataset.id!=='__bg'){msel.has(el.dataset.id)?msel.delete(el.dataset.id):msel.add(el.dataset.id);if(!msel.size)msel=null;renderUI();gesture=null;return;}
  if(el&&e.shiftKey&&sel&&sel.id!==el.dataset.id&&sel.id!=='__bg'&&el.dataset.id!=='__bg'){msel=new Set([sel.id,el.dataset.id]);sel=null;inspOpen=false;renderInsp();renderUI();gesture=null;return;}
@@ -3312,7 +3332,7 @@ svg.addEventListener('pointerdown',e=>{
   if(sel&&sel.id===id)sel.badge=el.dataset.badge!=null;
   if(locked){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl};return;}
   if(!locked&&el.dataset.badge!=null){gesture={type:'badge',id,mk,bj:+el.dataset.badge,moved:false,sx:e.clientX,sy:e.clientY,dbl};return;}
-  if(!locked&&el.dataset.lab&&!(itemById(id)||{}).lab){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl,labHint:true};return;}
+  if(!locked&&el.dataset.lab&&(itemById(id)||{}).type==='cam'&&!(itemById(id)||{}).lab){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl,labHint:true};return;}
   if(!locked){gesture={type:el.dataset.lab?'label':el.dataset.frame?'frame':'drag',id,mk,last:w,moved:false,sx:e.clientX,sy:e.clientY,dbl};const sc0=scene(),it0=itemById(id);if(el.dataset.frame||(it0&&it0.type==='cam'))freezeFrames(sc0);if(it0&&it0.type==='wall'&&unhook===it0.id)gesture.detach=true;else if(it0&&it0.type==='wall'&&wallJoined(sc0,it0))armHold(gesture);return;}
  }
  gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:!el};
@@ -3330,7 +3350,7 @@ svg.addEventListener('pointermove',e=>{
  if(g.type==='drag'||g.type==='label'||g.type==='frame'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<(g.hold?9:4))return;if(!g.moved){g.moved=true;g.hold=false;dragging=true;$('#ctx').classList.remove('on');}
   const dx=w.x-g.last.x,dy=w.y-g.last.y;
   if(g.id==='__bg'){const b=scene().bg;b.x+=dx;b.y+=dy;}
-  else{const it=itemById(g.id);if(it){if(g.type==='label'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else if(g.type==='frame'){const m=it.marks[g.mk],c=framePt(it,g.mk,m,null);m.sba={x:c.x+dx,y:c.y+dy};}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
+  else{const it=itemById(g.id);if(it){if(g.type==='label'){if(it.type==='cam'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else{const h=labHost(it,g.mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;if(h&&h.lab)h.lab={x:h.lab.x+dx/k,y:h.lab.y+dy/k};}}else if(g.type==='frame'){const m=it.marks[g.mk],c=framePt(it,g.mk,m,null);m.sba={x:c.x+dx,y:c.y+dy};}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
   g.last=w;renderCanvas();return;}
  if(g.type==='track'){if(Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<5)return;const it=itemById(g.id),a=positions(it)[g.i-1],b=posAt(it,g.i);b.cp=b.cp||[];b.cp.push(toTD(a,b,g.w0));gesture={type:'handle',h:`cp:${g.i}:${b.cp.length-1}`,moved:true};dragging=true;$('#ctx').classList.remove('on');dragHandle(gesture.h,w);renderCanvas();return;}
  if(g.type==='badge'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<4)return;g.moved=true;dragging=true;const it=itemById(g.id),w=toWorld(e.clientX,e.clientY);if(it){const c0=it.type==='char'?it.marks[runOf(it,g.mk)[0]]:it.marks[g.mk],ang=Math.round(Math.atan2(w.y-c0.y,w.x-c0.x)*180/Math.PI/5)*5;if(it.type==='char')it.marks[g.mk].rot=ang;else if(g.bj&&it.marks[g.mk].pans)it.marks[g.mk].pans[g.bj-1].rot=ang;else it.marks[g.mk].rot=ang;}renderCanvas();return;}
