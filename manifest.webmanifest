@@ -1,6 +1,6 @@
 {
- "name": "Blocking Board",
- "short_name": "Blocking",
+ "name": "ShotMap",
+ "short_name": "ShotMap",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
