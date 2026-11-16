@@ -221,8 +221,8 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
    <button id="bAdd" aria-label="Add new"><svg viewBox="0 0 24 24" style="stroke-width:2.6"><path d="M12 4v16M4 12h16"/></svg><span class="lbt">Add</span></button>
    <button id="bPages" aria-label="Pages"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></svg><span class="lbt" id="pgLbl">Pages</span></button>
    <button id="bUndo" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
-   <button id="bLasso" title="Select several things (or Shift-drag)"><svg viewBox="0 0 24 24"><path d="M5 9c0-3 3.5-5 7.5-5S20 6 20 9s-3.5 5-7.5 5c-1.2 0-2.3-.2-3.3-.5" stroke-dasharray="3 2.5"/><path d="M8 13.5c-1.8.8-2.5 2-2 3.3.6 1.5 2.6 1.6 3.2.2.4-1-.4-2.2-1.2-3.5zM6.5 19.5L5 22"/></svg><span class="lbt">Select</span></button>
    <button id="bRedo" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+   <button id="bLasso" title="Select several things (or Shift-drag)"><svg viewBox="0 0 24 24"><path d="M5 9c0-3 3.5-5 7.5-5S20 6 20 9s-3.5 5-7.5 5c-1.2 0-2.3-.2-3.3-.5" stroke-dasharray="3 2.5"/><path d="M8 13.5c-1.8.8-2.5 2-2 3.3.6 1.5 2.6 1.6 3.2.2.4-1-.4-2.2-1.2-3.5zM6.5 19.5L5 22"/></svg><span class="lbt">Select</span></button>
    <span class="sep"></span>
    <button id="bFr" title="Show storyboard frames"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg><span class="lbt">Frames</span></button>
    <button id="bFit" title="Fit to screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
@@ -246,7 +246,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_VERSION='20261116042743';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_VERSION='20261116043047';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -515,6 +515,7 @@ function migrateScene(s){
  for(const it of s.items)if('pg' in it){it.pgs=it.pg?[it.pg]:null;delete it.pg;}
  if(!s.pageId||(s.pageId!=='all'&&!s.pages.some(p=>p.id===s.pageId)))s.pageId=s.pages[0].id;
  for(const it of s.items){const ps=it.marks||it.mv?positions(it):[];for(let i=1;i<ps.length;i++){const b=ps[i];if(b.c){const a=ps[i-1];b.cp=[toTD(a,b,{x:(a.x+b.x)/2+b.c.x/2,y:(a.y+b.y)/2+b.c.y/2})];delete b.c;}}}
+ for(const it of s.items)if(it.kind==='dollytrack'){it.h=TRACK_H;it.w=Math.max(4,Math.round(it.w/FT/4)*4)*FT;}
  for(const it of s.items)if(it.type==='cam')for(const m of it.marks)if(m.sbp){m.sba={x:m.x+m.sbp.x,y:m.y+m.sbp.y};delete m.sbp;}
  for(const it of s.items)if(it.type==='cam'&&it.desc!=null){if(!it.marks[0].type)it.marks[0].type=it.desc;delete it.desc;}
 }
@@ -795,7 +796,19 @@ function capOf(m){return [m.size?(ABBR[m.size]||m.size):'',m.angle||'',m.type||'
 function labLines(m,i,n){const cap=capOf(m),d=String(m.desc||'').split('\n')[0];let l=[...wrapText(cap,24).slice(0,2),...wrapText(d,26).slice(0,2)];if(n>1||i>0){if(l.length)l[0]=`V${i+1}: `+l[0];else if(i===0)l=['V1'];}return l;}
 function camLabelPos(it,m,nl){if(it.lab)return it.lab;const L=behind(m.rot,46);return {x:L.x,y:L.y+(L.s<-.35?-6-(nl||0)*11:L.s>.35?6:0)};}
 function framePos(m,vi){if(m.sbp)return m.sbp;const L=behind(m.rot,160),k=(vi||0)%2?-1:1,o=Math.ceil((vi||0)/2)*185*k;return {x:L.x-L.s*o,y:L.y+L.c*o};}
+const FT=18.29,TRACK_H=46;
+const trackFt=it=>Math.max(4,Math.round(it.w/FT/4)*4);
+function trackPieces(ft){const n8=Math.floor(ft/8),n4=(ft%8)/4;return [n8?`${n8} × 8 ft`:'',n4?`${n4} × 4 ft`:''].filter(Boolean).join(' + ');}
+function trackShape(it){
+ const L=it.w,x0=-L/2,ry=18.5;let h=`<rect x="${x0}" y="${-TRACK_H/2}" width="${L}" height="${TRACK_H}" fill="transparent"/>`;
+ for(let x=x0+FT;x<x0+L-FT*0.5;x+=FT*2)h+=`<rect x="${x-2.5}" y="-23" width="5" height="46" rx="1" fill="#9aa3ad" stroke="#5b6170" stroke-width="0.8"/>`;
+ h+=`<line x1="${x0}" y1="${-ry}" x2="${x0+L}" y2="${-ry}" stroke="#26282d" stroke-width="3.2"/><line x1="${x0}" y1="${ry}" x2="${x0+L}" y2="${ry}" stroke="#26282d" stroke-width="3.2"/>`;
+ for(let x=x0+FT*4;x<x0+L-1;x+=FT*4)h+=`<rect x="${x-1.2}" y="${-ry-3}" width="2.4" height="6" fill="#fff"/><rect x="${x-1.2}" y="${ry-3}" width="2.4" height="6" fill="#fff"/>`;
+ h+=`<rect x="${x0-3}" y="-24" width="4" height="48" fill="#26282d"/><rect x="${x0+L-1}" y="-24" width="4" height="48" fill="#26282d"/>`;
+ return h;
+}
 function boxShape(it){
+ if(it.kind==='dollytrack')return trackShape(it);
  const L=LIB[it.kind]||LIB.sqtable;let s=L.s;
  if(it.kind==='image'&&it.img&&images[it.img])s=`<image href="${images[it.img]}" width="100" height="100" preserveAspectRatio="none"/><rect class="pl" width="100" height="100"/>`;
  else if(it.type==='mask')s=`<rect width="100" height="100" fill="${it.color||'#fff'}" fill-opacity="${it.op==null?1:it.op}"/>`;
@@ -808,7 +821,7 @@ function itemsMarkup(sc,pid){
   if(BOX(it.type)){
    const L=LIB[it.kind]||{};
    if(it.type==='light'&&L.beam&&it.beam!==false){const a=rad(it.rot||0),fx=it.x+Math.cos(a)*it.w/2,fy=it.y+Math.sin(a)*it.w/2,h=rad(22),R=it.reach||220;fov+=`<path class="deco" d="M${fx},${fy}L${fx+Math.cos(a-h)*R},${fy+Math.sin(a-h)*R}A${R},${R} 0 0 1 ${fx+Math.cos(a+h)*R},${fy+Math.sin(a+h)*R}Z" fill="#ffd75e" fill-opacity=".16"/>`;}
-   const lbl=it.label?`<text class="sl" y="${it.type==='light'?it.h/2+14:4}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${esc(it.label.toUpperCase())}</text>`:'';
+   const lbl=it.kind==='dollytrack'?`<text class="sl" y="${TRACK_H/2+14}" text-anchor="middle">${esc((it.label?it.label.toUpperCase()+' · ':'')+trackFt(it)+' FT TRACK')}</text>`:it.label?`<text class="sl" y="${it.type==='light'?it.h/2+14:4}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${esc(it.label.toUpperCase())}</text>`:'';
    const mv=it.mv||[],shp=boxShape(it);
    sh+=`<g data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
    const ps=positions(it);for(let i=1;i<ps.length;i++){const q=ps[i];paths+=arrow(ps[i-1],q,'#5b6170',true,Math.min(it.w,it.h)/2+4,!it.hard,`data-id="${it.id}" data-track="${i}"`);
@@ -965,7 +978,8 @@ function inspHTML(){
  const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';
  let h=x+`<div class="ph">${esc(name)}</div>`;
  if(it.type==='prop'||it.type==='set'||it.type==='light')h+=`<label class="fld">Label<input data-f="it.label" value="${esc(it.label||'')}" placeholder="Optional" autocomplete="off"></label>`;
- if(it.type==='prop'&&it.kind!=='image')h+=`<div class="lbl">Fill</div>${swatches('it.fill',FILL_COLORS,it.fill||'#CFD8E3',true)}`;
+ if(it.kind==='dollytrack')h+=`<label class="fld">Length in feet<input type="number" inputmode="numeric" min="4" step="4" data-f="it.trackft" value="${trackFt(it)}"></label><p class="mut" id="tpcs" style="margin-top:6px">${trackPieces(trackFt(it))} · drag the corner handle to add or remove track</p>`;
+ if(it.type==='prop'&&it.kind!=='image'&&it.kind!=='dollytrack')h+=`<div class="lbl">Fill</div>${swatches('it.fill',FILL_COLORS,it.fill||'#CFD8E3',true)}`;
  if(it.type==='light'&&LIB[it.kind].beam)h+=`<label class="row">Beam<input type="range" min="0" max="600" step="10" value="${it.beam===false?0:(it.reach||220)}" data-f="it.reach"></label>`;
  if(it.type==='mask')h+=`<div class="lbl">Color</div>${swatches('it.color',MASK_COLORS,it.color,true)}<label class="row">Opacity<input type="range" min="0.1" max="1" step="0.05" value="${it.op}" data-f="it.op"></label>`;
  if(it.type==='text')h+=`<label class="fld">Text<input data-f="it.text" value="${esc(it.text)}" autocomplete="off"></label><label class="row">Size<input type="range" min="8" max="96" step="1" value="${it.size||16}" data-f="it.size"></label><div class="lbl">Color</div>${swatches('it.color',TEXT_COLORS,it.color||'#2B2B2B',true)}`;
@@ -1013,6 +1027,7 @@ function setField(f,v){
   case 'it.label':case 'it.fill':case 'it.color':case 'it.text':it[f.slice(3)]=v;break;
   case 'it.op':case 'it.size':case 'it.t':it[f.slice(3)]=+v;break;
   case 'it.reach':if(+v===0)it.beam=false;else{it.beam=true;it.reach=+v;}break;
+  case 'it.trackft':{const f=Math.max(4,Math.round((+v||4)/4)*4);it.w=f*FT;it.h=TRACK_H;const t=$('#tpcs');if(t)t.textContent=trackPieces(f)+' · drag the corner handle to add or remove track';break;}
   case 'bg.op':s.bg.op=+v;break;
  }
  renderCanvas();
@@ -1099,7 +1114,7 @@ function addBox(kind){
  let o;
  if(type==='text')o={type:'text',x:c.x,y:c.y,text:'NOTE',size:18,color:'#2B2B2B',rot:0};
  else if(type==='mask')o={type:'mask',kind:'mask',x:c.x,y:c.y,w:L.w,h:L.h,rot:0,color:'#FFFFFF',op:1};
- else o={type,kind,x:c.x,y:c.y,w:L.w,h:L.h,rot:0,label:''};
+ else o={type,kind,x:c.x,y:c.y,w:kind==='dollytrack'?16*FT:L.w,h:kind==='dollytrack'?TRACK_H:L.h,rot:0,label:''};
  o.id=uid();o.locked=false;o.pgs=null;scene().items.push(o);sel={id:o.id,mark:null};if(type==='prop'){P.ui.recent=[kind,...(P.ui.recent||[]).filter(x=>x!==kind)].slice(0,8);}closePop();commit();
  if(Math.max(o.w||0,o.h||0)*view.k>($('#wrap').clientWidth*.8))fit();
 }
@@ -1544,6 +1559,7 @@ function dragHandle(h,w,shift){
  const it=itemById(sel.id);if(!it)return;const snap=a=>{const st=shift?15:5;return Math.round(a/st)*st;};
  if(h.startsWith('cp:')){const [,i,j]=h.split(':').map(Number),a=positions(it)[i-1],b=posAt(it,i);if(a&&b&&b.cp&&b.cp[j])b.cp[j]=toTD(a,b,w);return;}
  if(h==='rot'){if(it.marks){const m=it.marks[sel.mark];m.rot=snap(Math.atan2(w.y-m.y,w.x-m.x)*180/Math.PI);}else{const q=sel.mark&&it.mv?it.mv[sel.mark-1]:it;q.rot=snap(Math.atan2(w.y-q.y,w.x-q.x)*180/Math.PI+90);}}
+ else if(h==='size'&&it.kind==='dollytrack'){const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y,lx=Math.abs(dx*Math.cos(a)-dy*Math.sin(a))*2;it.w=Math.max(4,Math.round(lx/FT/4)*4)*FT;it.h=TRACK_H;}
  else if(h==='size'){const a=-rad(it.rot||0),dx=w.x-it.x,dy=w.y-it.y;it.w=Math.max(6,Math.abs(dx*Math.cos(a)-dy*Math.sin(a))*2);it.h=Math.max(6,Math.abs(dx*Math.sin(a)+dy*Math.cos(a))*2);}
  else if(h==='p1'||h==='p2'){const o=h==='p1'?{x:it.x2,y:it.y2}:{x:it.x1,y:it.y1};let p=snapWall(w);if(p===w)p=snapAngle(o,w);if(h==='p1'){it.x1=p.x;it.y1=p.y;}else{it.x2=p.x;it.y2=p.y;}}
 }
