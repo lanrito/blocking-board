@@ -98,6 +98,13 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .stepgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px 14px;width:290px;box-sizing:border-box}.stepgrid button{height:40px;border-radius:8px;border:1px solid #3a3b40;background:#2c2d31;color:#fff;font-weight:700;font-size:15px}.stepgrid button.on{background:#2f7cf6;border-color:#2f7cf6}
 #pop .pgonly{margin-left:8px;font-size:11px;font-weight:700;color:#8fb6ff;text-transform:uppercase}
 .imxr .xl{width:110px;height:34px;border:1px solid var(--line);border-radius:8px;padding:0 8px;background:var(--chip);font-size:14px;text-transform:uppercase}.imxr .xn{width:64px;height:34px;border:1px solid var(--line);border-radius:8px;padding:0 8px;background:var(--chip);font-size:15px}.imxr{cursor:default}
+#pop .lays .lrow{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 12px 0 18px;border-bottom:1px solid #34353a}
+#pop .lays .lrow.dis{opacity:.45}#pop .lays .ln{width:118px;flex:none;font-size:15px}#pop .lays input[type=range]{flex:1;min-width:0;accent-color:#3d8bf7}
+#pop .lays .lv{width:28px;text-align:right;font-size:13px;color:#c9cad0;font-variant-numeric:tabular-nums}
+#pop .lays .lk{width:36px;height:36px;border-radius:8px;border:0;background:none;color:#7c7d84;display:flex;align-items:center;justify-content:center;flex:none;padding:0;min-height:0}
+#pop .lays .lk.on{color:#fff;background:#2f7cf6}#pop .lays .lall{justify-content:space-between}
+#pop .lays .lkall{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8px;border:1px solid #45464c;background:#2c2d31;color:#fff;font-size:14px;width:auto;min-height:0}#pop .lays .lkall.on{background:#2f7cf6;border-color:#2f7cf6}
+#pop .hdr{float:right;font-weight:400;opacity:.7}
 .seg{display:flex;background:var(--chip);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
 .seg button{height:30px;padding:0 12px;border:0;border-radius:7px;background:none;font-size:14px;color:var(--mut);white-space:nowrap}
 .seg button.on{background:var(--panel);color:var(--ink);font-weight:650;box-shadow:0 1px 2px rgba(0,0,0,.14)}
@@ -269,7 +276,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
    <svg id="cv" xmlns="http://www.w3.org/2000/svg">
     <defs>
      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ebeae5" stroke-width="1"/></pattern>
-     <style id="svgcss"></style>
+     <style id="svgcss"></style><style id="laycss"></style>
     </defs>
     <g id="world"><rect x="-30000" y="-30000" width="60000" height="60000" fill="url(#grid)"/><g id="bgl"></g><g id="items"></g><g id="ui"></g></g>
    </svg>
@@ -285,6 +292,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
    <button id="bMenu" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
    <button id="bAdd" aria-label="Add new"><svg viewBox="0 0 24 24" style="stroke-width:2.6"><path d="M12 4v16M4 12h16"/></svg><span class="lbt">Add</span></button>
    <button id="bPages" aria-label="Pages"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></svg><span class="lbt" id="pgLbl">Pages</span></button>
+   <button id="bLayers" title="Layers: lock and fade"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5" opacity=".6"/></svg><span class="lbt">Layers</span></button>
    <button id="bUndo" aria-label="Undo"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
    <button id="bRedo" aria-label="Redo"><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
    <button id="bLasso" title="Select several things (or Shift-drag)"><svg viewBox="0 0 24 24"><path d="M5 9c0-3 3.5-5 7.5-5S20 6 20 9s-3.5 5-7.5 5c-1.2 0-2.3-.2-3.3-.5" stroke-dasharray="3 2.5"/><path d="M8 13.5c-1.8.8-2.5 2-2 3.3.6 1.5 2.6 1.6 3.2.2.4-1-.4-2.2-1.2-3.5zM6.5 19.5L5 22"/></svg><span class="lbt">Select</span></button>
@@ -311,7 +319,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116060358';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116061253';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -846,7 +854,7 @@ function arrow(a,b,col,dash,trim,soft,hit){
  let vx=b.x-l.x,vy=b.y-l.y,vl=Math.hypot(vx,vy)||1;vx/=vl;vy/=vl;
  const x2=b.x-vx*(trim+2),y2=b.y-vy*(trim+2),hx=x2-vx*13,hy=y2-vy*13,px=-vy*6.5,py=vx*6.5;
  const d=trackD([{x:a.x+ux*trim,y:a.y+uy*trim},...mids,{x:hx,y:hy}],soft!==false);
- return `<g class="deco"><path d="${d}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"${dash?' stroke-dasharray="7 6"':''}/><path d="M${x2},${y2}L${hx+px},${hy+py}L${hx-px},${hy-py}Z" fill="${col}"/></g>`+(hit?`<path ${hit} d="${d}" fill="none" stroke="transparent" stroke-width="16"/>`:'');
+ return '<g class="L-arrow">'+`<g class="deco"><path d="${d}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"${dash?' stroke-dasharray="7 6"':''}/><path d="M${x2},${y2}L${hx+px},${hy+py}L${hx-px},${hy-py}Z" fill="${col}"/></g>`+(hit?`<path ${hit} d="${d}" fill="none" stroke="transparent" stroke-width="16"/>`:'')+'</g>';
 }
 const MOVABLE=t=>t==='prop'||t==='light';
 function positions(it){return it.marks?it.marks:[{x:it.x,y:it.y,rot:it.rot||0},...(it.mv||[])];}
@@ -934,25 +942,25 @@ function itemsMarkup(sc,pid){
   if(IMF){const a=ACTOR(it.type)||it.type==='axis';if(IMF==='noActors'?a:!a)continue;}
   if(BOX(it.type)){
    const L=LIB[it.kind]||{};
-   if(it.type==='light'&&L.beam&&it.beam!==false){const a=rad(it.rot||0),fx=it.x+Math.cos(a)*it.w/2,fy=it.y+Math.sin(a)*it.w/2,h=rad(22),R=it.reach||220;fov+=`<path class="deco" d="M${fx},${fy}L${fx+Math.cos(a-h)*R},${fy+Math.sin(a-h)*R}A${R},${R} 0 0 1 ${fx+Math.cos(a+h)*R},${fy+Math.sin(a+h)*R}Z" fill="#ffd75e" fill-opacity=".16"/>`;}
+   if(it.type==='light'&&L.beam&&it.beam!==false){const a=rad(it.rot||0),fx=it.x+Math.cos(a)*it.w/2,fy=it.y+Math.sin(a)*it.w/2,h=rad(22),R=it.reach||220;fov+=`<path class="deco L-light" d="M${fx},${fy}L${fx+Math.cos(a-h)*R},${fy+Math.sin(a-h)*R}A${R},${R} 0 0 1 ${fx+Math.cos(a+h)*R},${fy+Math.sin(a+h)*R}Z" fill="#ffd75e" fill-opacity=".16"/>`;}
    const lbl=it.kind==='dollytrack'?`<text class="sl" y="${trackBox(it).y1+12}" text-anchor="middle">${esc((it.label?it.label.toUpperCase()+' · ':'')+trackFt(it)+' FT TRACK'+(Math.abs(trackK(it))>1e-7?' (CURVED)':''))}</text>`:it.label?`<text class="sl" y="${it.type==='light'?it.h/2+14:4}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${esc(it.label.toUpperCase())}</text>`:'';
    const mv=it.mv||[],shp=boxShape(it);
-   sh+=`<g data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
+   sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
    const ps=positions(it);for(let i=1;i<ps.length;i++){const q=ps[i];paths+=arrow(ps[i-1],q,'#5b6170',true,Math.min(it.w,it.h)/2+4,!it.hard,`data-id="${it.id}" data-track="${i}"`);
-    sh+=`<g data-id="${it.id}" data-mark="${i}" transform="translate(${q.x},${q.y}) rotate(${q.rot||0})" opacity=".55">${shp}<g transform="rotate(${-(q.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">${i+1}</text></g></g>`;}
+    sh+=`<g class="L-${layerOf(it)}" data-id="${it.id}" data-mark="${i}" transform="translate(${q.x},${q.y}) rotate(${q.rot||0})" opacity=".55">${shp}<g transform="rotate(${-(q.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">${i+1}</text></g></g>`;}
   }else if(it.type==='wall'){
    const ln=`x1="${it.x1}" y1="${it.y1}" x2="${it.x2}" y2="${it.y2}"`;
    const gp=wallGaps(sc,it,pid||sc.pageId),tw=it.t||8,wg=wallGeo(it),e0=tw/2;
    const vis0=gp.cut?gp.segs.map(([a,b,c,d])=>{const s0=Math.hypot(a-it.x1,b-it.y1)<.5,s1=Math.hypot(c-it.x2,d-it.y2)<.5;if(s0){a-=wg.ux*e0;b-=wg.uy*e0;}if(s1){c+=wg.ux*e0;d+=wg.uy*e0;}return `<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="#4a4c52" stroke-width="${tw}" stroke-linecap="butt"/>`;}).join(''):`<line ${ln} stroke="#4a4c52" stroke-width="${tw}" stroke-linecap="square"/>`;
-   sh+=`<g data-id="${it.id}">${vis0}<line ${ln} stroke="transparent" stroke-width="${Math.max(tw,26)}"/></g>`;
+   sh+=`<g class="L-set${it.locked?' L-lk':''}" data-id="${it.id}">${vis0}<line ${ln} stroke="transparent" stroke-width="${Math.max(tw,26)}"/></g>`;
   }else if(it.type==='axis'){
    const A=sc.items.find(x=>x.id===it.a),B=sc.items.find(x=>x.id===it.b);if(!A||!B)continue;
    const p=A.marks[Math.min(it.am||0,A.marks.length-1)],q=B.marks[Math.min(it.bm||0,B.marks.length-1)],dx=q.x-p.x,dy=q.y-p.y,L=Math.hypot(dx,dy)||1,ex=dx/L*90,ey=dy/L*90,ln=`x1="${p.x-ex}" y1="${p.y-ey}" x2="${q.x+ex}" y2="${q.y+ey}"`;
    let ang=Math.atan2(dy,dx)*180/Math.PI;if(ang>90)ang-=180;if(ang<-90)ang+=180;
-   sh+=`<g data-id="${it.id}"><line ${ln} stroke="#c93a36" stroke-width="2" stroke-dasharray="10 5 2 5" stroke-opacity=".85"/><line ${ln} stroke="transparent" stroke-width="20"/><text class="ax deco" transform="translate(${q.x+ex*.75},${q.y+ey*.75}) rotate(${ang})" y="-6" text-anchor="middle">180°</text></g>`;
+   sh+=`<g class="L-label" data-id="${it.id}"><line ${ln} stroke="#c93a36" stroke-width="2" stroke-dasharray="10 5 2 5" stroke-opacity=".85"/><line ${ln} stroke="transparent" stroke-width="20"/><text class="ax deco" transform="translate(${q.x+ex*.75},${q.y+ey*.75}) rotate(${ang})" y="-6" text-anchor="middle">180°</text></g>`;
   }else if(it.type==='text'){
    const fs=it.size||16,tw=String(it.text).length*fs*.62+12;
-   sh+=`<g data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})"><rect x="${-tw/2}" y="${-fs*.75}" width="${tw}" height="${fs*1.5}" fill="transparent"/><text class="ft" font-size="${fs}" fill="${it.color||'#2B2B2B'}" text-anchor="middle" y="${fs*.35}">${esc(it.text)}</text></g>`;
+   sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})"><rect x="${-tw/2}" y="${-fs*.75}" width="${tw}" height="${fs*1.5}" fill="transparent"/><text class="ft" font-size="${fs}" fill="${it.color||'#2B2B2B'}" text-anchor="middle" y="${fs*.35}">${esc(it.text)}</text></g>`;
   }else if(it.type==='char'){
    const c=charById(it.charId);if(!c)continue;const col=c.color,dk=shade(col,-.5),nm=esc(String(c.name||'?').toUpperCase()+(it.xn?' '+it.xn:'')),n=it.marks.length,off=charOff(sc,it);
    it.marks.forEach((m,i)=>{if(i>0&&!m.t)paths+=arrow(it.marks[i-1],m,col,true,19,!it.hard,`data-id="${it.id}" data-track="${i}"`);});
@@ -967,20 +975,20 @@ function itemsMarkup(sc,pid){
      let base=f+sideSg*90,bs=-1;for(let c0=0;c0<360;c0+=15){const sc0=Math.min(...av.map(v=>ad(c0,v)));if(sc0>bs+1){bs=sc0;base=c0;}}for(let j=a;j<=b;j++){const bo=it.marks[j].bo;let an=rad(base+(j-a-(k-1)/2)*34),bx=Math.cos(an)*46,by=Math.sin(an)*46;if(bo){bx=bo.x;by=bo.y;an=Math.atan2(by,bx);}const v=off+j+1,bl=Math.hypot(bx,by);
       nums+=`${bl>26?`<line class="deco" x1="${Math.cos(an)*16}" y1="${Math.sin(an)*16}" x2="${bx-Math.cos(an)*8}" y2="${by-Math.sin(an)*8}" stroke="${dk}" stroke-width="1.3"/>`:''}<g data-id="${it.id}" data-mark="${j}" data-badge="0" style="cursor:move"><circle cx="${bx}" cy="${by}" r="${v>9?9.5:8.5}" fill="${dk}"/><text class="bd deco" x="${bx}" y="${by+3.2}" text-anchor="middle" style="fill:#fff">${v}</text></g>`;}}
     else if(n>1||off>0)nums=`<circle class="deco" cx="0" cy="0" r="${off+a+1>9?9:7.5}" fill="#fff" stroke="${dk}" stroke-width="1.5"/><text class="bd deco" x="0" y="3.2" text-anchor="middle">${off+a+1}</text>`;
-    chars+=`<g transform="translate(${m.x},${m.y})${c.extra?' scale(.78)':''}"><g data-id="${it.id}" data-mark="${a}"><circle r="26" fill="transparent"/><g transform="rotate(${f})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${ghosts}<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}${b===a?nums:''}</g>${turns}${b>a?nums:''}</g>`;
+    chars+=`<g class="L-char${it.locked?' L-lk':''}" transform="translate(${m.x},${m.y})${c.extra?' scale(.78)':''}"><g data-id="${it.id}" data-mark="${a}"><circle r="26" fill="transparent"/><g transform="rotate(${f})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${ghosts}<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}${b===a?nums:''}</g>${turns}${b>a?nums:''}</g>`;
     a=b+1;}
   }else if(it.type==='cam'){
    const st=setupIn(sc,it.setupId);const col=st?st.color:'#999',dk=shade(col,-.42),lab=`Cam ${shotCode(sc,it)}`,n=it.marks.length;
    it.marks.forEach((m,i)=>{
     if(i>0)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     const a=rad(m.rot||0);
-    if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))}${n>1?' · V'+verCode(sc,i):''}</text></g>`;}
+    if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))}${n>1?' · V'+verCode(sc,i):''}</text></g>`;}
     let lbl='',lead='';const ln=labLines(m,i,n);
     if(i===0){const lp=camLabelPos(it,m,ln.length),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
      if(it.lab&&Math.hypot(lp.x,lp.y)>58)lead=`<line class="deco" x1="0" y1="0" x2="${lp.x}" y2="${lp.y-8}" stroke="#2f5f8f" stroke-opacity=".45" stroke-width="1"/>`;
-     lbl=`<g data-id="${it.id}" data-mark="0" data-lab="1" transform="translate(${lp.x},${lp.y})"><rect x="-62" y="-20" width="124" height="${22+ln.length*11}" fill="transparent"/><rect x="${-pw/2}" y="-17" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2 deco" y="-5.2" text-anchor="middle">${tag}</text>${ln.map((l,j)=>`<text class="sd deco" y="${9+j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
-    else if(ln.length){const L=behind(m.rot,34),oy=L.s<-.35?-ln.length*11:L.s>.35?8:-(ln.length*11)/2+8;lbl=`<g class="deco" transform="translate(${L.x},${L.y+oy})">${ln.map((l,j)=>`<text class="sd" y="${j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
-    cams+=`<g data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="26" fill="transparent"/>${lead}<g transform="rotate(${m.rot||0})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g>${panSVG(it,m,i,col,dk)}${n>1?`<text class="cn deco" x="${Math.cos(a)*-5.5}" y="${Math.sin(a)*-5.5+3.6}" text-anchor="middle">${i+1}</text>`:''}${lbl}</g>`;
+     lbl=`<g class="L-desc" data-id="${it.id}" data-mark="0" data-lab="1" transform="translate(${lp.x},${lp.y})"><rect x="-62" y="-20" width="124" height="${22+ln.length*11}" fill="transparent"/><rect x="${-pw/2}" y="-17" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2 deco" y="-5.2" text-anchor="middle">${tag}</text>${ln.map((l,j)=>`<text class="sd deco" y="${9+j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
+    else if(ln.length){const L=behind(m.rot,34),oy=L.s<-.35?-ln.length*11:L.s>.35?8:-(ln.length*11)/2+8;lbl=`<g class="deco L-desc" transform="translate(${L.x},${L.y+oy})">${ln.map((l,j)=>`<text class="sd" y="${j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
+    cams+=`<g class="L-cam${it.locked?' L-lk':''}" data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="26" fill="transparent"/>${lead}<g transform="rotate(${m.rot||0})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g>${panSVG(it,m,i,col,dk)}${n>1?`<text class="cn deco" x="${Math.cos(a)*-5.5}" y="${Math.sin(a)*-5.5+3.6}" text-anchor="middle">${i+1}</text>`:''}${lbl}</g>`;
    });
   }
  }
@@ -1031,7 +1039,7 @@ function renderBg(){
 }
 function renderUI(){$('#ui').innerHTML=uiMarkup();renderCtx();}
 function renderCanvas(){
- const s=scene();syncPieces(s);renderBg();if(anim.step){anim.base=null;drawAnim();}else $('#items').innerHTML=itemsMarkup(s);renderUI();renderAnimBar();
+ const s=scene();syncPieces(s);renderBg();applyLayers();if(anim.step){anim.base=null;drawAnim();}else $('#items').innerHTML=itemsMarkup(s);renderUI();renderAnimBar();
  $('#empty').style.display=pageItems(s).length||s.bgId?'none':'';
 }
 
@@ -2055,7 +2063,7 @@ function sheetSVG(s,pid){
  let prev=null;
  for(const r of rowsOf(s,pid)){if(y>H-M-46)break;if(prev&&prev!==r.st)sl+=`<line x1="${lx}" x2="${lx+LW}" y1="${y}" y2="${y}" stroke="#9a9a96" stroke-width="2"/>`;prev=r.st;
   sl+=`<rect x="${lx+14}" y="${y+12}" width="22" height="22" rx="4" fill="${r.st.color}"/><text x="${lx+52}" y="${y+31}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${lx+118}" y="${y+31}" class="x-lt">${verCode(s,r.vi)}</text><text x="${lx+170}" y="${y+31}" class="x-lt">${esc(trunc(vlabel(r.m),24))}</text><line x1="${lx}" x2="${lx+LW}" y1="${y+46}" y2="${y+46}" stroke="#e3e3df"/>`;y+=46;}
- return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${SHEET_CSS}</style><rect width="${W}" height="${H}" fill="#fff"/>${hd}<clipPath id="cp"><rect x="${dx0}" y="${dy0}" width="${dW}" height="${dH}"/></clipPath><g clip-path="url(#cp)"><g transform="translate(${tx},${ty}) scale(${k})">${bg}${itemsMarkup(s,pid)}</g></g>${sl}</svg>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${SHEET_CSS}${layerCss(s,true)}</style><rect width="${W}" height="${H}" fill="#fff"/>${hd}<clipPath id="cp"><rect x="${dx0}" y="${dy0}" width="${dW}" height="${dH}"/></clipPath><g clip-path="url(#cp)"><g transform="translate(${tx},${ty}) scale(${k})">${bg}${itemsMarkup(s,pid)}</g></g>${sl}</svg>`;
 }
 function listPagesSVG(s){
  const rows=rowsOf(s),W=1650,H=1275,M=48,per=6,RH=176,TW=W-2*M,out=[],n=Math.ceil(rows.length/per);
@@ -2244,6 +2252,33 @@ function stepSub(){const it=itemById(sel.id);if(!it||!it.marks)return;const i=se
  pop.querySelector('.back').onclick=()=>objPop(popAt.x,popAt.y);
  pop.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{if(b.dataset.n==='auto')delete m.st;else m.st=+b.dataset.n;anim.base=null;commit();renderAnimBar();objPop(popAt.x,popAt.y);});}
 
+/* ---------- layers: lock and opacity ---------- */
+const LAYERS=[['char','Characters'],['arrow','Arrows'],['cam','Cameras'],['sb','Storyboards'],['prop','Props'],['set','Set'],['light','Lighting'],['label','Labels']];
+function layerOf(it){return it.type==='char'?'char':it.type==='cam'?'cam':it.type==='prop'?'prop':it.type==='light'?'light':(it.type==='set'||it.type==='wall'||it.type==='mask')?'set':'label';}
+function lay(s){const L=(s&&s.layers)||{};return {lock:L.lock||{},op:L.op||{},lk:L.lk==null?100:L.lk,desc:L.desc==null?100:L.desc};}
+function layerLocked(it){return !!lay(scene()).lock[layerOf(it)];}
+function layerCss(s,exp){const L=lay(s);let c=`.L-lk{--lk:${L.lk/100}}.L-desc{opacity:${L.desc/100}}`;
+ for(const [k] of LAYERS){const o=(L.op[k]==null?100:L.op[k])/100*(L.lock[k]?L.lk/100:1);c+=`.L-${k}{opacity:calc(${o} * var(--lk,1))}`;if(L.lock[k]&&!exp)c+=`.L-${k},.L-${k} *{pointer-events:none!important}`;}return c;}
+function applyLayers(){const st=$('#laycss');if(st)st.textContent=layerCss(scene());}
+const LOCK_SVG=on=>`<svg viewBox="0 0 24 24" width="20" height="20"><rect x="5" y="11" width="14" height="10" rx="2" fill="${on?'currentColor':'none'}" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 ${on?'8 0v3':'7.5-1.5'}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+function layersPop(){const b=$('#bLayers');if(popFor===b){closePop();return;}openPop('',b);drawLayers();}
+function drawLayers(){const s=scene(),L=lay(s),all=LAYERS.every(([k])=>L.lock[k]),bg=s.bgId&&s.bg?s.bg:null;
+ const row=(key,name,val,lockOn,lockKey,dis)=>`<div class="lrow${dis?' dis':''}"><span class="ln">${name}</span><input type="range" min="1" max="100" step="1" value="${val}" data-op="${key}"${dis?' disabled':''}><b class="lv">${val}</b>${lockKey?`<button class="lk${lockOn?' on':''}" data-lock="${lockKey}" title="${lockOn?'Unlock':'Lock'} ${name}"${dis?' disabled':''}>${LOCK_SVG(lockOn)}</button>`:'<span class="lk"></span>'}</div>`;
+ pop.innerHTML=`<h4>Layers</h4><div class="ls lays" style="width:350px"><div class="lrow lall"><span class="ln"><b>All layers</b></span><button class="lkall${all?' on':''}" data-lockall="1">${LOCK_SVG(all)}<span>${all?'Unlock all':'Lock all'}</span></button></div>
+  <div class="hd">Layers <span class="hdr">opacity · lock</span></div>${LAYERS.map(([k,n])=>row(k,n,L.op[k]==null?100:L.op[k],L.lock[k],k)).join('')}
+  <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
+  <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">A locked layer can’t be selected or moved, so you can work on top of it. Locked Items sets how faded anything locked looks.</div></div>`;
+ const box=pop.querySelector('.lays');
+ box.addEventListener('input',e=>{const r=e.target.closest('[data-op]');if(!r)return;const v=+r.value,k=r.dataset.op;r.nextElementSibling.textContent=v;setLayerVal(s,k,v);if(k==='bg')renderBg();else applyLayers();});
+ box.addEventListener('change',e=>{if(e.target.closest('[data-op]'))commit({insp:false});});
+ box.addEventListener('click',e=>{const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
+  if(a){const on=!all;for(const [k] of LAYERS)s.layers.lock[k]=on;if(s.bg)s.bg.locked=on;}
+  else if(l.dataset.lock==='bg'){if(s.bg)s.bg.locked=!s.bg.locked;}
+  else s.layers.lock[l.dataset.lock]=!s.layers.lock[l.dataset.lock];
+  if(sel&&sel.id!=='__bg'){const it=itemById(sel.id);if(it&&layerLocked(it))sel=null;}if(msel){const keep=mselItems().filter(i=>!layerLocked(i)).map(i=>i.id);msel=keep.length?new Set(keep):null;}
+  commit({insp:false});drawLayers();});}
+function setLayerVal(s,k,v){if(k==='bg'){if(s.bg)s.bg.op=v/100;return;}s.layers=s.layers||{};if(k==='lk'||k==='desc'){s.layers[k]=v;return;}s.layers.op=Object.assign({},s.layers.op||{},{[k]:v});}
+
 /* ---------- keyboard shortcuts ---------- */
 const KEYS=[['Scenes',[['⌘O','Open a scene (folders, search)'],['⌘F','Search all scenes'],['⌘I','Scene info'],['⌘S','Saves happen automatically. This just confirms it'],['⌘P','Download PDF (diagrams + shot list)']]],
  ['Add',[['C','Character'],['A','Camera'],['P','Prop'],['S','Set piece'],['L','Lighting'],['T','Annotation']]],
@@ -2302,7 +2337,7 @@ function moveAll(dx,dy){for(const it of mselItems()){if(it.locked)continue;
  if(it.marks)it.marks.forEach(m=>{m.x+=dx;m.y+=dy;});else if(it.type==='wall'){it.x1+=dx;it.y1+=dy;it.x2+=dx;it.y2+=dy;}
  else if(it.type!=='axis'){it.x+=dx;it.y+=dy;for(const q of (it.mv||[])){q.x+=dx;q.y+=dy;}}}}
 function finishLasso(poly,cx,cy){
- const s=scene(),hits=pageItems(s).filter(it=>it.type!=='axis'&&itemPts(it).some(p=>inPoly(p,poly)));
+ const s=scene(),hits=pageItems(s).filter(it=>it.type!=='axis'&&!layerLocked(it)&&itemPts(it).some(p=>inPoly(p,poly)));
  setLasso(false);
  if(!hits.length){msel=null;renderUI();return;}
  if(hits.length===1){msel=null;sel={id:hits[0].id,mark:hits[0].marks?0:null};renderUI();renderInsp();renderShotSel();objPop(cx,cy);return;}
@@ -2415,7 +2450,7 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 
 /* ---------- toolbar + keys ---------- */
 $('#bMenu').onclick=menu;$('#bAdd').onclick=addMenu;$('#bPages').onclick=pagesMenu;
-$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;$('#bFit').onclick=fit;
+$('#bLayers').onclick=layersPop;$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;$('#bFit').onclick=fit;
 $('#bFr').onclick=()=>{P.ui.frames=!frameOn();saveLocal();renderTop();renderCanvas();if(frameOn()&&!pageItems(scene()).some(i=>i.type==='cam'&&i.marks.some(m=>m.sb)))toast('No storyboard frames yet. Select a camera and tap Frame.');};
 const narrow=()=>matchMedia('(max-width:640px)').matches;
 $('#bSide').onclick=()=>{const a=$('#app');if(narrow())a.classList.toggle('side-open');else{a.classList.toggle('side-off');requestAnimationFrame(()=>{placeCtx();});}};
@@ -2435,7 +2470,7 @@ addEventListener('keydown',e=>{
  if(typing)return;
  if(shortcut(e)){e.preventDefault();return;}
  if(msel&&(e.key==='Delete'||e.key==='Backspace')){e.preventDefault();const s=scene(),ids=new Set(mselItems().filter(i=>!i.locked).map(i=>i.id));s.items=s.items.filter(i=>!ids.has(i.id)&&!(i.type==='axis'&&(ids.has(i.a)||ids.has(i.b))));msel=null;commit();return;}
- if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();const s=scene(),ids=pageItems(s).filter(i=>i.type!=='axis').map(i=>i.id);if(ids.length){sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();}return;}
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();const s=scene(),ids=pageItems(s).filter(i=>i.type!=='axis'&&!layerLocked(i)).map(i=>i.id);if(ids.length){sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();}return;}
  if(e.key==='Escape'){if(lassoArmed){setLasso(false);return;}if(msel){clearMsel();return;}if(tool)endTool();else if(pop.classList.contains('on'))closePop();else if(sel)select(null);return;}
  if(e.key==='Enter'&&tool){endTool();return;}
  if((e.key==='Delete'||e.key==='Backspace')&&sel&&sel.id!=='__bg'){const it=itemById(sel.id);if(it&&!it.locked){e.preventDefault();deleteSel(false);}}
