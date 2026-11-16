@@ -201,6 +201,7 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .btns.end{justify-content:flex-end;margin-top:18px}
 .btns button,.sm{min-height:40px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--chip);font-size:14px}
+.prodcard input:not([type]),.prodcard select{height:38px;border:1px solid var(--line);border-radius:8px;background:var(--chip);padding:0 10px;font-size:15px;color:var(--ink);min-width:0}.prodcard input[type=color]{border-radius:8px;overflow:hidden}
 .danger{color:var(--danger)}
 .pri{background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important}
 .pri.danger{background:var(--danger)!important;border-color:var(--danger)!important}
@@ -323,7 +324,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116141735';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116142422';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -616,7 +617,7 @@ function load(){
  migrate();ensureLive();baseline();
 }
 const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
-function docs(){const d={meta:{characters:P.characters,folders:P.folders,sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes)d['scene-'+s.id]={scene:stripScene(s)};return d;}
+function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes)d['scene-'+s.id]={scene:stripScene(s)};return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
 const markDirty=k=>{if(!sync.dirty.includes(k))sync.dirty.push(k);};
 function detectChanges(){const d=docs(),now=Date.now();
@@ -741,7 +742,7 @@ function applyRemote(snap){
  const pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
  const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);return sc;};
  if(meta&&newer('meta',meta)){
-  P.characters=clone(meta.characters||[]);if(meta.folders)P.folders=clone(meta.folders);
+  P.characters=clone(meta.characters||[]);if(meta.folders)P.folders=clone(meta.folders);if(meta.productions)P.productions=clone(meta.productions);
   const order=meta.sceneOrder||[],byId={},next=[];for(const s of P.scenes)byId[s.id]=s;
   for(const id of order){const k='scene-'+id,b=sd[k];if(b&&b.scene&&(newer(k,b)||!byId[id]))next.push(take(k,b));else if(byId[id])next.push(byId[id]);}
   for(const s of P.scenes)if(!order.includes(s.id)&&sync.dirty.includes('scene-'+s.id))next.push(s);
@@ -1564,7 +1565,7 @@ modalEl.addEventListener('pointerdown',e=>{if(e.target===modalEl)closeModal();})
 function confirmBox(title,msg,ok,fn){modal(`<h3>${esc(title)}</h3><p>${esc(msg)}</p><div class="btns end"><button data-x>Cancel</button><button class="pri danger" id="ok">${esc(ok)}</button></div>`,c=>{c.querySelector('#ok').onclick=()=>{closeModal();fn();};});}
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400);}
 function sceneInfo(s0,after){
- const s=s0||scene(),F=[['number','Scene number','7'],['title','Title','NOBEL PRIZE'],['heading','Scene heading','INT. LOCATION - DAY'],['code','Episode / code',''],['day','Shoot day','Day 2']];
+ const s=s0||scene(),F=[['number','Scene number','7'],['title','Title','NOBEL PRIZE'],['heading','Scene heading','INT. LOCATION - DAY'],['code','Episode / code','Ep. 110'],['day','Shoot day','Shoot Day 8'],['date','Shoot date','April 17, 2026']];
  modal(`<h3>Scene info</h3>${F.map(([k,l,p])=>`<label class="fld">${l}<input data-k="${k}" value="${esc(s[k]||'')}" placeholder="${p}" autocomplete="off"></label>`).join('')}<label class="fld">Synopsis<textarea data-k="synopsis" rows="3">${esc(s.synopsis||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{
   card.querySelector('#ok').onclick=()=>{card.querySelectorAll('[data-k]').forEach(el=>{s[el.dataset.k]=el.value;});closeModal();commit();if(after)after();};
  });
@@ -2083,22 +2084,48 @@ lvEl.addEventListener('input',e=>{const t=e.target;if(!t.dataset.k)return;const 
 lvEl.addEventListener('change',e=>{if(e.target.dataset.k)commit({list:false});});
 
 /* ---------- export / backup ---------- */
+/* ---------- productions: letterhead on every exported page ---------- */
+const PROD_DEF={name:'',note:'',contacts:[],accent:'#2F6FD6',floorT:'Floor Plan',floorS:'Where does everything go?',listT:'Shot List',listS:'What specific camera set-ups capture the vision'};
+function prodById(id){return id?(P.productions||[]).find(p=>p.id===id)||null:null;}
+function folderProd(s){let f=fById(sFolder(s));while(f){if(f.prod&&prodById(f.prod))return f.prod;f=f.parent?fById(f.parent):null;}return null;}
+function topFolder(fid){let f=fById(fid);while(f&&f.parent&&fById(f.parent))f=fById(f.parent);return f;}
+let expProd;
+function prodFor(s){return prodById(expProd!==undefined?expProd:folderProd(s));}
+function fitFs(str,max,min,avail,k){return Math.max(min,Math.min(max,avail/(Math.max(1,str.length)*(k||.64))));}
+function letterhead(s,kind,W){
+ const pr=prodFor(s),o=Object.assign({},PROD_DEF,pr||{}),M=48,acc=o.accent||PROD_DEF.accent,top=M-8;let h='',ly=top,ry=top;
+ if(pr&&pr.logo&&images[pr.logo]&&pr.lw){const r=Math.min(380/pr.lw,96/pr.lh),w=pr.lw*r,hh=pr.lh*r;h+=`<image href="${images[pr.logo]}" xlink:href="${images[pr.logo]}" x="${M}" y="${top}" width="${w}" height="${hh}" preserveAspectRatio="xMinYMin meet"/>`;ly=top+hh;}
+ else if(pr&&pr.name){h+=`<text x="${M}" y="${top+34}" style="font-size:34px;font-weight:800;letter-spacing:.04em;fill:#141414">${esc(pr.name.toUpperCase())}</text>`;ly=top+44;}
+ const meta=[s.code,s.day,s.date].map(x=>String(x||'').trim()).filter(Boolean).join('   ·   ');
+ if(meta){h+=`<text x="${M}" y="${ly+30}" style="font-size:19px;font-weight:700;fill:${acc};letter-spacing:.03em">${esc(meta)}</text>`;ly+=38;}
+ if(o.note){h+=`<text x="${W-M}" y="${ry+20}" text-anchor="end" style="font-size:17px;font-style:italic;font-weight:600;fill:#C0392B">${esc(o.note)}</text>`;ry+=32;}
+ for(const c of o.contacts||[]){if(!c.label&&!c.value)continue;h+=`<text x="${W-M}" y="${ry+20}" text-anchor="end" style="font-size:17px;fill:#2a2a2d">${c.label?`<tspan style="font-size:13px;font-weight:700;fill:#8a8b90;letter-spacing:.1em">${esc(String(c.label).toUpperCase())}</tspan><tspan dx="10">`:'<tspan>'}${esc(c.value||'')}</tspan></text>`;ry+=25;}
+ let y=Math.max(ly,ry)+(Math.max(ly,ry)>top?16:0);
+ h+=`<line x1="${M}" x2="${W-M}" y1="${y}" y2="${y}" stroke="#1c1c1e" stroke-width="2.5"/><line x1="${M}" x2="${W-M}" y1="${y+6}" y2="${y+6}" stroke="${acc}" stroke-width="1.2"/>`;y+=6;
+ const num=s.number?'SC. '+s.number:'',hd=String(s.heading||'').trim().toUpperCase(),tt=String(s.title||'').trim().toUpperCase(),main=hd||tt||'UNTITLED',quote=hd&&tt?`“${tt}”`:'';
+ const avail=W-2*M,one=(num?num+':  ':'')+main+(quote?'  —  '+quote:'');let fs=fitFs(one,30,21,avail);
+ const T1=(n,m,q)=>`${n?`<tspan style="fill:${acc}">${esc(n)}:</tspan><tspan dx="12">`:'<tspan>'}${esc(m)}</tspan>${q?`<tspan dx="10" style="font-style:italic;font-weight:700"> —  ${esc(q)}</tspan>`:''}`;
+ if(one.length*.64*21<=avail||!quote){fs=fitFs(one,30,16,avail);y+=fs+26;h+=`<text x="${W/2}" y="${y}" text-anchor="middle" style="font-size:${fs}px;font-weight:800;fill:#141414;letter-spacing:.01em">${T1(num,main,quote)}</text>`;}
+ else{const a=(num?num+':  ':'')+main,f1=fitFs(a,28,16,avail),f2=fitFs(quote,24,15,avail,.6);y+=f1+26;h+=`<text x="${W/2}" y="${y}" text-anchor="middle" style="font-size:${f1}px;font-weight:800;fill:#141414">${T1(num,main,'')}</text>`;y+=f2+10;h+=`<text x="${W/2}" y="${y}" text-anchor="middle" style="font-size:${f2}px;font-weight:700;font-style:italic;fill:#141414">${esc(quote)}</text>`;}
+ const T=kind==='floor'?o.floorT:o.listT,S=kind==='floor'?o.floorS:o.listS;
+ if(T||S){y+=36;h+=`<text x="${W/2}" y="${y}" text-anchor="middle">${T?`<tspan style="font-size:15px;font-weight:800;letter-spacing:.24em;fill:${acc}">${esc(String(T).toUpperCase())}</tspan>`:''}${T&&S?`<tspan dx="14" style="font-size:17px;fill:#b5b6ba">·</tspan>`:''}${S?`<tspan dx="${T?14:0}" style="font-size:18px;font-style:italic;fill:#5f6065">${esc(S)}</tspan>`:''}</text>`;}
+ y+=18;h+=`<line x1="${M}" x2="${W-M}" y1="${y}" y2="${y}" stroke="#dcdcd7" stroke-width="1"/>`;
+ return {h,y};
+}
+function pageFooter(s,W,H,label){const pr=prodFor(s),M=48;
+ return `<line x1="${M}" x2="${W-M}" y1="${H-42}" y2="${H-42}" stroke="#e2e2de"/><text x="${M}" y="${H-20}" style="font-size:14px;fill:#9a9ba0;letter-spacing:.06em">${esc(pr&&pr.name?pr.name:'')}</text><text x="${W-M}" y="${H-20}" text-anchor="end" style="font-size:14px;fill:#9a9ba0;letter-spacing:.04em">${esc(label)}</text>`;}
+
 function wrapText(t,max){const ws=String(t||'').split(/\s+/).filter(Boolean),out=[];let l='';for(const w of ws){if((l+' '+w).trim().length>max){if(l)out.push(l);l=w;}else l=(l+' '+w).trim();}if(l)out.push(l);return out;}
 function sheetSVG(s,pid,port){
- const W=port?1275:1650,H=port?1650:1275,M=48,LW=port?W-M*2:440,dx0=M,dy0=250,dW=port?W-M*2:W-M*2-LW-32,dH=port?Math.round((H-dy0-M)*.62):H-dy0-M;
+ const W=port?1275:1650,H=port?1650:1275,M=48,LH=letterhead(s,'floor',W),syn=wrapText(s.synopsis,port?100:140).slice(0,2),BOT=H-58;
+ const LW=port?W-M*2:440,dx0=M,dy0=LH.y+(syn.length?syn.length*24+14:0)+22,dW=port?W-M*2:W-M*2-LW-32,dH=port?Math.round((BOT-dy0)*.64):BOT-dy0;
  const bb=bbox(s,pid)||{x:-300,y:-200,w:600,h:400},pad=24,k=Math.min(dW/(bb.w+pad*2),dH/(bb.h+pad*2),3);
  const tx=dx0+dW/2-(bb.x+bb.w/2)*k,ty=dy0+dH/2-(bb.y+bb.h/2)*k;
  let bg='';if(s.bgId&&s.bg&&images[s.bgId]){const b=s.bg;bg=`<image href="${images[s.bgId]}" xlink:href="${images[s.bgId]}" x="${b.x}" y="${b.y}" width="${b.w*b.s}" height="${b.h*b.s}" opacity="${b.op}" preserveAspectRatio="none"/>`;}
- const syn=wrapText(s.synopsis,port?88:118).slice(0,3);
- let hd=`<text x="${M}" y="${M+40}" class="x-t">${esc(((s.number?s.number+'   ':'')+(s.title||'Untitled')).toUpperCase())}</text>`;
- if(s.heading)hd+=`<text x="${M}" y="${M+80}" class="x-h">${esc(s.heading.toUpperCase())}</text>`;
- hd+=syn.map((l,i)=>`<text x="${M}" y="${M+114+i*26}" class="x-s">${esc(l)}</text>`).join('');
- hd+=`<text x="${W-M}" y="${M+40}" class="x-c" text-anchor="end">${esc((s.code||'').toUpperCase())}</text><text x="${W-M}" y="${M+74}" class="x-d" text-anchor="end">${esc(s.day||'')}</text>`;
- if(s.pages.length>1)hd+=`<text x="${W-M}" y="${M+104}" class="x-d" text-anchor="end">${esc(pid==='all'?'All pages':pageName(s,pid))}</text>`;
- hd+=`<line x1="${M}" x2="${W-M}" y1="${dy0-26}" y2="${dy0-26}" stroke="#cfcfcb" stroke-width="2"/>`;
+ let hd=LH.h+syn.map((l,i)=>`<text x="${W/2}" y="${LH.y+26+i*24}" text-anchor="middle" style="font-size:18px;font-style:italic;fill:#5b5c61">${esc(l)}</text>`).join('')+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',(o=>o.floorT)(Object.assign({},PROD_DEF,prodFor(s)||{}))||'Floor plan',s.pages.length>1?(pid==='all'?'All pages':pageName(s,pid)):''].filter(Boolean).join('  ·  '));
  const lx=W-M-LW;let y=port?dy0+dH+28:dy0,sl=`<rect x="${lx}" y="${y}" width="${LW}" height="40" fill="#f1f1ef"/><text x="${lx+52}" y="${y+26}" class="x-lh">SHOT</text><text x="${lx+118}" y="${y+26}" class="x-lh">VER</text><text x="${lx+170}" y="${y+26}" class="x-lh">SIZE · TYPE</text>${port?`<text x="${lx+520}" y="${y+26}" class="x-lh">DESCRIPTION</text>`:''}`;y+=40;
  let prev=null;
- for(const r of rowsOf(s,pid)){if(y>H-M-46)break;if(prev&&prev!==r.st)sl+=`<line x1="${lx}" x2="${lx+LW}" y1="${y}" y2="${y}" stroke="#9a9a96" stroke-width="2"/>`;prev=r.st;
+ for(const r of rowsOf(s,pid)){if(y>BOT-46)break;if(prev&&prev!==r.st)sl+=`<line x1="${lx}" x2="${lx+LW}" y1="${y}" y2="${y}" stroke="#9a9a96" stroke-width="2"/>`;prev=r.st;
   sl+=`<rect x="${lx+14}" y="${y+12}" width="22" height="22" rx="4" fill="${r.st.color}"/><text x="${lx+52}" y="${y+31}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${lx+118}" y="${y+31}" class="x-lt">${verCode(s,r.vi)}</text><text x="${lx+170}" y="${y+31}" class="x-lt">${esc(trunc(vlabel(r.m),port?30:24))}</text>${port?`<text x="${lx+520}" y="${y+31}" class="x-lt">${esc(trunc(r.m.desc||'',58))}</text>`:''}<line x1="${lx}" x2="${lx+LW}" y1="${y+46}" y2="${y+46}" stroke="#e3e3df"/>`;y+=46;}
  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${SHEET_CSS}${layerCss(s,true)}</style><rect width="${W}" height="${H}" fill="#fff"/>${hd}<clipPath id="cp"><rect x="${dx0}" y="${dy0}" width="${dW}" height="${dH}"/></clipPath><g clip-path="url(#cp)"><g transform="translate(${tx},${ty}) scale(${k})">${bg}${itemsMarkup(s,pid)}</g></g>${sl}</svg>`;
 }
@@ -2111,10 +2138,10 @@ function listPagesSVG(s,o){
  const cell=(n,str,lines)=>wrapText(str,fit(cols[C(n)][2])).slice(0,lines);
  const prep=rows.map(r=>{const t={size:cell('SHOT SIZE',r.m.size||'',3),type:cell('SHOT TYPE',r.m.type||'',3),angle:cell('SHOT ANGLE',r.m.angle||'',3),move:cell('MOVEMENT',r.m.move||'',3),desc:cell('DESCRIPTION',r.m.desc||'',8)};
   const n=Math.max(1,...Object.values(t).map(a=>a.length));return {r,t,h:Math.max(sb?IH+24:58,22+n*24+14)};});
- const top0=M+56+42,pages=[];let cur=[],y=top0;for(const q of prep){if(cur.length&&y+q.h>H-M){pages.push(cur);cur=[];y=top0;}cur.push(q);y+=q.h;}if(cur.length)pages.push(cur);
+ const LH=letterhead(s,'list',W),top0=LH.y+22+42,BOT=H-58,pages=[];let cur=[],y=top0;for(const q of prep){if(cur.length&&y+q.h>BOT){pages.push(cur);cur=[];y=top0;}cur.push(q);y+=q.h;}if(cur.length)pages.push(cur);
  const txt=(n,y,arr)=>arr.map((l,j)=>`<text x="${M+cols[C(n)][1]+10}" y="${y+30+j*24}" class="x-lt">${esc(l)}</text>`).join('');
  pages.forEach((pg,p)=>{
-  let y=M,h=`<text x="${M}" y="${y+32}" class="x-c">${esc(((s.number?s.number+'   ':'')+(s.title||'Untitled')).toUpperCase())}</text><text x="${W-M}" y="${y+32}" class="x-d" text-anchor="end">Shot list · ${p+1} of ${pages.length}</text>`;y+=56;
+  const lt=Object.assign({},PROD_DEF,prodFor(s)||{}).listT||'Shot list';let y=LH.y+22,h=LH.h+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',lt+(pages.length>1?` ${p+1} of ${pages.length}`:'')].filter(Boolean).join('  ·  '));
   h+=`<rect x="${M}" y="${y}" width="${TW}" height="42" fill="#2b3445"/>`+cols.map(c=>`<text x="${M+c[1]+10}" y="${y+27}" class="x-th">${c[0]}</text>`).join('');const top=y;y+=42;
   for(const {r,t,h:RH} of pg){
    if(sb){const src=r.m.sb&&images[r.m.sb];h+=src?`<image href="${src}" xlink:href="${src}" x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`:`<rect x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;}
@@ -2149,6 +2176,7 @@ async function exportPDF(o){
  if(!o.dia&&!o.list){toast('Pick diagrams, the shot list, or both.');return;}
  toast('Building PDF…');
  try{const {jsPDF}=await loadJsPDF(),doc=new jsPDF({orientation:o.port?'portrait':'landscape',unit:'pt',format:'letter'});let n=0,used=0;
+  expProd=o.prod===undefined?undefined:(o.prod||null);
   for(let si=0;si<list.length;si++){const sc=list[si];if(folder&&!sc.items.length)continue;
    const keep=P.sceneId;P.sceneId=sc.id;let svgs=[];
    try{if(o.dia)for(const pg of sc.pages)svgs.push(sheetSVG(sc,pg.id,o.port));if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}finally{P.sceneId=keep;}
@@ -2156,31 +2184,78 @@ async function exportPDF(o){
    for(const sv of svgs){const c=await rasterize(sv,W,H,1.4);if(n++)doc.addPage('letter',o.port?'portrait':'landscape');doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,o.port?612:792,o.port?792:612);}
    if(folder&&list.length>2)toast(`Building PDF… scene ${si+1} of ${list.length}`);
   }
-  if(!n){toast(o.dia?'Nothing to export yet.':'No shots to put in the shot list yet.');return;}
+  expProd=undefined;if(!n){toast(o.dia?'Nothing to export yet.':'No shots to put in the shot list yet.');return;}
   const base=folder?(fById(fid).name||'Folder').replace(/[^\w\- ]+/g,'').trim()||'Folder':fname(cur);
   await save(base+(o.dia?'':' shot list')+'.pdf',doc.output('blob'));
- }catch(e){toast('PDF export failed. Try the image instead.');}
+ }catch(e){toast('PDF export failed. Try the image instead.');}finally{expProd=undefined;}
 }
-function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts();if(!fid)o.scope='scene';
+function prodSaved(){commit();detectChanges();saveLocal();schedulePush();}
+function folderPathName(f){const out=[];let x=f;while(x){out.unshift(x.name);x=x.parent?fById(x.parent):null;}return out.join(' › ');}
+async function loadLogo(file){const url=URL.createObjectURL(file);try{const img=await loadImg(url),sc=Math.min(1,900/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.round(img.naturalWidth*sc),h=Math.round(img.naturalHeight*sc),c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+ let d=c.toDataURL('image/png');if(d.length>350000){const r=await shrinkImage(file,900,300000);return r;}return {data:d,w,h};}finally{URL.revokeObjectURL(url);}}
+function productionsDialog(after){const L=P.productions||[];
+ const uses=pr=>P.folders.filter(f=>f.prod===pr.id).length;
+ modal(`<h3>Productions</h3><p class="mut">The logo, note and contact lines at the top of every exported page. Give each production its folders, and their scenes export with it.</p>
+  <div class="rgrp">${L.map(pr=>`<button class="rrow" data-p="${pr.id}">${pr.logo&&images[pr.logo]?`<img src="${images[pr.logo]}" alt="" style="height:30px;max-width:110px;object-fit:contain;margin-right:12px">`:''}<span><b>${esc(pr.name||'Untitled production')}</b><small>${uses(pr)?uses(pr)+' folder'+(uses(pr)>1?'s':''):'No folders yet'}</small></span><span style="flex:none;color:var(--mut)">Edit ›</span></button>`).join('')||'<div class="rrow"><span class="mut">No productions yet.</span></div>'}</div>
+  <div class="btns end"><button id="pNew">New production</button><button class="pri" data-x>Done</button></div>`,card=>{
+  card.querySelector('#pNew').onclick=()=>prodEdit(null,()=>productionsDialog(after));
+  card.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b)prodEdit(prodById(b.dataset.p),()=>productionsDialog(after));});
+  const x=card.querySelector('[data-x]');if(x&&after)x.addEventListener('click',()=>setTimeout(after,0));
+ },'numcard');}
+function prodEdit(pr0,back){const isNew=!pr0,pr=Object.assign({id:uid()},PROD_DEF,{contacts:[{label:'Director',value:''},{label:'Phone',value:''},{label:'Email',value:''}]},pr0?JSON.parse(JSON.stringify(pr0)):{});
+ if(isNew&&!pr0)pr.note='';
+ const fl=P.folders.slice().sort((a,b)=>natCmp(folderPathName(a),folderPathName(b)));
+ const crow=(c,i)=>`<div class="pc" data-i="${i}" style="display:flex;gap:6px;margin-top:6px"><input data-c="label" value="${esc(c.label||'')}" placeholder="Label" style="width:34%"><input data-c="value" value="${esc(c.value||'')}" placeholder="What it says" style="flex:1"><button class="sm" data-rm="${i}" title="Remove line" style="flex:none;width:38px;padding:0">✕</button></div>`;
+ const logoBox=()=>pr.logo&&images[pr.logo]?`<img src="${images[pr.logo]}" alt="Logo" style="max-height:56px;max-width:220px;object-fit:contain;background:#fff;border-radius:6px;padding:4px">`:'<span class="mut">No logo yet. The production name is used instead.</span>';
+ modal(`<h3>${isNew?'New production':'Edit production'}</h3>
+  <label class="fld">Production name<input id="pnName" value="${esc(pr.name||'')}" placeholder="POWER: ORIGINS"></label>
+  <div class="lbl">Logo</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span id="pnLogo">${logoBox()}</span><button class="sm" id="pnPick">Choose logo…</button><button class="sm" id="pnNoLogo"${pr.logo?'':' hidden'}>Remove</button><input type="file" id="pnFile" accept="image/*" hidden></div>
+  <label class="fld">Note line (top right, in red)<input id="pnNote" value="${esc(pr.note||'')}" placeholder="*The following blocking and shot list is subject to last minute inspiration!*"></label>
+  <div class="lbl">Contact lines (top right)</div><div id="pnC">${(pr.contacts||[]).map(crow).join('')}</div><button class="sm" id="pnAdd" style="margin-top:8px">Add a line</button>
+  <div class="lbl">Accent color</div><input type="color" id="pnAcc" value="${esc(pr.accent||PROD_DEF.accent)}" style="width:64px;height:34px;padding:0;border:0;background:none">
+  <div class="lbl">Page titles</div><div style="display:flex;gap:6px"><input id="pnFT" value="${esc(pr.floorT||'')}" placeholder="Floor Plan" style="width:38%"><input id="pnFS" value="${esc(pr.floorS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnLT" value="${esc(pr.listT||'')}" placeholder="Shot List" style="width:38%"><input id="pnLS" value="${esc(pr.listS||'')}" placeholder="Subtitle" style="flex:1"></div>
+  <div class="lbl">Folders that use it</div>${fl.length?`<div class="rgrp" style="max-height:180px;overflow:auto">${fl.map(f=>{const other=f.prod&&f.prod!==pr.id&&prodById(f.prod);return `<label class="rrow"><span><b>${esc(folderPathName(f))}</b>${other?`<small>Now uses ${esc(other.name||'another production')}</small>`:''}</span><input type="checkbox" data-f="${f.id}"${f.prod===pr.id?' checked':''}></label>`;}).join('')}</div>`:'<p class="mut">Make folders in Open scene… and you can give them a production here.</p>'}
+  <div class="btns end">${isNew?'':'<button class="danger" id="pnDel" style="margin-right:auto">Delete</button>'}<button id="pnCancel">Cancel</button><button class="pri" id="pnOk">Save</button></div>`,card=>{card.classList.add('prodcard');
+  const q=x=>card.querySelector(x);
+  const readC=()=>{pr.contacts=[...card.querySelectorAll('.pc')].map(r=>({label:r.querySelector('[data-c=label]').value.trim(),value:r.querySelector('[data-c=value]').value.trim()}));};
+  q('#pnAdd').onclick=()=>{readC();pr.contacts.push({label:'',value:''});q('#pnC').innerHTML=pr.contacts.map(crow).join('');q('#pnC').lastChild.querySelector('input').focus();};
+  q('#pnC').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;readC();pr.contacts.splice(+b.dataset.rm,1);q('#pnC').innerHTML=pr.contacts.map(crow).join('');});
+  q('#pnPick').onclick=()=>q('#pnFile').click();
+  q('#pnFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const r=await loadLogo(f);pr.logo=addImage(r.data);pr.lw=r.w;pr.lh=r.h;q('#pnLogo').innerHTML=logoBox();q('#pnNoLogo').hidden=false;}catch(err){toast('That image couldn’t be used.');}};
+  q('#pnNoLogo').onclick=()=>{delete pr.logo;delete pr.lw;delete pr.lh;q('#pnLogo').innerHTML=logoBox();q('#pnNoLogo').hidden=true;};
+  q('#pnCancel').onclick=()=>{closeModal();if(back)back();};
+  if(q('#pnDel'))q('#pnDel').onclick=()=>{confirmBox('Delete this production?',`${pr.name||'It'} comes off any folders that use it. Scenes are not affected.`,'Delete',()=>{P.productions=(P.productions||[]).filter(x=>x.id!==pr.id);for(const f of P.folders)if(f.prod===pr.id)delete f.prod;prodSaved();if(back)back();});};
+  q('#pnOk').onclick=()=>{readC();
+   Object.assign(pr,{name:q('#pnName').value.trim(),note:q('#pnNote').value.trim(),accent:q('#pnAcc').value,floorT:q('#pnFT').value.trim(),floorS:q('#pnFS').value.trim(),listT:q('#pnLT').value.trim(),listS:q('#pnLS').value.trim()});
+   pr.contacts=pr.contacts.filter(c=>c.label||c.value);
+   P.productions=P.productions||[];const i=P.productions.findIndex(x=>x.id===pr.id);if(i>=0)P.productions[i]=pr;else P.productions.push(pr);
+   card.querySelectorAll('[data-f]').forEach(cb=>{const f=fById(cb.dataset.f);if(!f)return;if(cb.checked)f.prod=pr.id;else if(f.prod===pr.id)delete f.prod;});
+   closeModal();prodSaved();toast('Production saved.');if(back)back();};
+ },'numcard');}
+function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts();if(!fid)o.scope='scene';const fp=fid?folderProd(s):(o.prod&&prodById(o.prod)?o.prod:null),PL=P.productions||[];
  const nF=fid?folderScenes(fid).length:0;
  const radio=(g,v,l,sub,on,dis)=>`<button class="rrow" data-g="${g}" data-v="${v}"${dis?' disabled style="opacity:.45"':''}><span><b>${l}</b>${sub?`<small>${sub}</small>`:''}</span><i class="rad${on?' on':''}"></i></button>`;
  modal(`<h3>Export PDF</h3><div class="lbl">Export</div><div class="rgrp">${radio('scope','scene','This scene',esc(sceneLabel(s)),o.scope==='scene')}${radio('scope','folder','The whole folder',fid?`${esc(fById(fid).name)} · ${nF} scene${nF===1?'':'s'}`:'This scene isn’t in a folder',o.scope==='folder',!fid)}</div>
   <div class="lbl">Include</div><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Diagrams</label><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot list</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label>
+  <div class="lbl">Letterhead</div><div style="display:flex;gap:8px;align-items:center"><select id="xProd" style="flex:1;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--chip);padding:0 8px;font-size:15px;color:var(--ink)"><option value="">None</option>${PL.map(pr=>`<option value="${pr.id}"${pr.id===fp?' selected':''}>${esc(pr.name||'Untitled production')}</option>`).join('')}</select><button class="sm" id="xProds">${PL.length?'Edit…':'Set up…'}</button></div>${fid?`<p class="mut" style="font-size:12.5px;margin:6px 0 0">Remembered for ${esc(folderPathName(topFolder(fid)))}.</p>`:''}
   <div class="lbl">Page orientation</div><div class="rgrp">${radio('port','0','Landscape','Wide pages',!o.port)}${radio('port','1','Portrait','Traditional, tall pages',o.port)}</div>
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="xOk">Export</button></div>`,card=>{
   const cur={scope:o.scope,port:o.port};
   const sync=()=>{const on=card.querySelector('#xList').checked;card.querySelector('#xSb').disabled=!on;card.querySelector('#xSbRow').style.opacity=on?1:.45;card.querySelector('#xOk').disabled=!on&&!card.querySelector('#xDia').checked;};
   card.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b||b.disabled)return;cur[b.dataset.g]=b.dataset.g==='port'?b.dataset.v==='1':b.dataset.v;card.querySelectorAll(`[data-g="${b.dataset.g}"] .rad`).forEach(x=>x.classList.toggle('on',x.parentNode===b));});
   card.addEventListener('change',sync);sync();
-  card.querySelector('#xOk').onclick=()=>{const v={scope:cur.scope,port:cur.port,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked};P.ui.exp=v;saveLocal();closeModal();exportPDF(v);};
+  card.querySelector('#xProds').onclick=()=>productionsDialog(exportDialog);
+  card.querySelector('#xOk').onclick=()=>{const pv=card.querySelector('#xProd').value||null,v={scope:cur.scope,port:cur.port,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked,prod:pv};P.ui.exp=v;
+   if(fid&&pv!==fp){let f=fById(fid),tgt=null;while(f){if(f.prod){tgt=f;break;}f=f.parent?fById(f.parent):null;}tgt=tgt||topFolder(fid);if(pv)tgt.prod=pv;else delete tgt.prod;prodSaved();}
+   saveLocal();closeModal();exportPDF(v);};
  },'numcard');}
 async function exportPNG(){const s=scene();try{const c=await rasterize(sheetSVG(s,s.pageId),1650,1275,1.5);const blob=await new Promise(r=>c.toBlob(r,'image/png'));await save(fname(s)+(s.pages.length>1?' '+(s.pageId==='all'?'all pages':pageName(s,s.pageId)):'')+'.png',blob);}catch(e){toast('Image export failed.');}}
-async function backup(){const d=new Date().toISOString().slice(0,10);await save(`ShotMap backup ${d}.json`,JSON.stringify({app:'blocking-board',v:2,characters:P.characters,folders:P.folders,scenes:P.scenes.map(stripScene),images}));}
+async function backup(){const d=new Date().toISOString().slice(0,10);await save(`ShotMap backup ${d}.json`,JSON.stringify({app:'blocking-board',v:2,characters:P.characters,folders:P.folders,productions:P.productions||[],scenes:P.scenes.map(stripScene),images}));}
 $('#fJson').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f)return;
  try{const o=JSON.parse(await f.text());if(o.app!=='blocking-board'||!Array.isArray(o.scenes)||!o.scenes.length)throw 0;
   confirmBox('Restore this backup?',`It replaces everything here with ${o.scenes.length} scene${o.scenes.length>1?'s':''} from the file, and syncs that to your other devices.`,'Replace',()=>{
-   P.characters=o.characters||[];P.folders=o.folders||[];P.scenes=o.scenes;migrate();P.sceneId=P.scenes[0].id;ensureLive();
+   P.characters=o.characters||[];P.folders=o.folders||[];if(o.productions)P.productions=o.productions;P.scenes=o.scenes;migrate();P.sceneId=P.scenes[0].id;ensureLive();
    for(const k in (o.images||{})){if(!images[k]){images[k]=o.images[k];sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}}imgDirty=true;sel=null;commit();fit();
   });
  }catch(err){toast('That file isn’t a ShotMap backup.');}
@@ -2189,11 +2264,11 @@ function menu(){
  const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
  openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
   <button data-m="open">Open scene… <span class="kb">⌘O</span></button><button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="png">Download this page as an image</button>
+  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}</div></div>`,b,p=>{
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
-   ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:exportDialog,png:exportPNG,backup,restore:()=>$('#fJson').click(),
+   ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,backup,restore:()=>$('#fJson').click(),
      open:()=>openBrowser(),keys:keysDialog,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
  });
 }
