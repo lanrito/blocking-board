@@ -319,7 +319,7 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116063311';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116064142';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -968,16 +968,15 @@ function itemsMarkup(sc,pid){
    sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})"><rect x="${-tw/2}" y="${-fs*.75}" width="${tw}" height="${fs*1.5}" fill="transparent"/><text class="ft" font-size="${fs}" fill="${it.color||'#2B2B2B'}" text-anchor="middle" y="${fs*.35}">${esc(it.text)}</text></g>`;
   }else if(it.type==='char'){
    const c=charById(it.charId);if(!c)continue;const col=c.color,dk=shade(col,-.5),nm=esc(String(c.name||'?').toUpperCase()+(it.xn?' '+it.xn:'')),n=it.marks.length,off=charOff(sc,it);
-   it.marks.forEach((m,i)=>{if(i>0&&!m.t)paths+=arrow(it.marks[i-1],m,col,true,19,!it.hard,`data-id="${it.id}" data-track="${i}"`);});
+   const pcol=lum(col)>.8?shade(col,-.42):col;it.marks.forEach((m,i)=>{if(i>0&&!m.t)paths+=arrow(it.marks[i-1],m,pcol,true,19,!it.hard,`data-id="${it.id}" data-track="${i}"`);});
    for(let a=0;a<n;){const [,b]=runOf(it,a),m=it.marks[a],f=effFacing(it,b),L=behind(f,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
     let turns='',ghosts='',sideSg=1;
     for(let j=a+1;j<=b;j++){const q=it.marks[j],r0=effFacing(it,j-1);if(q.hid)continue;const d=((q.rot-r0)%360+540)%360-180;sideSg=d>0?-1:1;
      ghosts+=`<g transform="rotate(${q.back?q.rot:r0})" opacity=".32" class="deco"><path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>`;
      turns+=turnArc2(r0,q.rot,dk,26+(j-a-1)*7,q.back,`data-id="${it.id}" data-mark="${j}" class="turnhit"`);}
     let nums='';
-    if(b>a)for(let j=a;j<=b;j++)nums+=numBadge(it.id,j,'',it.marks[j].rot||0,off+j+1,dk,46);
-    else if(n>1||off>0)nums=`<circle class="deco" cx="0" cy="0" r="${off+a+1>9?9:7.5}" fill="#fff" stroke="${dk}" stroke-width="1.5"/><text class="bd deco" x="0" y="3.2" text-anchor="middle">${off+a+1}</text>`;
-    chars+=`<g class="L-char${it.locked?' L-lk':''}" transform="translate(${m.x},${m.y})${c.extra?' scale(.78)':''}"><g data-id="${it.id}" data-mark="${a}"><circle r="26" fill="transparent"/><g transform="rotate(${f})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${ghosts}<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}${b===a?nums:''}</g>${turns}${b>a?nums:''}</g>`;
+    if(b>a||n>1||off>0)for(let j=a;j<=b;j++)nums+=numBadge(it.id,j,'',it.marks[j].rot||0,off+j+1,dk,46);
+    chars+=`<g class="L-char${it.locked?' L-lk':''}" transform="translate(${m.x},${m.y})${c.extra?' scale(.78)':''}"><g data-id="${it.id}" data-mark="${a}"><circle r="26" fill="transparent"/><g transform="rotate(${f})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${ghosts}<text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${nm}</text>${m.note?`<text class="nt deco" x="${L.x}" y="${ly+(L.s<-.35?-13:13)}" text-anchor="${anc}">${esc(m.note)}</text>`:''}</g>${turns}${nums}</g>`;
     a=b+1;}
   }else if(it.type==='cam'){
    const st=setupIn(sc,it.setupId);const col=st?st.color:'#999',dk=shade(col,-.42),lab=`Cam ${shotCode(sc,it)}`,n=it.marks.length;
@@ -1018,7 +1017,7 @@ function uiMarkup(){
  h+=bendHandles(it);
  if(it.marks){const m=it.marks[sel.mark]||it.marks[0];h+=`<circle class="ring" cx="${m.x}" cy="${m.y}" r="27"/>`;
   if(it.locked)h+=lockBadge(m.x+22,m.y-22);
-  else if(it.type==='char'){const [ra,rb]=runOf(it,sel.mark||0);if(ra===rb){const c=charById(it.charId)||{color:'#888'},q=it.marks[ra];h+=`<g transform="translate(${q.x},${q.y})${c.extra?' scale(.78)':''}">${numBadge(it.id,ra,'',q.rot||0,charOff(s,it)+ra+1,shade(c.color,-.5),46)}</g>`;}}
+  else if(it.type==='char'){const [ra,rb]=runOf(it,sel.mark||0);if(ra===rb&&it.marks.length===1&&!charOff(s,it)){const c=charById(it.charId)||{color:'#888'},q=it.marks[ra];h+=`<g transform="translate(${q.x},${q.y})${c.extra?' scale(.78)':''}">${numBadge(it.id,ra,'',q.rot||0,charOff(s,it)+ra+1,shade(c.color,-.5),46)}</g>`;}}
   else if(it.type==='cam'&&!(m.pans&&m.pans.length)){const st=setupIn(s,it.setupId);h+=`<g transform="translate(${m.x},${m.y})">${numBadge(it.id,sel.mark||0,'',m.rot||0,'1',shade(st?st.color:'#999',-.42),52)}</g>`;}
   return h;}
  if(it.type==='axis'){const A=itemById(it.a),B=itemById(it.b);if(A&&B){const p=A.marks[Math.min(it.am||0,A.marks.length-1)],q=B.marks[Math.min(it.bm||0,B.marks.length-1)];h+=`<line class="ring" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"/>`;}return h;}
@@ -2228,8 +2227,9 @@ function animLayer(sc,N,frac){
  const T=frac*stepDur(sc,N);let paths='',bodies='',cams='';
  for(const it of animActors(sc)){const tl=timeline(it,N);if(!tl||tl.idle)continue;const p=poseAt(it,tl,T);
   if(it.type==='char'){const c=charById(it.charId);if(!c)continue;const col=c.color,dk=shade(col,-.5),L=behind(p.r,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
-   for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],col,true,19,!it.hard,'class="deco"');
-   bodies+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})${c.extra?' scale(.78)':''}" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g><text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${esc(String(c.name||'?').toUpperCase()+(it.xn?' '+it.xn:''))}</text></g>`;}
+   for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],lum(col)>.8?shade(col,-.42):col,true,19,!it.hard,'class="deco"');
+   const offA=charOff(sc,it),showN=it.marks.length>1||offA>0;
+   bodies+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})${c.extra?' scale(.78)':''}" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g><text class="nm deco" x="${L.x}" y="${ly}" text-anchor="${anc}">${esc(String(c.name||'?').toUpperCase()+(it.xn?' '+it.xn:''))}</text>${showN?numBadge(it.id,tl.cur,'',p.r,offA+tl.cur+1,dk,46):''}</g>`;}
   else{const st=setupIn(sc,it.setupId),col=st?st.color:'#999',dk=shade(col,-.42),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
    for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],col,false,20,!it.hard,'class="deco"');
    cams+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g><g class="deco" transform="translate(0,${-34})"><rect x="${-pw/2}" y="-9" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2" y="2.8" text-anchor="middle">${tag}</text></g></g>`;}}
