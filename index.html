@@ -79,6 +79,7 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .imck{width:24px;height:24px;border-radius:6px;border:1.5px solid #b8bcc4;background:var(--panel);font-size:14px;line-height:1;padding:0;flex:none;color:#fff}.imr:not(.off) .imck{background:var(--accent);border-color:var(--accent)}
 .imn{flex:1;min-width:0}.imn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}.imn small{color:var(--mut);font-size:12px}
 .imsx{flex:none}.imsx button{min-height:32px;padding:0 10px;font-size:13px}.imq{width:38px;font-style:normal;font-size:11px;color:#b7791f;font-weight:700;flex:none}
+.rvc{display:inline-flex;align-items:center;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-left:8px;padding:2px 7px 2px 6px;border-radius:9px;background:color-mix(in srgb,var(--rc) 22%,#fff);color:#1c1c1e;border-left:4px solid var(--rc);white-space:nowrap;vertical-align:1px}.brr.omit .brt b{text-decoration:line-through;text-decoration-color:#9a9a96}.brr.omit .brt,.brr.omit .bri{opacity:.6}.card [hidden]{display:none!important}.immode{margin:4px 0 12px}.imrs{margin-top:10px}.imrsum{margin:4px 0 8px;font-size:14px}.imrl{max-height:190px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 8px}.imrl:empty{display:none}.imrv{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}.imrv:last-child{border:0}.imrv .rvc{margin:0;flex:none;min-width:74px}.imrv b{min-width:34px}
 .imopt{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px}
 .card.keycard{width:min(560px,100%)}.kt div{display:flex;gap:12px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
 .kt kbd{flex:none;min-width:92px;font:600 12.5px/1.6 ui-monospace,Menlo,monospace;color:var(--ink)}
@@ -216,6 +217,8 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .sb{width:150px;aspect-ratio:16/9;border-radius:6px;border:1.5px dashed #c9c8c2;background:#f6f5f1;display:flex;align-items:center;justify-content:center;color:#6f6f74;font-size:13px;overflow:hidden;padding:0}
 .sb img{width:100%;height:100%;object-fit:cover;display:block}.sb.has{border:0}
 .sbw{position:relative;width:150px}
+.sbm{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.sbt{width:44px;aspect-ratio:16/9;padding:0;border-radius:4px;border:1px solid #d6d5cf;background:#f6f5f1;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#6f6f74;font-size:16px}.sbt img{width:100%;height:100%;object-fit:cover}.sbt.add{border-style:dashed}
+.sbbig{display:block;width:100%;max-height:60vh;object-fit:contain;border-radius:8px;background:#f2f1ec;margin:6px 0 4px}
 .sbx{position:absolute;top:5px;right:5px;width:28px;height:28px;border-radius:14px;border:0;background:rgba(0,0,0,.62);color:#fff;font-size:16px;line-height:28px;padding:0}
 #listView{flex:1;min-height:0;overflow:auto;display:none;-webkit-overflow-scrolling:touch}
 #app.mode-list{grid-template-columns:minmax(0,1fr) 0!important}
@@ -380,7 +383,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117131058';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117144250';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1296,7 +1299,13 @@ function swatches(field,colors,current,custom){
  const cu=hex7(current);
  return `<div class="sw">${colors.map(c=>`<button class="swb${hex7(c)===cu?' on':''}" style="--c:${c}" data-act="color" data-f="${field}" data-v="${c}" aria-label="Color ${c}"></button>`).join('')}${custom?`<label class="swc"><input type="color" data-f="${field}" value="${cu}"><span>Custom</span></label>`:''}</div>`;
 }
-function sbHTML(id,vi,m){const src=m.sb&&images[m.sb];return `<div class="sbw"><button class="sb${src?' has':''}" data-act="sbAdd" data-id="${id}" data-v="${vi}">${src?`<img src="${src}" alt="Storyboard frame">`:'+ Add frame'}</button>${src?`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${vi}" aria-label="Remove frame">×</button>`:''}</div>`;}
+const sbAll=m=>[m.sb,...(m.sbs||[])].filter(x=>x&&images[x]);
+function sbHTML(id,vi,m){const src=m.sb&&images[m.sb],ex=(m.sbs||[]).filter(x=>images[x]);return `<div class="sbw"><button class="sb${src?' has':''}" data-act="sbAdd" data-id="${id}" data-v="${vi}">${src?`<img src="${src}" alt="Storyboard frame">`:'+ Add frame'}</button>${src?`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${vi}" aria-label="Remove frame">×</button>`:''}${src?`<div class="sbm">${ex.map((x,k)=>`<button class="sbt" data-act="sbOpt" data-id="${id}" data-v="${vi}" data-k="${k}" title="Frame ${k+2}"><img src="${images[x]}" alt="Frame ${k+2}"></button>`).join('')}<button class="sbt add" data-act="sbMore" data-id="${id}" data-v="${vi}" title="Add another frame">+</button></div>`:''}</div>`;}
+function sbOpt(id,vi,k){const c=findCam(id);if(!c)return;const m=c.it.marks[vi],x=(m.sbs||[])[k];if(!x||!images[x])return;const n=sbAll(m).length;
+ modal(`<h3>Shot ${esc(shotCode(c.s,c.it))} · frame ${k+2} of ${n}</h3><img class="sbbig" src="${images[x]}" alt="Storyboard frame"><div class="btns end"><button id="sbR" class="danger">Remove</button><button id="sbP">Replace…</button><button id="sbM">Make Main Frame</button><button class="pri" data-x>Done</button></div>`,card=>{
+  card.querySelector('#sbR').onclick=()=>{m.sbs.splice(k,1);if(!m.sbs.length)delete m.sbs;closeModal();commit();};
+  card.querySelector('#sbP').onclick=()=>{closeModal();pendingSb={id,vi,k};$('#fSb').click();};
+  card.querySelector('#sbM').onclick=()=>{m.sbs[k]=m.sb;m.sb=x;closeModal();if(frameOn())freezeFrames(c.s);commit();toast('That frame is now the main one. It shows on the floor plan and in the shot list.');};});}
 function pageSelect(it){const s=scene();return `<div class="lbl">Shows on <span style="font-weight:400">· tap a page for only that page; Shift-tap to add more</span></div><div class="pgck"><button data-act="pgset" data-v="all" class="${it.pgs?'':'on'}">All pages</button>${s.pages.map((p,i)=>`<button data-act="pgset" data-v="${p.id}" class="${it.pgs&&it.pgs.includes(p.id)?'on':''}">${i+1} · ${esc(p.name)}</button>`).join('')}</div>`;}
 function inspHTML(){
  const s=scene(),x='<button class="x" data-act="closeInsp" aria-label="Close">×</button>';
@@ -1427,7 +1436,9 @@ function act(a,b){
    if(!vis(c.it,s)){s.pageId=(c.it.pgs&&c.it.pgs[0])||'all';saveLocal();render();fit();}sel={id:c.it.id,mark:vi};
    if(narrow())$('#app').classList.remove('side-open');renderUI();renderInsp();renderShotSel();break;}
   case 'sbAdd':pendingSb={id:b.dataset.id,vi:+b.dataset.v};$('#fSb').click();break;
-  case 'sbDel':{const c=findCam(b.dataset.id);if(c){delete c.it.marks[+b.dataset.v].sb;commit();}break;}
+  case 'sbDel':{const c=findCam(b.dataset.id);if(c){const m=c.it.marks[+b.dataset.v];const ex=(m.sbs||[]).filter(x=>images[x]);if(ex.length){m.sb=ex.shift();if(ex.length)m.sbs=ex;else delete m.sbs;}else{delete m.sb;delete m.sbs;}commit();}break;}
+  case 'sbMore':pendingSb={id:b.dataset.id,vi:+b.dataset.v,add:true};$('#fSb').click();break;
+  case 'sbOpt':sbOpt(b.dataset.id,+b.dataset.v,+b.dataset.k);break;
   case 'labReset':delete it.lab;commit();break;
   case 'newSetup':setupDialog();break;
   case 'tstraight':it.bend=0;commit();break;
@@ -1779,7 +1790,7 @@ function objPop(cx,cy){
    h=`<div class="hd">Dolly Marks</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this dolly mark" aria-label="Remove this dolly mark"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`
     +sec('Actions',B('trackto','Track To…')+B('trackfrom','Track From…')+B('pan','Add Pan'))
     +sec('Shot List',B('shotdesc','Edit Shot Description…')+B('addver','Add Version…')+(nv>1?B('delmark','Remove This Version'):''))
-    +sec('Storyboard',B('frame',va.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
+    +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
     +(s.setups.length>1?sec('Shot Order',(s.setups[0].id!==it.setupId?B('shotUp','Move Shot Earlier'):'')+(s.setups[s.setups.length-1].id!==it.setupId?B('shotDown','Move Shot Later'):'')):'')
     +sec('Settings',B('edit','Camera Details…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages;}
@@ -1868,6 +1879,7 @@ function objAct(o){
   case 'regallery':for(const o of s.items)if(o.type==='cam')for(const m of o.marks){delete m.sbp;delete m.sba;}freezeFrames(s);commit();break;
   case 'shotdesc':shotPop(popAt.x,popAt.y);break;
   case 'frame':act('sbAdd',fake({id:it.id,v:String(sel.mark||0)}));break;
+  case 'frame2':act('sbMore',fake({id:it.id,v:String(sel.mark||0)}));break;
   case 'bgReplace':act('bgReplace',fake());break;
   case 'bgRemove':act('bgRemove',fake());break;
  }
@@ -1929,11 +1941,26 @@ function trackPop(id,i,cx,cy,w){
   else if(t==='del'){if(it.marks)it.marks.splice(i,1);else it.mv.splice(i-1,1);sel={id:it.id,mark:it.marks?Math.min(i,it.marks.length)-1:null};closePop();commit();}
   else if(t==='soft'){it.hard=!it.hard;commit({insp:false});trackPop(id,i,cx,cy,w);}};
 }
+/* ---------- blocking plans: Plan A / Plan B of a scene's floor plan, cameras, shots and timing ---------- */
+const PLAN_KEYS=['items','setups','pages','pageId','tl','bgId','bg'];
+const planName=s=>s.plan||'Plan A';
+function planTake(s){const o={};for(const k of PLAN_KEYS)if(s[k]!==undefined)o[k]=clone(s[k]);return o;}
+function planPut(s,d){for(const k of PLAN_KEYS){if(d[k]===undefined)delete s[k];else s[k]=clone(d[k]);}try{migrateScene(s);}catch(e){}}
+function planNext(s){const used=new Set([planName(s),...(s.plans||[]).map(p=>p.name)]);for(let i=0;i<26;i++){const n='Plan '+String.fromCharCode(65+i);if(!used.has(n))return n;}return 'Plan '+((s.plans||[]).length+2);}
+function planNew(){const s=scene();stopPlay();anim.step=0;const nm=planNext(s);(s.plans=s.plans||[]).push({id:uid(),name:planName(s),d:planTake(s)});s.plan=nm;sel=null;msel=null;commit();toast(`${nm} is a copy of ${s.plans[s.plans.length-1].name}. Change it freely; switch back from the Pages menu.`);}
+function planGo(id){const s=scene(),i=(s.plans||[]).findIndex(p=>p.id===id);if(i<0)return;stopPlay();anim.step=0;const p=s.plans[i];
+ s.plans.splice(i,1,{id:uid(),name:planName(s),d:planTake(s)});planPut(s,p.d);s.plan=p.name;sel=null;msel=null;commit();fit();}
+function planRename(){const s=scene();modal(`<h3>Rename plan</h3><label class="fld">Name<input id="pln" value="${esc(planName(s))}" autocomplete="off" placeholder="e.g. Plan B: rain"></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{
+ const go=()=>{const v=card.querySelector('#pln').value.trim();if(v)s.plan=v;closeModal();commit();};card.querySelector('#ok').onclick=go;card.querySelector('#pln').addEventListener('keydown',e=>{if(e.key==='Enter')go();});});}
+function planDelete(){const s=scene();if(!(s.plans||[]).length)return;const nm=planName(s);
+ confirmBox(`Delete ${nm}?`,`Its floor plan, cameras, shots and timing are removed. ${s.plans[0].name} opens instead. Your Breakdown and Strategy aren’t affected.`,'Delete plan',()=>{stopPlay();anim.step=0;const p=s.plans.shift();planPut(s,p.d);s.plan=p.name;if(!s.plans.length){delete s.plans;if(s.plan==='Plan A')delete s.plan;}sel=null;msel=null;commit();fit();});}
 function pagesMenu(){
  const b=$('#bPages');if(popFor===b){closePop();return;}const s=scene();
- openPop(`<h4>Pages</h4><div class="ls" style="width:320px"><button data-p="all"><b style="width:26px">A</b>All Pages<span class="rad${s.pageId==='all'?' on':''}"></span></button>${s.pages.map((p,i)=>`<button data-p="${p.id}"><b style="width:26px">${i+1}</b>${esc(p.name)}<span class="rad${s.pageId===p.id?' on':''}"></span></button>`).join('')}<div class="hd">Actions</div><button data-a="new">New Page…</button>${s.pageId!=='all'?'<button data-a="rename">Rename Current Page…</button>':''}${s.pageId!=='all'&&s.pages.length>1?'<button data-a="delete">Delete Current Page…</button>':''}</div>`,b,p=>{
+ openPop(`<h4>Pages</h4><div class="ls" style="width:320px"><button data-p="all"><b style="width:26px">A</b>All Pages<span class="rad${s.pageId==='all'?' on':''}"></span></button>${s.pages.map((p,i)=>`<button data-p="${p.id}"><b style="width:26px">${i+1}</b>${esc(p.name)}<span class="rad${s.pageId===p.id?' on':''}"></span></button>`).join('')}<div class="hd">Actions</div><button data-a="new">New Page…</button>${s.pageId!=='all'?'<button data-a="rename">Rename Current Page…</button>':''}${s.pageId!=='all'&&s.pages.length>1?'<button data-a="delete">Delete Current Page…</button>':''}<div class="hd">Blocking Plans</div>${[{id:'',name:planName(s)},...(s.plans||[])].map(p=>`<button data-pl="${p.id}">${esc(p.name)}<span class="rad${p.id?'':' on'}"></span></button>`).join('')}<button data-a="plnew">New Plan from This One</button>${s.plans&&s.plans.length?'<button data-a="plren">Rename This Plan…</button><button data-a="pldel">Delete This Plan…</button>':''}</div>`,b,p=>{
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('button');if(!x)return;
-   if(x.dataset.p){gotoPage(x.dataset.p);closePop();}
+   if(x.dataset.pl!=null){closePop();if(x.dataset.pl)planGo(x.dataset.pl);}
+   else if(x.dataset.a==='plnew'){closePop();planNew();}else if(x.dataset.a==='plren'){closePop();planRename();}else if(x.dataset.a==='pldel'){closePop();planDelete();}
+   else if(x.dataset.p){gotoPage(x.dataset.p);closePop();}
    else if(x.dataset.a==='new'){closePop();newPageDialog();}
    else if(x.dataset.a==='rename'){closePop();renamePage();}
    else if(x.dataset.a==='delete'){closePop();deletePage();}});
@@ -1955,7 +1982,7 @@ function renamePage(){const s=scene(),p=s.pages.find(x=>x.id===s.pageId);if(!p)r
 function deletePage(){const s=scene(),p=s.pages.find(x=>x.id===s.pageId);if(!p)return;
  confirmBox(`Delete ${p.name}?`,'Everything that shows only on this page is removed, including its cameras. Items on all pages stay.','Delete page',()=>{const i=s.pages.indexOf(p);s.pages.splice(i,1);s.items=s.items.filter(it=>{if(!it.pgs)return true;it.pgs=it.pgs.filter(x=>x!==p.id);return it.pgs.length>0;});s.pageId=s.pages[Math.max(0,i-1)].id;sel=null;commit();});}
 function renderPageBits(){
- const s=scene();$('#pgLbl').textContent=s.pageId==='all'?'All Pages':pageName(s,s.pageId);
+ const s=scene();$('#pgLbl').textContent=(s.pageId==='all'?'All Pages':pageName(s,s.pageId))+(s.plans&&s.plans.length?' · '+planName(s):'');
  $('#pq').innerHTML=(s.pages.length>1?`<button class="pq${s.pageId==='all'?' cur':''}" data-p="all" title="All pages">A</button>`:'')+s.pages.map((p,i)=>`<button class="pq${s.pageId===p.id?' cur':''}" data-p="${p.id}" title="${esc(p.name)}">${i+1}</button>`).join('')+'<button class="pq" data-p="new" title="New page">+</button>';
 }
 $('#pq').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;if(b.dataset.p==='new')newPageDialog();else gotoPage(b.dataset.p);});
@@ -2034,7 +2061,7 @@ function openBrowser(at){
 }
 function rowF(f,sub){const n=countIn(f.id),k=fKids(f.id).length;return `<div class="brr" data-f="${f.id}"><span class="bri">${BIC.fold}</span><span class="brt"><b>${esc(f.name)}</b><small>${sub?esc(sub)+' · ':''}${plural(n,'scene')}${k?' · '+plural(k,'folder'):''}</small></span><button class="brm" data-fm="${f.id}" aria-label="Folder options">•••</button><span class="grip bgrip" title="Drag into a folder">⠿</span><span class="chev">›</span></div>`;}
 function rowS(s,sub,pickable){const cur=s.id===P.sceneId&&!s.trashed,picked=br.pick&&br.pick.has(s.id),n=shotCount(s),meta=sub!=null?sub:[s.heading,n?plural(n,'shot'):''].filter(Boolean).join(' · ');
- return `<div class="brr${cur?' cur':''}${picked?' picked':''}" data-s="${s.id}"><span class="bri">${br.pick&&pickable?'<i class="ck"></i>':BIC.scene}</span><span class="brt"><b>${esc(sceneLabel(s))}${cur?'<em>Open now</em>':''}</b><small>${meta?esc(meta):'&nbsp;'}</small></span><button class="brm" data-sm="${s.id}" aria-label="Scene options">•••</button>${s.trashed?'':'<span class="grip bgrip" title="Drag into a folder">⠿</span>'}</div>`;}
+ return `<div class="brr${cur?' cur':''}${picked?' picked':''}${s.rev&&s.rev.k==='omitted'?' omit':''}" data-s="${s.id}"><span class="bri">${br.pick&&pickable?'<i class="ck"></i>':BIC.scene}</span><span class="brt"><b>${esc(sceneLabel(s))}${cur?'<em>Open now</em>':''}${revChip(s)}</b><small>${meta?esc(meta):'&nbsp;'}</small></span><button class="brm" data-sm="${s.id}" aria-label="Scene options">•••</button>${s.trashed?'':'<span class="grip bgrip" title="Drag into a folder">⠿</span>'}</div>`;}
 /* ---------- templates: reusable sets ---------- */
 /* ---------- built-in templates: real walls, doors and furniture you can move ---------- */
 const FT_V=1,FT_CHARS=[['A','#E5484D'],['B','#3E63DD'],['C','#30A46C'],['D','#F76B15'],['E','#8E4EC6'],['F','#12A594']];
@@ -2236,7 +2263,7 @@ function overviewDialog(fid){const f=fById(fid);if(!f){toast('Put this scene in 
   for(const {s,k} of S){const sf=sFolder(s);if(sf!==sub){sub=sf;if(sf!==fid)h+=`<div class="ovg"><div class="ovsub">${esc(fPath(sf).slice(fPath(fid).length).map(x=>x.name).join(' › '))}</div></div>`;}
    const fp=k.chars||k.cams?`<span class="ovc"><b>${k.chars}</b> ${k.chars===1?'character':'characters'} · <b>${k.cams}</b> ${k.cams===1?'camera':'cameras'}</span>`:k.set?'<span class="ovc">Set only</span>':'<span class="ovc no">Not started</span>';
    const sl=k.shots?`<span class="ovc"><b>${k.shots}</b> ${k.shots===1?'shot':'shots'} · <b>${k.setups}</b> ${k.setups===1?'setup':'setups'}</span>${k.frames?`<span class="ovc">${k.frames} with storyboards</span>`:''}`:'<span class="ovc no">No shots</span>';
-   h+=`<div class="ovg ovr"><button class="ovn" data-os="${s.id}" data-om="nb"><b>${dot(s)}${esc(sceneLabel(s))}</b><small>${esc(s.heading||'')}</small></button><button data-os="${s.id}" data-om="nb">${meter(k.nb,k.nbN,'columns')}</button><button data-os="${s.id}" data-om="st">${meter(k.st,k.stN,'sections')}</button><button data-os="${s.id}" data-om="diagram">${fp}</button><button data-os="${s.id}" data-om="list">${sl}</button><button class="ovq${k.qs.length?'':' no'}" data-os="${s.id}" data-om="q">${k.qs.length||'–'}</button></div>`;}
+   h+=`<div class="ovg ovr"><button class="ovn" data-os="${s.id}" data-om="nb"><b>${dot(s)}${esc(sceneLabel(s))}${revChip(s)}</b><small>${esc(s.heading||'')}</small></button><button data-os="${s.id}" data-om="nb">${meter(k.nb,k.nbN,'columns')}</button><button data-os="${s.id}" data-om="st">${meter(k.st,k.stN,'sections')}</button><button data-os="${s.id}" data-om="diagram">${fp}</button><button data-os="${s.id}" data-om="list">${sl}</button><button class="ovq${k.qs.length?'':' no'}" data-os="${s.id}" data-om="q">${k.qs.length||'–'}</button></div>`;}
   return h;};
  const qsHTML=()=>{const W=S.filter(o=>o.k.qs.length);if(!W.length)return `<div class="ovempty">No questions yet.<br><small>Write them in the Questions column of a scene’s Breakdown. Turn the column on with the Questions column box above the page.</small></div>`;
   return W.map(({s,k})=>`<section class="ovqs"><h4 data-os="${s.id}" data-om="q">${dot(s)}${esc(sceneLabel(s))}<small>${esc(s.heading||'')}</small></h4><ul>${k.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></section>`).join('');};
@@ -2337,7 +2364,7 @@ function brSubHTML(){
  if(u.k==='tact'){const t=P.scenes.find(x=>x.id===u.id);if(!t)return cancel;const cur=scene();
   return `<h3>${esc(t.title)}</h3><p class="mut">Template${t.loc?' · '+esc(t.loc):''}</p><div class="menu">${B('tnew','New scene from this template')}${cur.tpl?'':B('tapply','Add to the open scene ('+esc(sceneLabel(cur))+')…')}${B('tedit','Edit template')}${B('trename','Rename…')}${B('tdelete','Delete template…','danger')}</div>${cancel}`;}
  if(u.k==='fact'){const f=fById(u.id);if(!f)return cancel;const n=countIn(f.id);
-  return `<h3>${esc(f.name)}</h3><p class="mut">${esc(pathTxt(fParent(f))||'Top level')} · ${plural(n,'scene')}</p><div class="menu">${B('fopen','Open')+B('rename','Rename…')+B('sub','New folder inside…')+B('fmove','Move to…')+B('fdel','Delete folder…','danger')}</div>${cancel}`;}
+  return `<h3>${esc(f.name)}</h3><p class="mut">${esc(pathTxt(fParent(f))||'Top level')} · ${plural(n,'scene')}</p><div class="menu">${B('fopen','Open')+B('frev','Update from a revised script…')+(folderScenes(f.id).some(x=>x.rev&&x.rev.k!=='omitted')?B('frevclr','Clear revision marks'):'')+B('rename','Rename…')+B('sub','New folder inside…')+B('fmove','Move to…')+B('fdel','Delete folder…','danger')}</div>${cancel}`;}
  if(u.k==='tname'){const t=P.scenes.find(x=>x.id===u.id);return `<h3>Rename template</h3><label class="fld">Name<input id="brn" value="${esc(t.title)}" autocomplete="off"></label><label class="fld">Location it’s for<input id="brl" value="${esc(t.loc||'')}" autocomplete="off" autocapitalize="characters"></label><div class="btns end">${B('back','Cancel')}${B('save','Save','pri')}</div>`;}
  if(u.k==='name'){const f=u.mode==='rename'?fById(u.id):null,par=u.parent?fById(u.parent):null;
   return `<h3>${f?'Rename folder':'New folder'}</h3>${par?`<p class="mut">Inside ${esc(pathTxt(par.id))}</p>`:''}<label class="fld">Name<input id="brn" value="${esc(f?f.name:'')}" placeholder="e.g. The Rookie, Season 8" autocomplete="off"></label><div class="btns end">${B('back','Cancel')}${B('save',f?'Save':'Create','pri')}</div>`;}
@@ -2376,6 +2403,8 @@ function brSubAct(a,dest){
   if(a==='kill'){br.sub={k:'confirm',what:'kill',id:s.id,prev:u};brRender();return;}}
  if(u.k==='fact'){const f=fById(u.id);if(!f)return;
   if(a==='fopen'){brGo(f.id);return;}
+  if(a==='frev'){br.sub=null;brRender();importScript(f.id);return;}
+  if(a==='frevclr'){let n=0;for(const x of folderScenes(f.id))if(x.rev&&x.rev.k!=='omitted'){delete x.rev;n++;}br.sub=null;commit();brRender();toast(`Cleared the marks on ${plural(n,'scene')}. Omitted scenes stay marked until you delete them.`);return;}
   if(a==='rename'){br.sub={k:'name',mode:'rename',id:f.id,prev:u};brRender();return;}
   if(a==='sub'){br.sub={k:'name',mode:'new',parent:f.id,prev:u};brRender();return;}
   if(a==='fmove'){br.sub={k:'move',folder:f.id,prev:u};brRender();return;}
@@ -2527,7 +2556,24 @@ function analyzeScript(ps){
  chars.sort((a,b)=>a.voOnly-b.voOnly||b.lines-a.lines||b.nScenes-a.nScenes||natCmp(a.name,b.name));
  return chars;
 }
-function importScript(){
+const REV_COLS=[['White','#cfcfca'],['Blue','#5b8def'],['Pink','#f08cbc'],['Yellow','#efcb2c'],['Green','#56b86a'],['Goldenrod','#d9a21b'],['Buff','#dcc18f'],['Salmon','#f4876f'],['Cherry','#d2304f'],['Tan','#bf9a72']];
+const revHex=c=>(REV_COLS.find(x=>x[0]===c)||REV_COLS[1])[1];
+const scNum=n=>String(n||'').toUpperCase().replace(/[\s.]/g,'');
+function scHash(sc){const t=sc.heading+'\n'+sc.paras.map(p=>p.t+':'+String(p.x).replace(/\s+/g,' ').trim()).join('\n');let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(16);}
+/* match a new draft against a folder's scenes: by scene number, then by heading for unnumbered scenes */
+function revPlan(fid,ps){const old=folderScenes(fid).filter(s=>!s.trashed&&!s.tpl),byN={};for(const o of old){const k=scNum(o.number);if(k&&!byN[k])byN[k]=o;}
+ const used=new Set(),rows=[];let blind=0;
+ ps.scenes.forEach((sc,i)=>{const k=scNum(sc.num),h=scHash(sc);let o=k&&byN[k]&&!used.has(byN[k].id)?byN[k]:null;
+  if(!o&&!k){const c=old.filter(x=>!used.has(x.id)&&x.heading===sc.heading);if(c.length===1)o=c[0];}
+  if(!o){rows.push({sc,i,s:null,k:'new',h});return;}used.add(o.id);
+  const back=o.rev&&o.rev.k==='omitted',hd=o.heading!==sc.heading;let k2;
+  if(back)k2='changed';else if(o.src)k2=o.src!==h?'changed':'same';else{k2=hd?'changed':'same';if(!hd)blind++;}
+  rows.push({sc,i,s:o,k:k2,h,hd,back});});
+ const gone=old.filter(o=>!used.has(o.id)&&!(o.rev&&o.rev.k==='omitted'));
+ return {rows,gone,blind,n:{same:rows.filter(r=>r.k==='same').length,changed:rows.filter(r=>r.k==='changed').length,new:rows.filter(r=>r.k==='new').length,gone:gone.length}};}
+function revChip(s){if(!s.rev)return '';const k=s.rev.k==='omitted'?'Omitted':s.rev.k==='new'?'New':'Revised';return `<i class="rvc" style="--rc:${revHex(s.rev.c)}">${esc(s.rev.c)} · ${k}</i>`;}
+function revFolders(){return P.folders.filter(f=>folderScenes(f.id).some(s=>!s.trashed&&!s.tpl));}
+function importScript(into){
  const inp=document.createElement('input');inp.type='file';inp.style.display='none';document.body.appendChild(inp);
  inp.onchange=async()=>{const f=inp.files[0];inp.remove();if(!f)return;toast('Reading the script…');
   try{const buf=await f.arrayBuffer(),head=new TextDecoder().decode(buf.slice(0,2000)),ext=(f.name.split('.').pop()||'').toLowerCase();let ps;
@@ -2537,36 +2583,63 @@ function importScript(){
    else{toast('That file type isn’t supported. Use Final Draft (.fdx), PDF or Fountain.');return;}
    if(!ps.scenes.length){toast('No scene headings (INT./EXT.) found in that file.');return;}
    ps.title=(ps.title&&ps.title.length<60?ps.title:'')||f.name.replace(/\.[^.]+$/,'');
-   importReview(ps,analyzeScript(ps),f.name);
+   importReview(ps,analyzeScript(ps),f.name,into);
   }catch(e){console.warn(e);toast('Couldn’t read that file.');}
  };
  inp.click();
 }
-function importReview(ps,chars,fname){
+function importReview(ps,chars,fname,into){
  const xrows=[];ps.scenes.forEach((sc,si)=>{for(const g of sceneExtras(sc))xrows.push({si,sc,g});});
  const folderOpts=(par,d)=>fKids(par).map(f=>`<option value="${f.id}">${'   '.repeat(d)}${esc(f.name)}</option>`+folderOpts(f.id,d+1)).join('');
  const cur=br&&br.at&&br.at!=='__trash'?br.at:'';
  const row=(c,i)=>`<div class="imr${c.on?'':' off'}" data-i="${i}"><button class="imck" data-act="on" aria-label="Include">${c.on?'✓':''}</button><span class="imn"><b>${esc(c.name)}</b><small>${c.lines?plural(c.lines,'line'):'no lines'} · ${plural(c.nScenes,'scene')}${c.voOnly?' · voice only':''}</small></span><span class="pgck imsx">${[['m','Male'],['f','Female'],['','–']].map(([v,l])=>`<button data-act="g" data-v="${v}" class="${c.g===v?'on':''}">${l}</button>`).join('')}</span>${c.guess&&c.g?'<em class="imq" title="Guessed from the script. Check it.">guess</em>':'<em class="imq"></em>'}</div>`;
+ /* is this a new draft of a folder you already have? */
+ const RF=revFolders(),score=f=>{const p=revPlan(f.id,ps);return p.rows.length?(p.rows.length-p.n.new)/p.rows.length:0;};
+ let revF=into&&fById(into)?into:null;if(!revF){const c=[cur,...RF.map(f=>f.id)].filter(id=>id&&RF.some(f=>f.id===id)).map(id=>({id,v:score(fById(id))})).sort((a,b)=>b.v-a.v)[0];if(c&&c.v>=.6)revF=c.id;}
+ let mode=revF?'rev':'new';if(!revF&&RF.length)revF=RF[0].id;
+ const nextCol=fid=>{const f=fById(fid),h=(f&&f.revs)||[];const i=h.length?REV_COLS.findIndex(x=>x[0]===h[h.length-1].c):0;return REV_COLS[Math.min(REV_COLS.length-1,i+1)][0];};
  modal(`<h3>Import ${esc(ps.title)}</h3><p class="mut">Found ${plural(ps.scenes.length,'scene')} and ${plural(chars.length,'character')} in ${esc(fname)}.</p>
-  <div class="imgrid"><label class="fld">New folder<input id="imN" value="${esc(ps.title)}" autocomplete="off"></label><label class="fld">Inside<select id="imP"><option value="">Top level</option>${folderOpts(null,0)}</select></label></div>
-  <details class="oth"><summary>Scenes (${ps.scenes.length})</summary><div class="imsc">${ps.scenes.map((s,i)=>`<div><b>${esc(s.num||String(i+1))}</b>${esc(s.heading)}<small>${s.present.length?esc(s.present.join(', ')):'No characters found'}</small></div>`).join('')}</div></details>
-  <div class="lbl">Characters <span style="font-weight:400">· set each one’s sex. “guess” means it was read from the script (pronouns, Mr./Mrs., Mom, etc.); please check those.</span></div>
+  ${RF.length?`<div class="pgck immode"><button data-mode="new">New folder</button><button data-mode="rev">Revised draft of a folder</button></div>`:''}
+  <div id="imNew"><div class="imgrid"><label class="fld">New folder<input id="imN" value="${esc(ps.title)}" autocomplete="off"></label><label class="fld">Inside<select id="imP"><option value="">Top level</option>${folderOpts(null,0)}</select></label></div></div>
+  <div id="imRev" hidden><div class="imgrid"><label class="fld">Folder to update<select id="imF">${RF.map(f=>`<option value="${f.id}">${esc(pathTxt(f.id))}</option>`).join('')}</select></label><label class="fld">Revision color<select id="imC">${REV_COLS.map(([c])=>`<option>${c}</option>`).join('')}</select></label></div><div id="imRS" class="imrs"></div></div>
+  <details class="oth" id="imScs"><summary>Scenes (${ps.scenes.length})</summary><div class="imsc">${ps.scenes.map((s,i)=>`<div><b>${esc(s.num||String(i+1))}</b>${esc(s.heading)}<small>${s.present.length?esc(s.present.join(', ')):'No characters found'}</small></div>`).join('')}</div></details>
+  <div class="lbl" id="imChL">Characters <span style="font-weight:400">· set each one’s sex. “guess” means it was read from the script (pronouns, Mr./Mrs., Mom, etc.); please check those.</span></div>
   <div class="imch">${chars.map(row).join('')||'<p class="mut">No character cues found.</p>'}</div>
   ${(()=>{const ts=templates().filter(t=>t.loc);const n=ps.scenes.filter(sc=>ts.some(t=>t.loc===locKey(sc.heading))).length;return n?`<label class="imopt"><input type="checkbox" id="imTp" checked> Add saved set templates to the ${plural(n,'scene')} at matching locations</label>`:'';})()}
-  ${xrows.length?`<div class="lbl">Extras <span style="font-weight:400">· these scenes seem to call for background people. Set how many for each; 0 leaves them out.</span></div><div class="imch">${xrows.map((r,i)=>`<div class="imr imxr"><span class="imn"><b>${esc(r.sc.num||String(r.si+1))} · ${esc(r.sc.heading)}</b><small>${esc(r.g.snip)}</small></span><input class="xl" data-i="${i}" value="${esc(r.g.label)}" aria-label="Group name"><input class="xn" data-i="${i}" type="number" min="0" max="200" value="${r.g.n}" aria-label="How many"></div>`).join('')}</div>`:''}
+  <div id="imX">${xrows.length?`<div class="lbl">Extras <span style="font-weight:400">· these scenes seem to call for background people. Set how many for each; 0 leaves them out.</span></div><div class="imch">${xrows.map((r,i)=>`<div class="imr imxr"><span class="imn"><b>${esc(r.sc.num||String(r.si+1))} · ${esc(r.sc.heading)}</b><small>${esc(r.g.snip)}</small></span><input class="xl" data-i="${i}" value="${esc(r.g.label)}" aria-label="Group name"><input class="xn" data-i="${i}" type="number" min="0" max="200" value="${r.g.n}" aria-label="How many"></div>`).join('')}</div>`:''}</div>
   <label class="imopt"><input type="checkbox" id="imPl" checked> Put each scene’s characters in the scene, ready to block</label>
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="imGo">Import ${plural(ps.scenes.length,'scene')}</button></div>`,card=>{
   const sel=card.querySelector('#imP');sel.value=cur&&fById(cur)?cur:'';
+  const fS=card.querySelector('#imF'),cS=card.querySelector('#imC');if(fS){fS.value=revF;cS.value=nextCol(revF);}
+  const known=()=>{if(mode!=='rev')return new Set();const root=(fPath(fS.value)[0]||{}).id,ids=new Set();for(const x of liveScenes())if(rootOf(x)===root)for(const it of x.items)if(it.type==='char')ids.add(it.charId);
+   return new Set(P.characters.filter(c=>!c.extra&&!c.tpl&&ids.has(c.id)).map(c=>c.name.toUpperCase()));};
+  let plan=null;
+  const show=()=>{const rv=mode==='rev';card.querySelectorAll('.immode button').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));
+   card.querySelector('#imNew').hidden=rv;card.querySelector('#imRev').hidden=!rv;card.querySelector('#imScs').hidden=rv;card.querySelector('#imX').hidden=rv;
+   const K=known();card.querySelectorAll('.imch .imr[data-i]').forEach(r=>{const c=chars[+r.dataset.i];r.hidden=rv&&K.has(c.name.toUpperCase());});
+   if(rv){plan=revPlan(fS.value,ps);const N=plan.n,col=revHex(cS.value),line=(r,k,t)=>`<div class="imrv"><i class="rvc" style="--rc:${col}">${k}</i><b>${esc(r.sc?r.sc.num||String(r.i+1):r.number)}</b>${esc(t)}</div>`;
+    card.querySelector('#imRS').innerHTML=`<p class="imrsum"><b>${N.changed}</b> changed · <b>${N.new}</b> new · <b>${N.gone}</b> omitted · ${N.same} unchanged</p>
+     <div class="imrl">${plan.rows.filter(r=>r.k!=='same').map(r=>line(r,r.k==='new'?'New':r.back?'Back in':'Changed',r.sc.heading+(r.k==='changed'&&r.hd?'  (new heading)':''))).join('')}${plan.gone.map(o=>`<div class="imrv"><i class="rvc" style="--rc:${col}">Omitted</i><b>${esc(o.number)}</b>${esc(o.heading||o.title||'')}</div>`).join('')}</div>
+     ${plan.blind?`<p class="mut" style="font-size:12.5px">${plural(plan.blind,'scene')} came from an older import, so only its heading could be compared this time. From now on the whole scene text is compared.</p>`:''}
+     <p class="mut" style="font-size:12.5px">Your Breakdown, Strategy, floor plans and shots stay with every scene. Omitted scenes are marked, not deleted.</p>`;
+    const k=card.querySelectorAll('.imch .imr[data-i]:not([hidden])').length;
+    card.querySelector('#imGo').textContent=`Update ${fById(fS.value).name}`;card.querySelector('#imChL').innerHTML=`New characters <span style="font-weight:400">· ${k?'only the ones not already in this show. Set each one’s sex.':'none. Everyone in this draft is already in the show.'}</span>`;}
+   else{card.querySelector('#imGo').textContent=`Import ${plural(ps.scenes.length,'scene')}`;card.querySelector('#imChL').innerHTML=chL0;}};
+  const chL0=card.querySelector('#imChL').innerHTML;
+  card.querySelectorAll('.immode button').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;show();});
+  if(fS){fS.onchange=()=>{cS.value=nextCol(fS.value);show();};cS.onchange=show;}
   card.querySelector('.imch').addEventListener('click',e=>{const b=e.target.closest('[data-act]'),r=e.target.closest('[data-i]');if(!r)return;const c=chars[+r.dataset.i];
    if(b&&b.dataset.act==='g'){c.g=b.dataset.v;c.guess=false;}else c.on=!c.on;r.outerHTML=row(c,+r.dataset.i);});
+  show();
   card.querySelector('#imGo').onclick=()=>{
+   if(mode==='rev'){revApply(fS.value,cS.value,revPlan(fS.value,ps),chars,card.querySelector('#imPl').checked,!!(card.querySelector('#imTp')||{}).checked,known());return;}
    const name=card.querySelector('#imN').value.trim()||ps.title,par=sel.value||null,place=card.querySelector('#imPl').checked,useTpl=!!(card.querySelector('#imTp')||{}).checked;
    const fo={id:uid(),name,parent:par};P.folders.push(fo);
    const rootId=par?(fPath(par)[0]||{}).id||par:fo.id,usedC=rootColors(rootId);const ids={};let ci=0;for(const c of chars)if(c.on){ci++;const col=distinctColor(usedC);usedC.push(col);const ch={id:uid(),name:c.name,color:col};if(c.g)ch.g=c.g;P.characters.push(ch);ids[c.name]=ch.id;}
    const xg={},xBy={};card.querySelectorAll('.xn').forEach(inp=>{const i=+inp.dataset.i,n=Math.max(0,Math.min(200,parseInt(inp.value,10)||0)),lab=(card.querySelector(`.xl[data-i="${i}"]`).value.trim()||'BG').toUpperCase();if(!n)return;
     if(!xg[lab]){const col=distinctColor(usedC,EXTRA_COLORS);usedC.push(col);const c={id:uid(),name:lab,color:col,extra:true};P.characters.push(c);xg[lab]=c;}(xBy[xrows[i].si]=xBy[xrows[i].si]||[]).push({c:xg[lab],n});});
    let first=null;
-   ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.folder=fo.id;
+   ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.folder=fo.id;s.src=scHash(sc);
     if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of sc.present.filter(n=>ids[n])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}
      let yy=y+(x>0?150:60);for(const g of (xBy[i]||[])){placeExtras(s,g.c.id,g.n,300,yy,'cluster','mix',pg);yy+=Math.ceil(g.n/Math.ceil(Math.sqrt(g.n*1.4)))*48+70;}}
     if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
@@ -2576,6 +2649,19 @@ function importReview(ps,chars,fname){
   };
  },'imcard');
 }
+function revApply(fid,col,plan,chars,place,useTpl,K){const f=fById(fid);if(!f)return;const d=new Date().toISOString().slice(0,10),root=(fPath(fid)[0]||{}).id||fid,usedC=rootColors(root);
+ const ids={};for(const c of P.characters)if(!c.extra&&!c.tpl&&K.has(c.name.toUpperCase())&&!ids[c.name.toUpperCase()])ids[c.name.toUpperCase()]=c.id;
+ let nc=0;for(const c of chars){if(!c.on||K.has(c.name.toUpperCase()))continue;const cl=distinctColor(usedC);usedC.push(cl);const ch={id:uid(),name:c.name,color:cl};if(c.g)ch.g=c.g;P.characters.push(ch);ids[c.name.toUpperCase()]=ch.id;nc++;}
+ for(const r of plan.rows){
+  if(r.s){r.s.src=r.h;if(r.k==='changed'){r.s.heading=r.sc.heading;if(r.sc.num)r.s.number=r.sc.num;r.s.rev={k:'changed',c:col,d};}continue;}
+  const s=blankScene(r.sc.num||r.i+1);s.heading=r.sc.heading;s.folder=fid;s.src=r.h;s.rev={k:'new',c:col,d};
+  if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of r.sc.present.filter(n=>ids[n.toUpperCase()])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n.toUpperCase()],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}}
+  if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
+  P.scenes.push(s);}
+ for(const o of plan.gone)o.rev={k:'omitted',c:col,d};
+ (f.revs=f.revs||[]).push({c:col,d});
+ commit();closeModal();openBrowser(fid);const N=plan.n;
+ toast(`${f.name} updated to ${col} pages: ${N.changed} changed, ${N.new} new, ${N.gone} omitted${nc?', '+plural(nc,'new character'):''}. Undo takes it back.`);}
 function sel0(){sel=null;msel=null;inspOpen=false;endTool();}
 let brDrag=null,brDragEnd=0,brDragBound=false;
 function bindBrDrag(root){
@@ -2643,7 +2729,9 @@ $('#fProp').addEventListener('change',async e=>{
 let pendingSb=null;
 $('#fSb').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f||!pendingSb)return;const t=pendingSb;pendingSb=null;
- try{const c=findCam(t.id);if(!c)return;const {data}=await shrinkImage(f,720,110000);c.it.marks[t.vi].sb=addImage(data);if(frameOn())freezeFrames(c.s);commit();}
+ try{const c=findCam(t.id);if(!c)return;const {data}=await shrinkImage(f,720,110000),m=c.it.marks[t.vi],id=addImage(data);
+  if(t.add&&m.sb&&images[m.sb])(m.sbs=m.sbs||[]).push(id);else if(t.k!=null&&m.sbs&&m.sbs[t.k]!=null)m.sbs[t.k]=id;else m.sb=id;
+  if(frameOn())freezeFrames(c.s);commit();if(t.add)toast(`Frame ${sbAll(m).length} added. The first frame is the one on the floor plan.`);}
  catch(err){toast('That image could not be read. Try a PNG or JPEG.');}
 });
 
@@ -3186,7 +3274,7 @@ function letterhead(s,kind,W,pageLbl){
  const T1=(n,m,q)=>`${n?`<tspan style="fill:${acc}">${esc(n)}:</tspan><tspan dx="12">`:'<tspan>'}${esc(m)}</tspan>${q?`<tspan dx="10" style="font-style:italic;font-weight:700"> —  ${esc(q)}</tspan>`:''}`;
  if(one.length*.64*21<=avail||!quote){fs=fitFs(one,30,16,avail);y+=fs+26;h+=`<text x="${W/2}" y="${y}" text-anchor="middle" style="font-size:${fs}px;font-weight:800;fill:#141414;letter-spacing:.01em">${T1(num,main,quote)}</text>`;}
  else{const a=(num?num+':  ':'')+main,f1=fitFs(a,28,16,avail),f2=fitFs(quote,24,15,avail,.6);y+=f1+26;h+=`<text x="${W/2}" y="${y}" text-anchor="middle" style="font-size:${f1}px;font-weight:800;fill:#141414">${T1(num,main,'')}</text>`;y+=f2+10;h+=`<text x="${W/2}" y="${y}" text-anchor="middle" style="font-size:${f2}px;font-weight:700;font-style:italic;fill:#141414">${esc(quote)}</text>`;}
- const T=kind==='both'?[o.floorT,o.listT].filter(Boolean).join(' & '):kind==='floor'?o.floorT:kind==='nb'?o.nbT:kind==='st'?o.stT:o.listT,S=pageLbl||(kind==='floor'?o.floorS:kind==='list'?o.listS:kind==='nb'?o.nbS:kind==='st'?o.stS:'');
+ const T=kind==='both'?[o.floorT,o.listT].filter(Boolean).join(' & '):kind==='floor'?o.floorT:kind==='nb'?o.nbT:kind==='st'?o.stT:kind==='board'?'Storyboards':o.listT,S=pageLbl||(kind==='floor'?o.floorS:kind==='list'?o.listS:kind==='nb'?o.nbS:kind==='st'?o.stS:'');
  if(T||S){y+=36;h+=`<text x="${W/2}" y="${y}" text-anchor="middle">${T?`<tspan style="font-size:15px;font-weight:800;letter-spacing:.24em;fill:${acc}">${esc(String(T).toUpperCase())}</tspan>`:''}${T&&S?`<tspan dx="14" style="font-size:17px;fill:#b5b6ba">·</tspan>`:''}${S?`<tspan dx="${T?14:0}" style="font-size:18px;font-style:italic;fill:#5f6065">${esc(S)}</tspan>`:''}</text>`;}
  y+=18;h+=`<line x1="${M}" x2="${W-M}" y1="${y}" y2="${y}" stroke="#dcdcd7" stroke-width="1"/>`;
  return {h,y};
@@ -3234,6 +3322,23 @@ function listPagesSVG(s,o){
  });
  return out;
 }
+/* ---------- storyboard sheet: every frame in a grid, with its shot and description ---------- */
+function boardPagesSVG(s,o){o=o||{};const port=!!o.port,W=port?1275:1650,H=port?1650:1275,M=48,TW=W-2*M,out=[];
+ const panels=[];for(const r of rowsOf(s)){const fr=sbAll(r.m);fr.forEach((id,k)=>panels.push({r,id,k,n:fr.length}));}
+ if(!panels.length)return out;
+ const cols=port?2:3,rows=port?3:2,G=26,PW=(TW-G*(cols-1))/cols,IH=Math.round(PW*9/16),CAP=118,PH=IH+CAP,per=cols*rows,np=Math.ceil(panels.length/per),fitc=Math.max(10,Math.floor((PW-8)/10.2));
+ for(let p=0;p<np;p++){const LH=letterhead(s,'board',W);let h=LH.h+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'','Storyboards'+(np>1?` ${p+1} of ${np}`:'')].filter(Boolean).join('  ·  '));
+  const top=LH.y+26,gapY=Math.max(G,Math.min(48,(H-70-top-rows*PH)/Math.max(1,rows-1)));
+  panels.slice(p*per,p*per+per).forEach((q,i)=>{const cx=M+(i%cols)*(PW+G),cy=top+Math.floor(i/cols)*(PH+gapY),src=images[q.id],r=q.r;
+   h+=`<rect x="${cx}" y="${cy}" width="${PW}" height="${IH}" fill="#f4f4f1"/>${src?`<image href="${src}" xlink:href="${src}" x="${cx}" y="${cy}" width="${PW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`:''}<rect x="${cx}" y="${cy}" width="${PW}" height="${IH}" fill="none" stroke="#1c1c1e" stroke-width="1.5"/>`;
+   const code=shotCode(s,r.it),ver=nVer(r.it)>1?'  V'+verCode(s,r.vn):'',fk=q.n>1?`frame ${q.k+1} of ${q.n}`:'';let y=cy+IH+30;
+   h+=`<rect x="${cx}" y="${y-17}" width="18" height="18" rx="3" fill="${r.st.color}"/><text x="${cx+26}" y="${y}" style="font-size:22px;font-weight:800;fill:#141414">${esc(code+ver)}</text>${fk?`<text x="${cx+PW}" y="${y}" text-anchor="end" style="font-size:15px;fill:#8a8b90">${fk}</text>`:''}`;
+   const spec=[r.m.size,r.m.type,r.m.angle,r.m.move].map(x=>String(x||'').trim()).filter(Boolean).join('  ·  ');
+   if(spec){y+=26;h+=`<text x="${cx}" y="${y}" style="font-size:16px;font-weight:600;fill:#3a3b40">${esc(trunc(spec,fitc+6))}</text>`;}
+   const d=wrapText(String(r.m.desc||'').trim(),fitc).slice(0,spec?2:3);if(d.length&&wrapText(String(r.m.desc||'').trim(),fitc).length>d.length)d[d.length-1]=trunc(d[d.length-1],fitc-1)+'…';
+   d.forEach(l=>{y+=23;h+=`<text x="${cx}" y="${y}" style="font-size:16px;fill:#2a2a2d">${esc(l)}</text>`;});});
+  out.push(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${SHEET_CSS}</style><rect width="${W}" height="${H}" fill="#fff"/>${h}</svg>`);}
+ return out;}
 function listKit(s,o,W){
  const port=!!o.port,sb=o.sb!==false,M=48,TW=W-2*M;
  const spec=port?(sb?[['STORYBOARD',204],['SHOT #',80],['VER',54],['SHOT SIZE',128],['SHOT TYPE',128],['SHOT ANGLE',118],['MOVEMENT',118]]:[['SHOT #',84],['VER',56],['SHOT SIZE',150],['SHOT TYPE',150],['SHOT ANGLE',132],['MOVEMENT',132]])
@@ -3301,11 +3406,11 @@ async function save(filename,data){
 }
 function folderScenes(fid){const kids=P.folders.filter(f=>f.parent===fid).sort((a,b)=>natCmp(a.name,b.name));
  return [...P.scenes.filter(x=>!x.trashed&&!x.tpl&&x.folder===fid).sort(sceneCmp),...kids.flatMap(f=>folderScenes(f.id))];}
-function expOpts(){return Object.assign({scope:'scene',nb:true,q:false,st:true,dia:true,list:true,sb:true,port:false,master:true,split:true,zoom:false,layout:'full'},P.ui.exp||{});}
+function expOpts(){return Object.assign({scope:'scene',nb:true,q:false,st:true,dia:true,list:true,sb:true,bd:false,port:false,master:true,split:true,zoom:false,layout:'full'},P.ui.exp||{});}
 async function exportPDF(o){
  o=Object.assign(expOpts(),o||{});const cur=scene(),fid=sFolder(cur),folder=o.scope==='folder'&&fid;
  const list=folder?folderScenes(fid):[cur],W=o.port?1275:1650,H=o.port?1650:1275;
- if(!o.dia&&!o.list&&!o.nb&&!o.st){toast('Pick at least one thing to include.');return;}
+ if(!o.dia&&!o.list&&!o.nb&&!o.st&&!o.bd){toast('Pick at least one thing to include.');return;}
  toast('Building PDF…');
  try{const {jsPDF}=await loadJsPDF(),doc=new jsPDF({orientation:o.port?'portrait':'landscape',unit:'pt',format:'letter'});let n=0,used=0;
   expProd=o.prod===undefined?undefined:(o.prod||null);
@@ -3315,14 +3420,14 @@ async function exportPDF(o){
    try{if(written)tp=await pdfTextPages(doc,sc,o,np);if(!sc.items.length&&written){}else if(!o.dia&&!o.list){}else if(o.layout==='compact'){const fr=P.ui.frames;if(o.list&&o.sb)P.ui.frames=false;try{svgs=compactPagesSVG(sc,o);}finally{P.ui.frames=fr;}}else{if(o.dia){const n=sc.pages.length;if(n<2)svgs.push(sheetSVG(sc,sc.pages[0].id,o.port,o.list));else{
      const box=o.zoom?null:bbox(sc,'all'),master=o.master||!o.split;
      if(master)svgs.push(sheetSVG(sc,'all',o.port,o.list,{label:`Master  ·  every move, all ${n} pages`}));
-     if(o.split)sc.pages.forEach((pg,i)=>{const nm=String(pg.name||'').trim(),lbl=`Page ${i+1} of ${n}`+(nm&&!/^page\s*\d+$/i.test(nm)?`  ·  ${nm}`:'');svgs.push(sheetSVG(sc,pg.id,o.port,o.list,{label:lbl,box:box||bbox(sc,pg.id)}));});}}if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}}finally{P.sceneId=keep;}
+     if(o.split)sc.pages.forEach((pg,i)=>{const nm=String(pg.name||'').trim(),lbl=`Page ${i+1} of ${n}`+(nm&&!/^page\s*\d+$/i.test(nm)?`  ·  ${nm}`:'');svgs.push(sheetSVG(sc,pg.id,o.port,o.list,{label:lbl,box:box||bbox(sc,pg.id)}));});}}if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}if(o.bd)svgs.push(...boardPagesSVG(sc,{port:o.port}));}finally{P.sceneId=keep;}
    if(svgs.length||tp)used++;
    for(const sv of svgs){const c=await rasterize(sv,W,H,1.4);np();doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,o.port?612:792,o.port?792:612);}
    if(folder&&list.length>2)toast(`Building PDF… scene ${si+1} of ${list.length}`);
   }
-  expProd=undefined;if(!n){toast(o.dia?'Nothing to export yet.':o.list?'No shots to put in the shot list yet.':'Nothing is written in the Breakdown or Strategy yet.');return;}
+  expProd=undefined;if(!n){toast(o.dia?'Nothing to export yet.':o.list?'No shots to put in the shot list yet.':o.bd?'No storyboard frames yet. Add them in the shot list.':'Nothing is written in the Breakdown or Strategy yet.');return;}
   const base=folder?(fById(fid).name||'Folder').replace(/[^\w\- ]+/g,'').trim()||'Folder':fname(cur);
-  {const pk=[['nb','Breakdown'],['st','Strategy'],['dia','Floor Plan'],['list','Shot List']].filter(([k])=>o[k]);await save(base+(pk.length===1?' - '+pk[0][1]:'')+'.pdf',doc.output('blob'));}
+  {const pk=[['nb','Breakdown'],['st','Strategy'],['dia','Floor Plan'],['list','Shot List'],['bd','Storyboards']].filter(([k])=>o[k]);await save(base+(pk.length===1?' - '+pk[0][1]:'')+'.pdf',doc.output('blob'));}
  }catch(e){toast('PDF export failed. Try the image instead.');}finally{expProd=undefined;}
 }
 function prodSaved(){commit();detectChanges();saveLocal();schedulePush();}
@@ -3379,7 +3484,7 @@ function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts(),mp=s.pages.le
  const nF=fid?folderScenes(fid).length:0;
  const radio=(g,v,l,sub,on,dis)=>`<button class="rrow" data-g="${g}" data-v="${v}"${dis?' disabled style="opacity:.45"':''}><span><b>${l}</b>${sub?`<small>${sub}</small>`:''}</span><i class="rad${on?' on':''}"></i></button>`;
  modal(`<h3>Export PDF</h3><div class="lbl">Export</div><div class="rgrp">${radio('scope','scene','This scene',esc(sceneLabel(s)),o.scope==='scene')}${radio('scope','folder','The whole folder',fid?`${esc(fById(fid).name)} · ${nF} scene${nF===1?'':'s'}`:'This scene isn’t in a folder',o.scope==='folder',!fid)}</div>
-  <div class="lbl" style="display:flex;align-items:center;gap:8px">Include<button class="sm" id="xAll" style="margin-left:auto;min-height:30px;padding:0 10px;font-size:13px">Select all</button></div><label class="imopt"><input type="checkbox" id="xNb"${o.nb?' checked':''}> Scene Breakdown</label><label class="imopt" id="xQRow" style="margin-left:24px"><input type="checkbox" id="xQ"${o.q?' checked':''}> Questions column</label><label class="imopt"><input type="checkbox" id="xSt"${o.st?' checked':''}> Scene Strategy</label><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Floor Plan</label><div id="xPgOpts" style="margin-left:24px"><label class="imopt"><input type="checkbox" id="xMaster"${o.master?' checked':''}> Master page with every move${mp?'':' <span class="mut">(for scenes with more than one page)</span>'}</label><label class="imopt"><input type="checkbox" id="xSplit"${o.split?' checked':''}> Each page on its own</label><label class="imopt"><input type="checkbox" id="xZoom"${o.zoom?' checked':''}> Zoom each page to its action</label></div><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot List</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label>
+  <div class="lbl" style="display:flex;align-items:center;gap:8px">Include<button class="sm" id="xAll" style="margin-left:auto;min-height:30px;padding:0 10px;font-size:13px">Select all</button></div><label class="imopt"><input type="checkbox" id="xNb"${o.nb?' checked':''}> Scene Breakdown</label><label class="imopt" id="xQRow" style="margin-left:24px"><input type="checkbox" id="xQ"${o.q?' checked':''}> Questions column</label><label class="imopt"><input type="checkbox" id="xSt"${o.st?' checked':''}> Shooting Strategy</label><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Floor Plan</label><div id="xPgOpts" style="margin-left:24px"><label class="imopt"><input type="checkbox" id="xMaster"${o.master?' checked':''}> Master page with every move${mp?'':' <span class="mut">(for scenes with more than one page)</span>'}</label><label class="imopt"><input type="checkbox" id="xSplit"${o.split?' checked':''}> Each page on its own</label><label class="imopt"><input type="checkbox" id="xZoom"${o.zoom?' checked':''}> Zoom each page to its action</label></div><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot List</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label><label class="imopt"><input type="checkbox" id="xBd"${o.bd?' checked':''}> Storyboard sheet <span class="mut">· every frame, large, with its shot</span></label>
   <div class="lbl">Layout</div><div class="rgrp">${radio('layout','full','Full','Each floor plan and the shot list on their own pages',o.layout!=='compact')}${radio('layout','compact','Compact','Floor plans side by side, shot list underneath. Fewest pages',o.layout==='compact')}</div>
   <div class="lbl">Letterhead</div><div style="display:flex;gap:8px;align-items:center"><select id="xProd" style="flex:1;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--chip);padding:0 8px;font-size:15px;color:var(--ink)"><option value="">None</option>${PL.map(pr=>`<option value="${pr.id}"${pr.id===fp?' selected':''}>${esc(pr.name||'Untitled production')}</option>`).join('')}</select><button class="sm" id="xProds">${PL.length?'Edit…':'Set up…'}</button></div>${fid?`<p class="mut" style="font-size:12.5px;margin:6px 0 0">Remembered for ${esc(folderPathName(topFolder(fid)))}.</p>`:''}
   <div class="lbl">Header details</div><div class="hdrf" style="display:flex;gap:6px">${[['code','Episode','e.g. Ep. 110'],['day','Shoot day','e.g. Shoot Day 8'],['date','Shoot date','e.g. April 17']].map(([k,l,ph])=>`<label class="fld" style="flex:1;margin:0">${l}<input data-h="${k}" data-ph="${ph}" placeholder="${ph}" autocomplete="off"></label>`).join('')}</div><p class="mut" id="xHnote" style="font-size:12.5px;margin:6px 0 0"></p>
@@ -3387,17 +3492,17 @@ function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts(),mp=s.pages.le
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="xOk">Export</button></div>`,card=>{
   const cur={scope:o.scope,port:o.port,layout:o.layout==='compact'?'compact':'full'};
   const sync=()=>{const on=card.querySelector('#xList').checked,d=card.querySelector('#xDia').checked,sp=card.querySelector('#xSplit').checked;card.querySelector('#xSb').disabled=!on;card.querySelector('#xSbRow').style.opacity=on?1:.45;
-   ['#xMaster','#xSplit'].forEach(x=>card.querySelector(x).disabled=!d);card.querySelector('#xZoom').disabled=!d||!sp;card.querySelector('#xPgOpts').style.opacity=d?1:.45;card.querySelector('#xZoom').parentNode.style.opacity=d&&sp?1:.45;{const nb=card.querySelector('#xNb').checked;card.querySelector('#xQ').disabled=!nb;card.querySelector('#xQRow').style.opacity=nb?1:.45;card.querySelector('#xOk').disabled=!on&&!d&&!nb&&!card.querySelector('#xSt').checked;}{const all=['#xNb','#xSt','#xDia','#xList'].every(x=>card.querySelector(x).checked);card.querySelector('#xAll').textContent=all?'Clear all':'Select all';}};
+   ['#xMaster','#xSplit'].forEach(x=>card.querySelector(x).disabled=!d);card.querySelector('#xZoom').disabled=!d||!sp;card.querySelector('#xPgOpts').style.opacity=d?1:.45;card.querySelector('#xZoom').parentNode.style.opacity=d&&sp?1:.45;{const nb=card.querySelector('#xNb').checked;card.querySelector('#xQ').disabled=!nb;card.querySelector('#xQRow').style.opacity=nb?1:.45;card.querySelector('#xOk').disabled=!on&&!d&&!nb&&!card.querySelector('#xSt').checked&&!card.querySelector('#xBd').checked;}{const all=['#xNb','#xSt','#xDia','#xList','#xBd'].every(x=>card.querySelector(x).checked);card.querySelector('#xAll').textContent=all?'Clear all':'Select all';}};
   card.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b||b.disabled)return;cur[b.dataset.g]=b.dataset.g==='port'?b.dataset.v==='1':b.dataset.v;card.querySelectorAll(`[data-g="${b.dataset.g}"] .rad`).forEach(x=>x.classList.toggle('on',x.parentNode===b));});
   card.addEventListener('change',sync);sync();
-  card.querySelector('#xAll').onclick=()=>{const ids=['#xNb','#xSt','#xDia','#xList'],all=ids.every(x=>card.querySelector(x).checked);ids.forEach(x=>{card.querySelector(x).checked=!all;});sync();};
+  card.querySelector('#xAll').onclick=()=>{const ids=['#xNb','#xSt','#xDia','#xList','#xBd'],all=ids.every(x=>card.querySelector(x).checked);ids.forEach(x=>{card.querySelector(x).checked=!all;});sync();};
   let hOrig={};const hList=()=>cur.scope==='folder'&&fid?folderScenes(fid):[s];
   const fillHdr=()=>{const L=hList();hOrig={};card.querySelectorAll('[data-h]').forEach(inp=>{const k=inp.dataset.h,v=[...new Set(L.map(x=>String(x[k]||'')))];hOrig[k]=v.length===1?v[0]:null;inp.value=v.length===1?v[0]:'';inp.placeholder=v.length===1?inp.dataset.ph:'Varies by scene';});
    card.querySelector('#xHnote').textContent=cur.scope==='folder'&&fid?`Changes here apply to all ${L.length} scene${L.length===1?'':'s'} in ${fById(fid).name}. Leave a box alone to keep each scene’s own.`:'For this scene. Also in Scene info (⌘I).';};
   fillHdr();card.addEventListener('click',e=>{if(e.target.closest('[data-g=scope]'))setTimeout(fillHdr,0);});
   card.querySelector('#xProds').onclick=()=>productionsDialog(exportDialog);
   card.querySelector('#xOk').onclick=()=>{let hch=false;card.querySelectorAll('[data-h]').forEach(inp=>{const k=inp.dataset.h,v=inp.value.trim();if(hOrig[k]===null&&!v)return;if(v!==(hOrig[k]||''))for(const x of hList()){x[k]=v;hch=true;}});if(hch)commit();
-   const pv=card.querySelector('#xProd').value||null,v={scope:cur.scope,port:cur.port,layout:cur.layout,nb:card.querySelector('#xNb').checked,q:card.querySelector('#xQ').checked,st:card.querySelector('#xSt').checked,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked,prod:pv,master:card.querySelector('#xMaster').checked,split:card.querySelector('#xSplit').checked,zoom:card.querySelector('#xZoom').checked};P.ui.exp=v;
+   const pv=card.querySelector('#xProd').value||null,v={scope:cur.scope,port:cur.port,layout:cur.layout,nb:card.querySelector('#xNb').checked,q:card.querySelector('#xQ').checked,st:card.querySelector('#xSt').checked,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked,bd:card.querySelector('#xBd').checked,prod:pv,master:card.querySelector('#xMaster').checked,split:card.querySelector('#xSplit').checked,zoom:card.querySelector('#xZoom').checked};P.ui.exp=v;
    if(fid&&pv!==fp){let f=fById(fid),tgt=null,g=0;while(f&&g++<40){if(f.prod){tgt=f;break;}f=f.parent?fById(f.parent):null;}tgt=tgt||topFolder(fid);if(pv)tgt.prod=pv;else delete tgt.prod;prodSaved();}
    saveLocal();closeModal();exportPDF(v);};
  },'numcard');}
@@ -3624,7 +3729,7 @@ function shotPop(cx,cy){
   <div class="hd">Shot / Version</div><div class="sv2"><button data-sf="shots"${many?'':' disabled'}>Shot ${esc(shotCode(s,it))}<span class="pgv">›</span></button><button data-sf="vers"${n>1?'':' disabled'}>Version ${verCode(s,verNum(it,vi))}<span class="pgv">›</span></button></div>
   <div class="hd">This Version</div>${row('size',m.size)}${row('type',m.type)}${row('angle',m.angle)}${row('move',m.move)}
   <div class="hd">Description</div><button data-sf="desc" class="sdesc"><span>${m.desc?esc(trunc(String(m.desc),120)):'<i>Not Set</i>'}</span><span class="pgv">›</span></button>
-  <div class="hd">Storyboard</div><button data-sf="frame">${m.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…'}</button>
+  <div class="hd">Storyboard</div><button data-sf="frame">${m.sb?'Replace Main Frame…':'Add Storyboard Frame…'}</button>${m.sb?`<button data-sf="frame2">Add Another Frame…${(m.sbs||[]).length?`<span class="pgv">${sbAll(m).length} frames</span>`:''}</button>`:''}
   <div class="hd">Label</div>${it.lab?'<button data-sf="labreset">Reattach Label to the Camera</button>':'<button data-sf="labfree">Detach Label</button>'}<button data-sf="camdesc">Show Descriptions on the Floor Plan<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button>
   <div class="hd">Add / Remove</div><button data-sf="addver">Add Version…</button>${n>1?`<button data-sf="delver">${IC.x}Remove This Version</button>`:''}<button data-sf="del">${IC.x}Delete From Shot List</button></div>`;
  pop.classList.add('on');popFor=null;placePopAt(cx,cy);
@@ -3634,6 +3739,7 @@ function shotPop(cx,cy){
   else if(a==='vers')shotList(true);
   else if(a==='desc'){const at=popAt;modal(`<h3>Description</h3><p class="mut">Shot ${esc(shotCode(s,it))}${n>1?' · version '+verCode(s,verNum(it,vi)):''}</p><label class="fld"><textarea id="sdT" rows="5">${esc(m.desc||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const t=card.querySelector('#sdT');t.focus();t.setSelectionRange(t.value.length,t.value.length);card.querySelector('#ok').onclick=()=>{m.desc=t.value;closeModal();commit();shotPop(at.x,at.y);};});}
   else if(a==='frame'){closePop();act('sbAdd',{dataset:{id:it.id,v:String(vi)}});}
+  else if(a==='frame2'){closePop();act('sbMore',{dataset:{id:it.id,v:String(vi)}});}
   else if(a==='camdesc'){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();back();}
   else if(a==='labreset'){delete it.lab;closePop();commit();toast('Label is back with its camera.');}
   else if(a==='labfree'){labDetach(it,0);closePop();commit();toast('Label detached. Drag it where you want it.');}
