@@ -106,6 +106,7 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 #pop .lays .lk.on{color:#fff;background:#2f7cf6}#pop .lays .lall{justify-content:space-between}
 #pop .lays .lkall{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8px;border:1px solid #45464c;background:#2c2d31;color:#fff;font-size:14px;width:auto;min-height:0}#pop .lays .lkall.on{background:#2f7cf6;border-color:#2f7cf6}
 #pop .hdr{float:right;font-weight:400;opacity:.7}
+#pop .dmr{display:flex;border-bottom:1px solid #34353a}#pop .ls .dmr button{flex:1;justify-content:center;min-height:50px;font-size:20px;font-weight:600;border-bottom:0;border-right:1px solid #34353a;padding:0}#pop .ls .dmr button:last-child{border-right:0}#pop .ls .dmr button.on{background:#3f6fd8}#pop .ls .dmr button:disabled{opacity:.35}
 #pop .cgrid{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:4px;padding:11px 14px 13px;border-bottom:1px solid #34353a}
 #pop .ls .cgrid button.sw,#pop .ls .cgrid button.sw:hover{flex:0 0 22px;width:22px;height:22px;min-height:0;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.22);background:var(--c);transition:transform .1s}
 #pop .ls .cgrid button.sw:hover{transform:scale(1.15)}#pop .ls .cgrid button.sw.on{border-color:#fff;box-shadow:0 0 0 2px #2f7cf6}
@@ -373,7 +374,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261116233010';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117031602';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1035,13 +1036,28 @@ function behind(rot,dist){const a=rad((rot||0)+180),c=Math.cos(a),s=Math.sin(a);
 function labHost(it,mk){if(!it)return null;if(it.type==='char'){const a=runOf(it,mk||0)[0];return it.marks[a];}return it;}
 function labIsFree(it,mk){const h=labHost(it,mk);return !!(h&&h.lab);}
 function labDetach(it,mk){const h=labHost(it,mk);if(!h)return;
- if(it.type==='cam'){const p0=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);h.lab={x:p0.x,y:p0.y};}
+ if(it.type==='cam'){const p0=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,nVer(it)).length);h.lab={x:p0.x,y:p0.y};}
  else if(it.type==='char'){const [a,b]=runOf(it,mk||0),L=behind(effFacing(it,b),44);h.lab={x:L.x,y:L.y};}
  else h.lab={x:0,y:-(Math.min(it.w||40,it.h||40)/2+18)};}
 function labCan(it){return !!it&&(it.type==='cam'||it.type==='char'||((it.type==='prop'||it.type==='set'||it.type==='light')&&!!it.label&&it.kind!=='dollytrack'));}
 /* right-click on a name that is still attached (it is drawn, not a piece): find whose it is */
 function labelAt(x,y){for(const t of document.querySelectorAll('#items text.nm, #items text.nt')){const r=t.getBoundingClientRect();if(x>=r.left-3&&x<=r.right+3&&y>=r.top-2&&y<=r.bottom+2){const g=t.closest('[data-id]');if(g)return g;}}return null;}
 function capOf(m){return [m.size?(ABBR[m.size]||m.size):'',m.angle||'',m.type||''].filter(Boolean).join(' ');}
+/* A camera's marks: each version starts a run; Track To adds dolly marks (tk) to that run; Add Version at the same spot adds sp. */
+const VFIELDS=['size','type','angle','move','desc','sb','sbp','sba'];
+function verStart(it,i){i=clamp(i||0,0,it.marks.length-1);while(i>0&&it.marks[i].tk)i--;return i;}
+function camRun(it,i){const a=verStart(it,i);let b=a;while(b+1<it.marks.length&&it.marks[b+1].tk)b++;return [a,b];}
+function verNum(it,i){const a=verStart(it,i);let n=-1;for(let j=0;j<=a;j++)if(!it.marks[j].tk)n++;return Math.max(0,n);}
+function nVer(it){return it.marks.filter(m=>!m.tk).length;}
+function spBase(it,i){const sp=it.marks[i]&&it.marks[i].sp;if(typeof sp==='string'){const k=it.marks.findIndex(q=>q.mid===sp);if(k>=0&&k!==i)return k;}let j=i-1;while(j>0&&(it.marks[j].tk||it.marks[j].sp))j--;return Math.max(0,j);}
+/* a version at the same spot sits exactly on its base camera; whichever was turned or moved last leads */
+function addVersion(it,from){const a=verStart(it,from),A=it.marks[a];
+ const B=A.sp?it.marks[spBase(it,a)]:A;if(!B.mid)B.mid=uid();const m={x:B.x,y:B.y,rot:B.rot||0,sp:B.mid,size:'',type:A.type||'',angle:A.angle||'',move:'',desc:''};it.marks.push(m);
+ sel={id:it.id,mark:it.marks.length-1};commit();renderShotSel();toast(`Version ${verCode(scene(),nVer(it)-1)} added at the same spot.`);
+ const at=popAt||(()=>{const r=$('#cv').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+120};})();shotPop(at.x,at.y);}
+function camSync(it){if(it.type!=='cam'||!it.marks.some(m=>m.sp))return;
+ if(sel&&sel.id===it.id&&it.marks[sel.mark]&&it.marks[sel.mark].sp){const m=it.marks[sel.mark],B=it.marks[spBase(it,sel.mark)];B.x=m.x;B.y=m.y;B.rot=m.rot;}
+ it.marks.forEach((m,j)=>{if(m.sp){const B=it.marks[spBase(it,j)];m.x=B.x;m.y=B.y;m.rot=B.rot;}});}
 function labLines(m,i,n){const cap=capOf(m),d=P.ui.camDesc?String(m.desc||'').split('\n')[0]:'';let l=[...wrapText(cap,24).slice(0,2),...wrapText(d,26).slice(0,2)];if(n>1||i>0){const vc=verCode(scene(),i);if(l.length)l[0]=`V${vc}: `+l[0];else if(i===0)l=['V'+vc];}return l;}
 function camLabelPos(it,m,nl){if(it.lab)return it.lab;const L=behind(m.rot,46);return {x:L.x,y:L.y+(L.s<-.35?-6-(nl||0)*11:L.s>.35?6:0)};}
 function framePos(m,vi){if(m.sbp)return m.sbp;const L=behind(m.rot,160),k=(vi||0)%2?-1:1,o=Math.ceil((vi||0)/2)*185*k;return {x:L.x-L.s*o,y:L.y+L.c*o};}
@@ -1126,17 +1142,20 @@ function itemsMarkup(sc,pid){
     chars+=`<g class="L-char${it.locked?' L-lk':''}" transform="translate(${m.x},${m.y})${c.extra?' scale(.78)':''}"><g data-id="${it.id}" data-mark="${a}"><circle r="26" fill="transparent"/>${cld}<g transform="rotate(${f})"><circle r="15" fill="${col}" stroke="${dk}" stroke-width="2"/>${stripes(it.g||c.g,dk)}<path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>${ghosts}${cl}${pb}</g>${turns}${nums}</g>`;
     a=b+1;}
   }else if(it.type==='cam'){
-   const st=setupIn(sc,it.setupId);const col=st?st.color:'#999',dk=shade(col,-.42),lab=`Cam ${shotCode(sc,it)}`,n=it.marks.length;
+   camSync(it);const st=setupIn(sc,it.setupId);const col=st?st.color:'#999',dk=shade(col,-.42),lab=`Cam ${shotCode(sc,it)}`,n=nVer(it);
+   const vlines=i=>{let l=labLines(it.marks[i],verNum(it,i),n);it.marks.forEach((q,j)=>{if(q.sp&&spBase(it,j)===i)l=l.concat(labLines(q,verNum(it,j),n));});return l;};
    it.marks.forEach((m,i)=>{
-    if(i>0)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
+    if(m.sp){if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))} · V${verCode(sc,verNum(it,i))}</text></g>`;}return;}
+    if(i>0&&m.tk){const p=it.marks[i-1];paths+=`<line class="deco" x1="${p.x}" y1="${p.y}" x2="${m.x}" y2="${m.y}" stroke="${col}" stroke-opacity=".22" stroke-width="10" stroke-linecap="round"/>`+arrow(p,m,dk,true,20,false,`data-id="${it.id}" data-track="${i}"`);}
+    else if(i>0)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     const a=rad(m.rot||0);
-    if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))}${n>1?' · V'+verCode(sc,i):''}</text></g>`;}
-    let lbl='',lead='';const ln=labLines(m,i,n);
+    if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))}${n>1?' · V'+verCode(sc,verNum(it,i)):''}</text></g>`;}
+    let lbl='',lead='';const ln=m.tk?[]:vlines(i);
     if(i===0){const lp=camLabelPos(it,m,ln.length),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
      if(it.lab&&Math.hypot(lp.x,lp.y)>58)lead=`<line class="deco" x1="0" y1="0" x2="${lp.x}" y2="${lp.y-8}" stroke="#2f5f8f" stroke-opacity=".45" stroke-width="1"/>`;
      const hw=Math.max(pw,...ln.map(l=>l.length*5.5))/2+7;lbl=`<g class="L-desc${it.lab?' L-free':''}" data-id="${it.id}" data-mark="0" data-lab="1" transform="translate(${lp.x},${lp.y})"><rect x="${-hw}" y="-20" width="${hw*2}" height="${22+ln.length*11}" fill="transparent"/><rect x="${-pw/2}" y="-17" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2 deco" y="-5.2" text-anchor="middle">${tag}</text>${ln.map((l,j)=>`<text class="sd deco" y="${9+j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
     else if(ln.length){const L=behind(m.rot,34),oy=L.s<-.35?-ln.length*11:L.s>.35?8:-(ln.length*11)/2+8;lbl=`<g class="deco L-desc" transform="translate(${L.x},${L.y+oy})">${ln.map((l,j)=>`<text class="sd" y="${j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
-    cams+=`<g class="L-cam${it.locked?' L-lk':''}" data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="26" fill="transparent"/>${lbl}${lead}<g transform="rotate(${m.rot||0})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g>${panSVG(it,m,i,col,dk)}${n>1?`<text class="cn deco" x="${Math.cos(a)*-5.5}" y="${Math.sin(a)*-5.5+3.6}" text-anchor="middle">${i+1}</text>`:''}</g>`;
+    cams+=`<g class="L-cam${it.locked?' L-lk':''}" data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="26" fill="transparent"/>${lbl}${lead}<g transform="rotate(${m.rot||0})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g>${panSVG(it,m,i,col,dk)}${(()=>{const [ra,rb]=camRun(it,i),num=rb>ra?i-ra+1:n>1?verNum(it,i)+1:0;return num?`<text class="cn deco" x="${Math.cos(a)*-5.5}" y="${Math.sin(a)*-5.5+3.6}" text-anchor="middle">${num}</text>`:'';})()}</g>`;
    });
   }
  }
@@ -1208,7 +1227,7 @@ function ctxHTML(){
  const s=scene();if(sel.id==='__bg'){const b=s.bg;return `<span class="nm">Floor plan</span><button data-act="edit">Edit</button><button data-act="lock">${b.locked?'Unlock':'Lock'}</button>`;}
  const it=itemById(sel.id);if(!it)return '';const lk=`<button data-act="lock">${it.locked?'Unlock':'Lock'}</button>`;
  if(it.type==='char'){const c=charById(it.charId)||{name:'?',color:'#888'};return `<span class="nm"><i style="background:${c.color}"></i>${esc(String(c.name).toUpperCase())}${it.marks.length>1?' · '+(sel.mark+1):''}</span><button data-act="moveMode">Move</button><button data-act="edit">Edit</button>${lk}${it.marks.length>1?'<button data-act="delMark">Remove mark</button>':''}<button class="dg" data-act="del">Delete</button>`;}
- if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?',color:'#888'};return `<span class="nm"><i style="background:${st.color};border-radius:3px"></i>${esc(shotCode(s,it))}${it.marks.length>1?' · V'+verCode(s,sel.mark||0):''}</span><button data-act="moveMode">Move</button><button data-act="edit">Edit</button><button data-act="sbAdd" data-id="${it.id}" data-v="${sel.mark||0}">Frame</button>${lk}<button class="dg" data-act="del">Delete</button>`;}
+ if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?',color:'#888'};return `<span class="nm"><i style="background:${st.color};border-radius:3px"></i>${esc(shotCode(s,it))}${nVer(it)>1?' · V'+verCode(s,verNum(it,sel.mark||0)):''}</span><button data-act="trackto">Track</button><button data-act="edit">Edit</button><button data-act="sbAdd" data-id="${it.id}" data-v="${sel.mark||0}">Frame</button>${lk}<button class="dg" data-act="del">Delete</button>`;}
  const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';
  const n=(it.mv||[]).length+1;
  return `<span class="nm">${esc(name)}${n>1?' · '+((sel.mark||0)+1):''}</span>${MOVABLE(it.type)?'<button data-act="moveMode">Move</button>':''}<button data-act="edit">Edit</button>${sel.mark?'<button data-act="delMark">Remove position</button>':'<button data-act="dup">Duplicate</button>'}${lk}<button class="dg" data-act="del">Delete</button>`;
@@ -1249,7 +1268,7 @@ function inspHTML(){
   ${pageSelect(it)}<div class="btns">${lockBtn}<button class="danger" data-act="del">Remove from diagram</button></div>
   <p class="mut" style="margin-top:10px">Name and color apply everywhere this character appears. Drag the round handle to turn them.</p>`;}
  if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?',color:'#888'},n=it.marks.length,vi=sel.mark||0,m=it.marks[vi]||it.marks[0];
-  return x+`<div class="ph"><i class="dot" style="background:${st.color}"></i>Shot ${esc(shotCode(s,it))}<span class="mut">· version ${verCode(s,vi)}${n>1?' of '+n:''}</span></div>
+  return x+`<div class="ph"><i class="dot" style="background:${st.color}"></i>Shot ${esc(shotCode(s,it))}<span class="mut">· version ${verCode(s,verNum(it,vi))}${nVer(it)>1?' of '+nVer(it):''}</span></div>
   <div class="vgrid"><label class="fld">Shot size${sizeSelect('data-f="v.size"',m.size||'')}</label>
   <label class="fld">Shot type<input data-f="v.type" list="dl-type" value="${esc(m.type||'')}" autocomplete="off"></label>
   <label class="fld">Shot angle<input data-f="v.angle" list="dl-angle" value="${esc(m.angle||'')}" autocomplete="off"></label>
@@ -1278,17 +1297,17 @@ function renderInsp(){const el=$('#insp');if(!inspOpen||!sel||offCanvas()){el.cl
 function openInsp(){inspOpen=true;closePop();renderInsp();}
 
 /* ---------- shot list column ---------- */
-function rowsOf(s,pid){const out=[],cams=s.items.filter(it=>it.type==='cam'&&(!pid||vis(it,s,pid)));for(const st of s.setups){const list=cams.filter(c=>c.setupId===st.id).sort(byLetter);list.forEach((it,ci)=>it.marks.forEach((m,vi)=>out.push({st,it,m,vi,first:ci===0&&vi===0})));}return out;}
+function rowsOf(s,pid){const out=[],cams=s.items.filter(it=>it.type==='cam'&&(!pid||vis(it,s,pid)));for(const st of s.setups){const list=cams.filter(c=>c.setupId===st.id).sort(byLetter);list.forEach((it,ci)=>{let vn=0;it.marks.forEach((m,vi)=>{if(m.tk)return;out.push({st,it,m,vi,vn:vn++,first:ci===0&&vi===0});});});}return out;}
 function renderShots(){
  const s=scene(),rows=rowsOf(s);let h='';let prev=null;
  for(const r of rows){if(prev&&prev!==r.st)h+='<div class="sgap"></div>';prev=r.st;
   const on=sel&&sel.id===r.it.id&&(sel.mark||0)===r.vi,desc=(r.m.desc||'').split('\n')[0];
-  h+=`<div class="sr${on?' on':''}" data-act="selCam" data-id="${r.it.id}" data-v="${r.vi}"><span class="grip" title="Drag to reorder">⠿</span><div class="sn" style="color:${shade(r.st.color,-.25)}">${esc(shotCode(s,r.it))}${r.it.marks.length>1?`<small>V${verCode(s,r.vi)}</small>`:''}</div><div class="st">${esc(vlabel(r.m)||'No size or type yet')}${desc?`<small>${esc(desc)}</small>`:s.pages.length>1&&r.it.pgs?`<small>Page ${esc(pagesSummary(r.it))}</small>`:''}</div></div>`;}
+  h+=`<div class="sr${on?' on':''}" data-act="selCam" data-id="${r.it.id}" data-v="${r.vi}"><span class="grip" title="Drag to reorder">⠿</span><div class="sn" style="color:${shade(r.st.color,-.25)}">${esc(shotCode(s,r.it))}${nVer(r.it)>1?`<small>V${verCode(s,r.vn)}</small>`:''}</div><div class="st">${esc(vlabel(r.m)||'No size or type yet')}${desc?`<small>${esc(desc)}</small>`:s.pages.length>1&&r.it.pgs?`<small>Page ${esc(pagesSummary(r.it))}</small>`:''}</div></div>`;}
  if(!rows.length)h+='<p class="hint">No shots yet. Add a camera setup and you’ll be asked how many cameras it uses. Each setup gets its own color.</p>';
  h+='<button class="addsu" data-act="newSetup">+ Add camera setup</button>';
  $('#shots').innerHTML=h;
 }
-function renderShotSel(){document.querySelectorAll('#listView tr[data-id]').forEach(r=>{const on=!!sel&&sel.id===r.dataset.id&&(sel.mark||0)===+r.dataset.v;r.classList.toggle('on',on);if(on&&mode==='split'){const lv=$('#listView'),t=r.offsetTop,h=r.offsetHeight;if(t<lv.scrollTop+40||t+h>lv.scrollTop+lv.clientHeight)lv.scrollTop=t-48;}});document.querySelectorAll('.sr[data-id]').forEach(r=>r.classList.toggle('on',!!sel&&sel.id===r.dataset.id&&(sel.mark||0)===+r.dataset.v));}
+function renderShotSel(){document.querySelectorAll('#listView tr[data-id]').forEach(r=>{const si=sel&&itemById(sel.id),on=!!sel&&sel.id===r.dataset.id&&(si&&si.type==='cam'?verStart(si,sel.mark||0):(sel.mark||0))===+r.dataset.v;r.classList.toggle('on',on);if(on&&mode==='split'){const lv=$('#listView'),t=r.offsetTop,h=r.offsetHeight;if(t<lv.scrollTop+40||t+h>lv.scrollTop+lv.clientHeight)lv.scrollTop=t-48;}});document.querySelectorAll('.sr[data-id]').forEach(r=>{const si=sel&&itemById(sel.id);r.classList.toggle('on',!!sel&&sel.id===r.dataset.id&&(si&&si.type==='cam'?verStart(si,sel.mark||0):(sel.mark||0))===+r.dataset.v);});}
 $('#shots').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b);});
 bindShotDrag($('#shots'),'.sr[data-id]');bindShotDrag($('#listView'),'tr[data-id]');
 
@@ -1350,7 +1369,9 @@ function act(a,b){
   case 'lock':if(sel.id==='__bg')s.bg.locked=!s.bg.locked;else if(it)it.locked=!it.locked;commit();break;
   case 'del':deleteSel(true);break;
   case 'moveMode':startTool({t:'move',id:it.id});break;
+  case 'trackto':{const [,rb]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'to',at:rb});break;}
   case 'delMark':if(it.type==='char'){const [a,b]=runOf(it,sel.mark||0);if(it.marks.length>b-a+1){it.marks.splice(a,b-a+1);shiftAxis(s,it.id,b+1,-(b-a+1));if(a<it.marks.length&&it.marks[a].t)delete it.marks[a].t;sel.mark=Math.max(0,Math.min(a,it.marks.length-1));}}
+  else if(it.type==='cam'){const [a,b]=camRun(it,sel.mark||0);if(nVer(it)>1){const kids=it.marks.map((q,j)=>q.sp&&j>b&&spBase(it,j)===a?j:-1).filter(j=>j>=0);if(kids.length){const K=it.marks[kids[0]];delete K.sp;K.mid=uid();for(const j of kids.slice(1))it.marks[j].sp=K.mid;}it.marks.splice(a,b-a+1);if(it.marks[0].tk)delete it.marks[0].tk;sel.mark=Math.min(a,it.marks.length-1);}}
   else if(it.marks){it.marks.splice(sel.mark,1);sel.mark=Math.min(sel.mark,it.marks.length-1);}else if(sel.mark&&it.mv){it.mv.splice(sel.mark-1,1);sel.mark=null;}commit();break;
   case 'front':s.items.splice(s.items.indexOf(it),1);s.items.push(it);commit();break;
   case 'back':s.items.splice(s.items.indexOf(it),1);s.items.unshift(it);commit();break;
@@ -1373,7 +1394,7 @@ function act(a,b){
 /* ---------- tools: tap-to-place moves, wall drawing ---------- */
 let tool=null;
 function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
- if(t.t==='move'){const it=itemById(t.id);const nm=it.type==='char'?String((charById(it.charId)||{}).name||'').toUpperCase():'';$('#bannerTxt').textContent=it.type==='char'?`Tap where ${nm} goes next.`:it.type==='cam'?'Tap where the camera moves to. The new position becomes a new version.':'Tap where it moves to.';}
+ if(t.t==='move'){const it=itemById(t.id);const nm=it.type==='char'?String((charById(it.charId)||{}).name||'').toUpperCase():'';$('#bannerTxt').textContent=it.type==='char'?`Tap where ${nm} goes next.`:it.type==='cam'&&t.tk==='to'?'Tap where the camera tracks to.':it.type==='cam'&&t.tk==='from'?'Tap where the camera tracks in from.':it.type==='cam'?'Tap where the camera moves to. The new position becomes a new version.':'Tap where it moves to.';}
  else if(t.t==='from'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap where ${String((charById(it.charId)||{}).name||'').toUpperCase()} walks in from.`;}
  else if(t.t==='turn'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap the direction ${String((charById(it.charId)||{}).name||'').toUpperCase()} turns to.`;}
  else if(t.t==='axis')$('#bannerTxt').textContent='Tap the other character to draw the axis line.';
@@ -1403,6 +1424,10 @@ function toolTap(w){
   if(!best){toast('Tap another character to draw the axis line to.');return;}
   const ax={id:uid(),type:'axis',a:it.id,am:tool.mark,b:best.o.id,bm:best.mi,pgs:curPgs(),locked:false};s.items.push(ax);sel={id:ax.id,mark:null};endTool();commit();return;}
  if(tool.t==='move'&&!itemById(tool.id).marks){const it=itemById(tool.id),ps=positions(it),last=ps[ps.length-1];it.mv=it.mv||[];it.mv.push({x:w.x,y:w.y,rot:last.rot||0});sel={id:it.id,mark:it.mv.length};endTool();commit();return;}
+ if(tool.t==='move'&&tool.tk){const it=itemById(tool.id);if(!it){endTool();return;}
+  if(tool.tk==='to'){const b=tool.at,p=it.marks[b],m={x:w.x,y:w.y,rot:p.rot||0,tk:1};it.marks.splice(b+1,0,m);sel={id:it.id,mark:b+1};}
+  else{const a=tool.at,old=it.marks[a],m={x:w.x,y:w.y,rot:old.rot||0};for(const k of VFIELDS)if(old[k]!==undefined){m[k]=old[k];delete old[k];}if(old.sp)m.sp=old.sp;if(old.mid){m.mid=old.mid;delete old.mid;}delete old.sp;old.tk=1;it.marks.splice(a,0,m);sel={id:it.id,mark:a};}
+  endTool();commit();return;}
  if(tool.t==='move'){const it=itemById(tool.id);if(!it){endTool();return;}const last=it.marks[it.marks.length-1];
   const rot=it.type==='char'?Math.round(Math.atan2(w.y-last.y,w.x-last.x)*180/Math.PI/5)*5:(last.rot||0);
   const m={x:w.x,y:w.y,rot};if(it.type==='cam')Object.assign(m,{size:last.size||'',type:last.type||'',angle:last.angle||'',move:'',desc:''});
@@ -1564,10 +1589,15 @@ function objPop(cx,cy){
    h=sec('Actions',B('pbefore','Insert Turn Before')+B('pafter','Insert Turn After')+B('pdel','Delete Turn',IC.x))+sec('Settings',ck('tiltup','Tilt Up',q.tilt==='up')+ck('tiltdown','Tilt Down',q.tilt==='down')+(animOn?stB:''));}
   else if(it.type==='cam'&&sel.badge&&!sel.pan){title='Edit Turn';h=sec('Actions',B('pbefore','Insert Turn Before')+B('pafter','Insert Turn After'));}
   else if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?'};title=`Edit Camera ${esc(shotCode(s,it))}`;
-   h=sec('Actions',B('walkto','Move To…')+B('pan','Add Pan')+B('shotdesc','Edit Shot Description…')+B('frame',(it.marks[sel.mark||0]||{}).sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
-    +sec('Object',B('del','Delete',IC.x)+(it.marks.length>1?B('delmark','Remove This Version'):'')+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
+   const mi=clamp(sel.mark||0,0,it.marks.length-1),[ra,rb]=camRun(it,mi),va=it.marks[ra],nv=nVer(it);if(nv>1)title+=` · V${verCode(s,verNum(it,mi))}`;
+   let dm='';for(let j=ra;j<=rb;j++)dm+=`<button data-o="dm:${j}" class="${j===mi?'on':''}">${j-ra+1}</button>`;
+   h=`<div class="hd">Dolly Marks</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this dolly mark" aria-label="Remove this dolly mark"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`
+    +sec('Actions',B('trackto','Track To…')+B('trackfrom','Track From…')+B('pan','Add Pan'))
+    +sec('Shot List',B('shotdesc','Edit Shot Description…')+B('addver','Add Version…')+(nv>1?B('delmark','Remove This Version'):''))
+    +sec('Storyboard',B('frame',va.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
+    +sec('Object',B('del','Delete',IC.x)+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
     +(s.setups.length>1?sec('Shot Order',(s.setups[0].id!==it.setupId?B('shotUp','Move Shot Earlier'):'')+(s.setups[s.setups.length-1].id!==it.setupId?B('shotDown','Move Shot Later'):'')):'')
-    +sec('Settings',B('edit','Edit Color…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages;}
+    +sec('Settings',stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages;}
   else if(it.type==='axis'){title='Axis Line';h=sec('Object',B('del','Delete',IC.x));}
   else{const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';title='Edit '+name;
    const isBox=BOX(it.type)&&it.type!=='mask',ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;
@@ -1584,6 +1614,11 @@ function objPop(cx,cy){
 function objAct(o){
  const s=scene(),it=sel&&sel.id!=='__bg'?itemById(sel.id):null,fake=d=>({dataset:d||{}});
  if(o==='pages'){pagesSub();return;}
+ if(it&&it.type==='cam'&&o.startsWith('dm:')){sel.mark=+o.slice(3);renderUI();renderShotSel();objPop(popAt.x,popAt.y);return;}
+ if(it&&it.type==='cam'&&o==='dmdel'){const mi=sel.mark||0;if(mi>0&&it.marks[mi].tk){it.marks.splice(mi,1);sel.mark=mi-1;commit();objPop(popAt.x,popAt.y);}return;}
+ if(it&&it.type==='cam'&&o==='trackto'){const [,rb]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'to',at:rb});return;}
+ if(it&&it.type==='cam'&&o==='trackfrom'){const [ra]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'from',at:ra});return;}
+ if(it&&it.type==='cam'&&o==='addver'){addVersion(it,sel.mark||0);return;}
  if(o==='astep'){stepSub();return;}
  closePop();
  switch(o){
@@ -2234,7 +2269,7 @@ function renderList(){
  const lo=prodOpts(s),head=`<div class="lvh"><div style="flex:1"><div class="dvk">${esc(lo.listT||'')}<i>${esc(lo.listS||'')}</i></div><h2>${esc((s.number?s.number+'  ':'')+(s.title||'Untitled scene'))}</h2>${s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}${s.synopsis?`<p class="syn">${esc(s.synopsis)}</p>`:''}</div><button class="sm" id="lvMenu">Shot list ▾</button><button class="sm" id="lvInfo">Scene info</button></div>`;
  if(!rows.length){lv.innerHTML=head+'<div class="lv-empty">No shots yet. Add a camera on the diagram; each camera, and each version along its move, becomes a row here.</div>';}
  else lv.innerHTML=head+`<table class="sl"><thead><tr><th>Storyboard</th><th>Shot #</th><th>Version</th><th>Shot size</th><th>Shot type</th><th>Shot angle</th><th>Movement</th><th>Description</th></tr></thead><tbody>${rows.map(r=>{const k=`data-id="${r.it.id}" data-v="${r.vi}"`,on=sel&&sel.id===r.it.id&&(sel.mark||0)===r.vi;
-  return `<tr class="${r.first?'ss':''}${on?' on':''}" data-id="${r.it.id}" data-v="${r.vi}"><td style="width:166px">${sbHTML(r.it.id,r.vi,r.m)}</td><td style="width:84px"><button class="shotno" data-act="goShot" ${k} title="Show on diagram"><i style="background:${r.st.color}"></i>${esc(shotCode(s,r.it))}</button><span class="grip" title="Drag to reorder">⠿</span></td><td style="width:64px"><div class="ver">${verCode(s,r.vi)}</div></td>
+  return `<tr class="${r.first?'ss':''}${on?' on':''}" data-id="${r.it.id}" data-v="${r.vi}"><td style="width:166px">${sbHTML(r.it.id,r.vi,r.m)}</td><td style="width:84px"><button class="shotno" data-act="goShot" ${k} title="Show on diagram"><i style="background:${r.st.color}"></i>${esc(shotCode(s,r.it))}</button><span class="grip" title="Drag to reorder">⠿</span></td><td style="width:64px"><div class="ver">${verCode(s,r.vn)}</div></td>
   <td style="width:176px">${sizeSelect(`data-k="size" ${k}`,r.m.size||'')}</td><td style="width:140px"><input data-k="type" ${k} list="dl-type" value="${esc(r.m.type||'')}" autocomplete="off"></td><td style="width:130px"><input data-k="angle" ${k} list="dl-angle" value="${esc(r.m.angle||'')}" autocomplete="off"></td><td style="width:150px"><input data-k="move" ${k} list="dl-move" value="${esc(r.m.move||'')}" autocomplete="off"></td><td><textarea data-k="desc" ${k}>${esc(r.m.desc||'')}</textarea></td></tr>`;}).join('')}</tbody></table>`;
  $('#lvInfo').onclick=()=>sceneInfo();{const b=$('#lvMenu');if(b)b.onclick=()=>shotMenu(b);}
 }
@@ -2780,7 +2815,7 @@ function sheetSVG(s,pid,port,full,opt){opt=opt||{};
  const lx=W-M-LW;let y=port?dy0+dH+26:dy0,sl=!sum?'':(port?`<line x1="${M}" x2="${W-M}" y1="${y}" y2="${y}" stroke="#1c1c1e" stroke-width="1.5"/><text x="${M}" y="${y+32}" style="font-size:14px;font-weight:800;letter-spacing:.24em;fill:${acc}">SHOTS</text>`:`<line x1="${lx-22}" x2="${lx-22}" y1="${dy0}" y2="${BOT}" stroke="#d2d2cd" stroke-width="1.5"/><text x="${lx}" y="${y+14}" style="font-size:14px;font-weight:800;letter-spacing:.24em;fill:${acc}">SHOTS</text>`);y+=port?46:28;if(sum)sl+=`<rect x="${lx}" y="${y}" width="${LW}" height="40" fill="#f1f1ef"/><text x="${lx+52}" y="${y+26}" class="x-lh">SHOT</text><text x="${lx+118}" y="${y+26}" class="x-lh">VER</text><text x="${lx+170}" y="${y+26}" class="x-lh">SIZE · TYPE</text>${port?`<text x="${lx+520}" y="${y+26}" class="x-lh">DESCRIPTION</text>`:''}`;y+=40;
  let prev=null;
  for(const r of sum?R:[]){if(y>BOT-46)break;if(prev&&prev!==r.st)sl+=`<line x1="${lx}" x2="${lx+LW}" y1="${y}" y2="${y}" stroke="#9a9a96" stroke-width="2"/>`;prev=r.st;
-  sl+=`<rect x="${lx+14}" y="${y+12}" width="22" height="22" rx="4" fill="${r.st.color}"/><text x="${lx+52}" y="${y+31}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${lx+118}" y="${y+31}" class="x-lt">${verCode(s,r.vi)}</text><text x="${lx+170}" y="${y+31}" class="x-lt">${esc(trunc(vlabel(r.m),port?30:24))}</text>${port?`<text x="${lx+520}" y="${y+31}" class="x-lt">${esc(trunc(r.m.desc||'',58))}</text>`:''}<line x1="${lx}" x2="${lx+LW}" y1="${y+46}" y2="${y+46}" stroke="#e3e3df"/>`;y+=46;}
+  sl+=`<rect x="${lx+14}" y="${y+12}" width="22" height="22" rx="4" fill="${r.st.color}"/><text x="${lx+52}" y="${y+31}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${lx+118}" y="${y+31}" class="x-lt">${verCode(s,r.vn)}</text><text x="${lx+170}" y="${y+31}" class="x-lt">${esc(trunc(vlabel(r.m),port?30:24))}</text>${port?`<text x="${lx+520}" y="${y+31}" class="x-lt">${esc(trunc(r.m.desc||'',58))}</text>`:''}<line x1="${lx}" x2="${lx+LW}" y1="${y+46}" y2="${y+46}" stroke="#e3e3df"/>`;y+=46;}
  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${SHEET_CSS}${layerCss(s,true)}</style><rect width="${W}" height="${H}" fill="#fff"/>${hd}<clipPath id="cp"><rect x="${dx0}" y="${dy0}" width="${dW}" height="${dH}"/></clipPath><g clip-path="url(#cp)"><g transform="translate(${tx},${ty}) scale(${k})">${bg}${itemsMarkup(s,pid)}</g></g>${sl}</svg>`;
 }
 function listPagesSVG(s,o){
@@ -2800,7 +2835,7 @@ function listPagesSVG(s,o){
   for(const {r,t,h:RH} of pg){
    if(sb){const src=r.m.sb&&images[r.m.sb];h+=src?`<image href="${src}" xlink:href="${src}" x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`:`<rect x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;}
    const sx=M+cols[C('SHOT #')][1],vx=M+cols[C('VER')][1];
-   h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${vx+10}" y="${y+30}" class="x-ls">${verCode(s,r.vi)}</text>`;
+   h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${vx+10}" y="${y+30}" class="x-ls">${verCode(s,r.vn)}</text>`;
    h+=txt('SHOT SIZE',y,t.size)+txt('SHOT TYPE',y,t.type)+txt('SHOT ANGLE',y,t.angle)+txt('MOVEMENT',y,t.move)+txt('DESCRIPTION',y,t.desc);
    h+=`<line x1="${M}" x2="${W-M}" y1="${y+RH}" y2="${y+RH}" stroke="#d6d6d1"/>`;y+=RH;
   }
@@ -2822,7 +2857,7 @@ function listKit(s,o,W){
  const head=y=>`<rect x="${M}" y="${y}" width="${TW}" height="42" fill="#2b3445"/>`+cols.map(c=>`<text x="${M+c[1]+10}" y="${y+27}" class="x-th">${c[0]}</text>`).join('');
  const row=({r,t,h:RH},y)=>{let h='';if(sb){const src=r.m.sb&&images[r.m.sb];const iy=y+(o.dense?9:12);h+=src?`<image href="${src}" xlink:href="${src}" x="${M+10}" y="${iy}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`:`<rect x="${M+10}" y="${iy}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;}
   const sx=M+cols[C('SHOT #')][1],vx=M+cols[C('VER')][1];
-  h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${vx+10}" y="${y+30}" class="x-ls">${verCode(s,r.vi)}</text>`;
+  h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${vx+10}" y="${y+30}" class="x-ls">${verCode(s,r.vn)}</text>`;
   h+=txt('SHOT SIZE',y,t.size)+txt('SHOT TYPE',y,t.type)+txt('SHOT ANGLE',y,t.angle)+txt('MOVEMENT',y,t.move)+txt('DESCRIPTION',y,t.desc);
   return h+`<line x1="${M}" x2="${W-M}" y1="${y+RH}" y2="${y+RH}" stroke="#d6d6d1"/>`;};
  const close=(top,y)=>cols.slice(1).map(c=>`<line x1="${M+c[1]}" x2="${M+c[1]}" y1="${top}" y2="${y}" stroke="#e1e1dc"/>`).join('')+`<rect x="${M}" y="${top}" width="${TW}" height="${y-top}" fill="none" stroke="#c9c9c4"/>`;
@@ -3157,10 +3192,10 @@ const SHOT_F={size:'Shot Size',type:'Shot Type',angle:'Shot Angle',move:'Movemen
 function shotOptions(k){const used=new Set();for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){const v=String(m[k]||'').trim();if(v&&!PRESET[k].includes(v))used.add(v);}return [...PRESET[k],...[...used].sort()];}
 function shotPop(cx,cy){
  if(!sel||tool||offCanvas())return;const s=scene(),it=itemById(sel.id);if(!it||it.type!=='cam'){objPop(cx,cy);return;}
- popAt={x:cx,y:cy};const n=it.marks.length,vi=clamp(sel.mark||0,0,n-1),m=it.marks[vi],many=rowsOf(s).filter(r=>r.vi===0).length>1;
+ popAt={x:cx,y:cy};const n=nVer(it),vi=verStart(it,sel.mark||0),m=it.marks[vi],many=rowsOf(s).filter(r=>r.vi===0).length>1;
  const val=v=>v?esc(trunc(String(v),24)):'<i>Not Set</i>',row=(k,v)=>`<button data-sf="pick" data-k="${k}">${SHOT_F[k]}<span class="pgv">${val(v)} ›</span></button>`;
  pop.innerHTML=`<h4>Edit Shot Description</h4><div class="ls shotls" style="width:320px">
-  <div class="hd">Shot / Version</div><div class="sv2"><button data-sf="shots"${many?'':' disabled'}>Shot ${esc(shotCode(s,it))}<span class="pgv">›</span></button><button data-sf="vers"${n>1?'':' disabled'}>Version ${verCode(s,vi)}<span class="pgv">›</span></button></div>
+  <div class="hd">Shot / Version</div><div class="sv2"><button data-sf="shots"${many?'':' disabled'}>Shot ${esc(shotCode(s,it))}<span class="pgv">›</span></button><button data-sf="vers"${n>1?'':' disabled'}>Version ${verCode(s,verNum(it,vi))}<span class="pgv">›</span></button></div>
   <div class="hd">This Version</div>${row('size',m.size)}${row('type',m.type)}${row('angle',m.angle)}${row('move',m.move)}
   <div class="hd">Description</div><button data-sf="desc" class="sdesc"><span>${m.desc?esc(trunc(String(m.desc),120)):'<i>Not Set</i>'}</span><span class="pgv">›</span></button>
   <div class="hd">Storyboard</div><button data-sf="frame">${m.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…'}</button>
@@ -3171,12 +3206,12 @@ function shotPop(cx,cy){
   if(a==='pick')shotPick(b.dataset.k);
   else if(a==='shots')shotList(false);
   else if(a==='vers')shotList(true);
-  else if(a==='desc'){const at=popAt;modal(`<h3>Description</h3><p class="mut">Shot ${esc(shotCode(s,it))}${n>1?' · version '+verCode(s,vi):''}</p><label class="fld"><textarea id="sdT" rows="5">${esc(m.desc||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const t=card.querySelector('#sdT');t.focus();t.setSelectionRange(t.value.length,t.value.length);card.querySelector('#ok').onclick=()=>{m.desc=t.value;closeModal();commit();shotPop(at.x,at.y);};});}
+  else if(a==='desc'){const at=popAt;modal(`<h3>Description</h3><p class="mut">Shot ${esc(shotCode(s,it))}${n>1?' · version '+verCode(s,verNum(it,vi)):''}</p><label class="fld"><textarea id="sdT" rows="5">${esc(m.desc||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const t=card.querySelector('#sdT');t.focus();t.setSelectionRange(t.value.length,t.value.length);card.querySelector('#ok').onclick=()=>{m.desc=t.value;closeModal();commit();shotPop(at.x,at.y);};});}
   else if(a==='frame'){closePop();act('sbAdd',{dataset:{id:it.id,v:String(vi)}});}
   else if(a==='camdesc'){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();back();}
   else if(a==='labreset'){delete it.lab;closePop();commit();toast('Label is back with its camera.');}
   else if(a==='labfree'){labDetach(it,0);closePop();commit();toast('Label detached. Drag it where you want it.');}
-  else if(a==='addver'){closePop();startTool({t:'move',id:it.id});}
+  else if(a==='addver'){addVersion(it,vi);}
   else if(a==='delver'){closePop();act('delMark',{dataset:{}});}
   else if(a==='del'){closePop();deleteSel(true);}
  };
@@ -3191,7 +3226,7 @@ function shotPick(k){const it=itemById(sel.id);if(!it)return;const m=it.marks[se
   m[k]=v;commit();back();};
 }
 function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;const at=popAt,back=()=>shotPop(at.x,at.y),R=rowsOf(s).filter(r=>versions?r.it===it:r.vi===0);
- pop.innerHTML=`<h4><button class="back">‹ Back</button>${versions?'Version':'Shot'}</h4><div class="ls" style="width:320px">${R.map(r=>{const on=r.it===it&&(versions?r.vi===(sel.mark||0):true);return `<button data-id="${r.it.id}" data-v="${r.vi}"><b style="min-width:34px">${versions?verCode(s,r.vi):esc(shotCode(s,r.it))}</b><span style="color:#cfd0d4">${esc(trunc(capOf(r.m)||'No details yet',26))}</span><span class="rad${on?' on':''}"></span></button>`;}).join('')}</div>`;
+ pop.innerHTML=`<h4><button class="back">‹ Back</button>${versions?'Version':'Shot'}</h4><div class="ls" style="width:320px">${R.map(r=>{const on=r.it===it&&(versions?r.vi===verStart(it,sel.mark||0):true);return `<button data-id="${r.it.id}" data-v="${r.vi}"><b style="min-width:34px">${versions?'V'+verCode(s,r.vn):esc(shotCode(s,r.it))}</b><span style="color:#cfd0d4">${esc(trunc(capOf(r.m)||'No details yet',26))}</span><span class="rad${on?' on':''}"></span></button>`;}).join('')}</div>`;
  pop.querySelector('.back').onclick=back;placePopAt(at.x,at.y);
  pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-id]');if(!b)return;sel={id:b.dataset.id,mark:+b.dataset.v||0};renderUI();renderShotSel();back();};
 }
