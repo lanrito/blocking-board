@@ -389,7 +389,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117174158';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117174405';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -439,9 +439,9 @@ const LIB={
  rifle:{n:'Rifle',w:70,h:22,s:'<path class="pd" d="M2,34L24,26H70V14H78V26H98V42H72L68,56H58L56,92H44L48,56H40L22,74H2Z"/>'},
  bush:{n:'Bush',w:50,h:50,s:`<path class="pf" d="${scallop(50,50,40,8)}"/>`},
  tree:{n:'Tree',w:150,h:150,s:`<path class="pf" d="${scallop(50,50,42,13)}"/>`},
- car:{n:'Car',w:270,h:110,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="22" ry="40"/><path class="pl" d="M30,22V78M30,22H40M30,78H40M60,22H74V78H60M60,50H74"/>'},
- minibus:{n:'Mini Bus',w:380,h:130,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="14" ry="40"/><path class="pl" d="M18,22V78M18,22H26M18,78H26M42,22H74V78H42M42,50H74M58,22V78"/>'},
- semi:{n:'Semi Truck',w:360,h:150,s:'<rect class="pf" x="1" y="14" width="22" height="72" rx="4"/><rect class="pf" x="26" y="8" width="72" height="84" rx="3"/><path class="pl" d="M44,8V92M62,30H96M62,70H96"/>'},
+ car:{n:'Car',w:270,h:110,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="22" ry="40"/><path class="pl" d="M38,24H24V76H38M66,22H54V43H66M66,57H54V78H66"/><path class="pl pg" d="M82,22Q88,50 82,78"/>'},
+ minibus:{n:'Mini Bus',w:380,h:130,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="14" ry="40"/><path class="pl" d="M20,22H12V78H20M38,22H30V78H38M56,22H48V78H56M77,20H68V43H77M77,57H68V80H77"/><path class="pl pg" d="M88,20Q93,50 88,80"/>'},
+ semi:{n:'Semi Truck',w:360,h:150,s:'<rect class="pf" x="1" y="14" width="22" height="72" rx="4"/><rect class="pf" x="26" y="8" width="72" height="84" rx="3"/><path class="pl" d="M44,8V92M62,30H96M62,70H96"/><path class="pl" d="M8,22H14V43H8M8,57H14V78H8"/><path class="pl pg" d="M5,22Q2,50 5,78"/>'},
  trailer:{n:'Truck Trailer',w:800,h:150,s:'<rect class="pf" x="1" y="6" width="98" height="88" rx="2"/>'},
  moto:{n:'Motorcycle',w:130,h:60,s:'<path class="pf" d="M2,40Q2,26 14,30L40,32Q50,20 62,30L74,32V14H80V32L90,34Q98,36 98,50Q98,64 90,66L80,68V86H74V68L62,70Q50,80 40,68L14,70Q2,74 2,60Z"/>'},
  tank:{n:'Tank',w:420,h:220,s:'<rect class="pf" x="1" y="4" width="70" height="92" rx="4"/><rect class="pf" x="16" y="26" width="36" height="48" rx="6"/><rect class="pf" x="52" y="44" width="47" height="12"/>'},
@@ -498,11 +498,11 @@ const LIB={
  barcounter:{n:'Bar Counter',w:300,h:45,s:'<rect class="pf" x="1" y="8" width="98" height="84" rx="20" ry="40"/>'},
  cafetable:{n:'Café Table + 2',w:45,h:60,s:'<circle class="pf" cx="50" cy="50" r="30"/><rect class="pw" x="34" y="2" width="32" height="14" rx="4"/><rect class="pw" x="34" y="84" width="32" height="14" rx="4"/>'},
  // street & vehicles
- suv:{n:'SUV',w:300,h:125,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="16" ry="34"/><path class="pl" d="M26,18V82M26,18H34M26,82H34M48,18H80V82H48M48,50H80"/>'},
- taxi:{n:'Taxi',w:270,h:110,s:'<rect class="pyl" x="1" y="4" width="98" height="92" rx="22" ry="40"/><path class="pl" d="M30,22V78M30,22H40M30,78H40M60,22H74V78H60"/><rect class="pw" x="62" y="40" width="10" height="20"/>'},
- police:{n:'Police Car',w:280,h:110,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="22" ry="40"/><path class="pl" d="M30,22V78M30,22H40M30,78H40M60,22H74V78H60"/><rect class="pred" x="64" y="36" width="5" height="14"/><rect class="pblue" x="64" y="50" width="5" height="14"/>'},
- ambulance:{n:'Ambulance',w:380,h:130,s:'<rect class="pw" x="1" y="4" width="98" height="92" rx="10" ry="30"/><path class="pl" d="M14,22V78M14,22H22M14,78H22"/><path class="pred" d="M56,38H66V45H73V55H66V62H56V55H49V45H56Z"/>'},
- bus:{n:'City Bus',w:720,h:150,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="4" ry="22"/><path class="pl" d="M6,20V80M6,20H10M6,80H10"/><rect class="pl" x="30" y="34" width="12" height="32"/><rect class="pl" x="64" y="34" width="12" height="32"/>'},
+ suv:{n:'SUV',w:300,h:125,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="16" ry="34"/><path class="pl" d="M26,20H16V80H26M49,20H38V80H49M73,18H62V43H73M73,57H62V82H73"/><path class="pl pg" d="M86,18Q92,50 86,82"/>'},
+ taxi:{n:'Taxi',w:270,h:110,s:'<rect class="pyl" x="1" y="4" width="98" height="92" rx="22" ry="40"/><path class="pl" d="M38,24H24V76H38M66,22H54V43H66M66,57H54V78H66"/><path class="pl pg" d="M82,22Q88,50 82,78"/><rect class="pw" x="41" y="40" width="9" height="20"/>'},
+ police:{n:'Police Car',w:280,h:110,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="22" ry="40"/><path class="pl" d="M38,24H24V76H38M66,22H54V43H66M66,57H54V78H66"/><path class="pl pg" d="M82,22Q88,50 82,78"/><rect class="pred" x="44" y="30" width="5" height="20"/><rect class="pblue" x="44" y="50" width="5" height="20"/>'},
+ ambulance:{n:'Ambulance',w:380,h:130,s:'<rect class="pw" x="1" y="4" width="98" height="92" rx="10" ry="30"/><path class="pl" d="M70,10V90"/><path class="pl" d="M87,20H78V43H87M87,57H78V80H87"/><path class="pred" d="M30,38H40V45H47V55H40V62H30V55H23V45H30Z"/>'},
+ bus:{n:'City Bus',w:720,h:150,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="4" ry="22"/><path class="pl" d="M14,16H8V34H14M14,66H8V84H14M25,16H19V34H25M25,66H19V84H25M36,16H30V34H36M36,66H30V84H36M47,16H41V34H47M47,66H41V84H47M58,16H52V34H58M58,66H52V84H58M69,16H63V34H69M69,66H63V84H69M80,16H74V34H80M80,66H74V84H80M94,16H88V34H94"/><path class="pl pg" d="M95,10V90"/>'},
  bicycle:{n:'Bicycle',w:110,h:34,s:'<path class="pl ph" d="M2,50H98M80,14V86"/><ellipse class="pf" cx="40" cy="50" rx="10" ry="20"/>'},
  boat:{n:'Rowboat',w:300,h:110,s:'<path class="pf" d="M2,50Q20,6 70,6Q92,6 98,50Q92,94 70,94Q20,94 2,50Z"/><path class="pl" d="M40,8V92M66,6V94"/>'},
  helicopter:{n:'Helicopter',w:700,h:700,s:'<ellipse class="pf" cx="50" cy="44" rx="16" ry="22"/><path class="pf" d="M47,64H53V96H47Z"/><path class="pl ph" d="M10,6L90,82M90,6L10,82"/>'},
