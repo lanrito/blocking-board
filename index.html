@@ -94,8 +94,10 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .brghost{position:fixed;z-index:90;pointer-events:none;background:#232427;color:#fff;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #animBar{display:flex;align-items:center;gap:2px;min-width:0}#animBar>button{min-width:40px}#animBar #aPlay.on{background:#2f6fde;color:#fff}
 #animBar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
-.asteps{display:flex;gap:1px;overflow-x:auto;max-width:min(46vw,620px);scrollbar-width:none}.asteps::-webkit-scrollbar{display:none}
-#bar .ast{min-width:34px;font-weight:700;color:#d6d7dc;padding:0 6px}#bar .ast.dim{color:#6c6d73}#bar .ast.cur{color:#fff;background:#2f6fde;border-radius:8px}
+.asteps{display:flex;gap:1px;align-items:center;overflow-x:auto;max-width:min(46vw,620px);scrollbar-width:none}.asteps::-webkit-scrollbar{display:none}
+.aslab{flex:none;align-self:center;font-size:11.5px;font-weight:650;color:#f5c26b;padding:0 4px 0 8px;white-space:nowrap;border-left:2px solid #f5c26b;margin-left:4px}#animBar #aVis.on{background:#3a3b40;color:#fff}
+#pop .spdrow{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:0 18px;border-bottom:1px solid #34353a;color:#fff;font-size:16px}#pop .spdb{display:flex;align-items:flex-end;gap:4px;height:26px}#pop .spdb i{width:9px;border-radius:2px;background:#5d5e64;cursor:pointer}#pop .spdb i.on{background:#3ecf6a}#pop .spdb.off i.on{background:#2b8a49}
+#bar .ast{flex:none;min-width:34px;font-weight:700;color:#d6d7dc;padding:0 6px}#bar .ast.dim{color:#6c6d73}#bar .ast.cur{color:#fff;background:#2f6fde;border-radius:8px}
 .stepgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:12px 14px;width:290px;box-sizing:border-box}.stepgrid button{height:40px;border-radius:8px;border:1px solid #3a3b40;background:#2c2d31;color:#fff;font-weight:700;font-size:15px}.stepgrid button.on{background:#2f7cf6;border-color:#2f7cf6}
 #pop .pgonly{margin-left:8px;font-size:11px;font-weight:700;color:#8fb6ff;text-transform:uppercase}
 .imxr .xl{width:110px;height:34px;border:1px solid var(--line);border-radius:8px;padding:0 8px;background:var(--chip);font-size:14px;text-transform:uppercase}.imxr .xn{width:64px;height:34px;border:1px solid var(--line);border-radius:8px;padding:0 8px;background:var(--chip);font-size:15px}.imxr{cursor:default}
@@ -106,6 +108,8 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 #pop .lays .lk.on{color:#fff;background:#2f7cf6}#pop .lays .lall{justify-content:space-between}
 #pop .lays .lkall{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8px;border:1px solid #45464c;background:#2c2d31;color:#fff;font-size:14px;width:auto;min-height:0}#pop .lays .lkall.on{background:#2f7cf6;border-color:#2f7cf6}
 #pop .hdr{float:right;font-weight:400;opacity:.7}
+.skcard{width:min(860px,96vw)!important;max-width:none!important}.skwrap{background:#e9e8e4;border-radius:10px;padding:8px}#skC{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#fff;border-radius:4px;touch-action:none;cursor:crosshair}
+.sktools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0 4px}.skc{width:34px;height:34px;border-radius:50%;border:2px solid #cfcfca;background:var(--c);padding:0}.skc.on{box-shadow:0 0 0 3px #2f6fde}.sks{width:40px;height:34px;border-radius:8px;border:1px solid #d6d5d0;background:#f6f5f1;display:flex;align-items:center;justify-content:center;padding:0}.sks i{border-radius:50%;background:#1c1c1e;display:block}.sks.on{border-color:#2f6fde;box-shadow:0 0 0 2px #2f6fde}.sksep{width:1px;height:26px;background:#d6d5d0;margin:0 4px}
 #pop .dmr{display:flex;border-bottom:1px solid #34353a}#pop .ls .dmr button{flex:1;justify-content:center;min-height:50px;font-size:20px;font-weight:600;border-bottom:0;border-right:1px solid #34353a;padding:0}#pop .ls .dmr button:last-child{border-right:0}#pop .ls .dmr button.on{background:#3f6fd8}#pop .ls .dmr button:disabled{opacity:.35}
 #pop .cgrid{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:4px;padding:11px 14px 13px;border-bottom:1px solid #34353a}
 #pop .ls .cgrid button.sw,#pop .ls .cgrid button.sw:hover{flex:0 0 22px;width:22px;height:22px;min-height:0;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.22);background:var(--c);transition:transform .1s}
@@ -374,7 +378,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117031706';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117032606';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1044,13 +1048,40 @@ function labCan(it){return !!it&&(it.type==='cam'||it.type==='char'||((it.type==
 function labelAt(x,y){for(const t of document.querySelectorAll('#items text.nm, #items text.nt')){const r=t.getBoundingClientRect();if(x>=r.left-3&&x<=r.right+3&&y>=r.top-2&&y<=r.bottom+2){const g=t.closest('[data-id]');if(g)return g;}}return null;}
 function capOf(m){return [m.size?(ABBR[m.size]||m.size):'',m.angle||'',m.type||''].filter(Boolean).join(' ');}
 /* A camera's marks: each version starts a run; Track To adds dolly marks (tk) to that run; Add Version at the same spot adds sp. */
-const VFIELDS=['size','type','angle','move','desc','sb','sbp','sba'];
+const VFIELDS=['size','type','angle','move','desc','sb','sbp','sba','sb0'];
 function verStart(it,i){i=clamp(i||0,0,it.marks.length-1);while(i>0&&it.marks[i].tk)i--;return i;}
 function camRun(it,i){const a=verStart(it,i);let b=a;while(b+1<it.marks.length&&it.marks[b+1].tk)b++;return [a,b];}
 function verNum(it,i){const a=verStart(it,i);let n=-1;for(let j=0;j<=a;j++)if(!it.marks[j].tk)n++;return Math.max(0,n);}
 function nVer(it){return it.marks.filter(m=>!m.tk).length;}
 function spBase(it,i){const sp=it.marks[i]&&it.marks[i].sp;if(typeof sp==='string'){const k=it.marks.findIndex(q=>q.mid===sp);if(k>=0&&k!==i)return k;}let j=i-1;while(j>0&&(it.marks[j].tk||it.marks[j].sp))j--;return Math.max(0,j);}
 /* a version at the same spot sits exactly on its base camera; whichever was turned or moved last leads */
+/* sketch pad: draw over a storyboard frame (or a blank one); the drawing is saved into the frame image */
+let penSeen=false;
+function sketchFrame(it,from){if(!it||it.type!=='cam')return;const s=scene(),vi=verStart(it,from),m=it.marks[vi],W=1280,H=720;
+ const COLS=['#e5484d','#1c1c1e','#ffffff','#2f6fde','#f5c518'],SIZES=[[3,'Fine'],[7,'Medium'],[14,'Thick']];let col=COLS[0],wid=7,strokes=[],cur=null,base=null;
+ modal(`<h3>Sketch · Shot ${esc(shotCode(s,it))}${nVer(it)>1?' V'+verCode(s,verNum(it,vi)):''}</h3><div class="skwrap"><canvas id="skC" width="${W}" height="${H}"></canvas></div>
+  <div class="sktools">${COLS.map(c=>`<button class="skc${c===col?' on':''}" data-c="${c}" style="--c:${c}" aria-label="Color"></button>`).join('')}<span class="sksep"></span>${SIZES.map(([w,l])=>`<button class="sks${w===wid?' on':''}" data-w="${w}" title="${l}"><i style="width:${w+3}px;height:${w+3}px"></i></button>`).join('')}<span class="sksep"></span><button class="sm" id="skU">Undo</button><button class="sm" id="skX">${m.sb0!==undefined?'Start Over':'Clear'}</button></div>
+  <div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{
+  const cv=card.querySelector('#skC'),cx=cv.getContext('2d');
+  const paint=()=>{cx.fillStyle='#fff';cx.fillRect(0,0,W,H);if(base){const k=Math.max(W/base.width,H/base.height),bw=base.width*k,bh=base.height*k;cx.drawImage(base,(W-bw)/2,(H-bh)/2,bw,bh);}
+   cx.lineCap='round';cx.lineJoin='round';for(const st of strokes.concat(cur?[cur]:[])){cx.strokeStyle=st.c;cx.lineWidth=st.w;cx.beginPath();st.p.forEach((q,i)=>i?cx.lineTo(q[0],q[1]):cx.moveTo(q[0],q[1]));if(st.p.length===1)cx.lineTo(st.p[0][0]+.1,st.p[0][1]);cx.stroke();}};
+  const load=id=>{base=null;if(id&&images[id]){const im=new Image();im.onload=()=>{base=im;paint();};im.src=images[id];}paint();};
+  load(m.sb);
+  const pt=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height];};
+  cv.addEventListener('pointerdown',e=>{if(e.pointerType==='pen')penSeen=true;else if(e.pointerType==='touch'&&penSeen)return;e.preventDefault();cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);cur={c:col,w:wid*(e.pointerType==='pen'&&e.pressure?.6+e.pressure*.8:1),p:[pt(e)],id:e.pointerId};paint();});
+  cv.addEventListener('pointermove',e=>{if(!cur||e.pointerId!==cur.id)return;const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];for(const q of (evs.length?evs:[e]))cur.p.push(pt(q));paint();});
+  const up=e=>{if(!cur||e.pointerId!==cur.id)return;strokes.push(cur);cur=null;paint();};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  card.querySelector('.sktools').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+   if(b.dataset.c){col=b.dataset.c;card.querySelectorAll('.skc').forEach(x=>x.classList.toggle('on',x===b));}
+   else if(b.dataset.w){wid=+b.dataset.w;card.querySelectorAll('.sks').forEach(x=>x.classList.toggle('on',x===b));}
+   else if(b.id==='skU'){strokes.pop();paint();}
+   else if(b.id==='skX'){strokes=[];if(m.sb0!==undefined){load(m.sb0||null);card.dataset.reset='1';}else{base=null;paint();card.dataset.reset='1';}}});
+  card.querySelector('#ok').onclick=()=>{
+   if(!strokes.length&&!card.dataset.reset){closeModal();return;}
+   if(m.sb0===undefined)m.sb0=m.sb||'';
+   if(!strokes.length&&card.dataset.reset){if(m.sb0)m.sb=m.sb0;else delete m.sb;delete m.sb0;closeModal();if(frameOn())freezeFrames(s);commit();toast('Sketch removed.');return;}
+   paint();const id=addImage(cv.toDataURL('image/jpeg',.86));m.sb=id;closeModal();if(frameOn())freezeFrames(s);commit();toast('Sketch saved to the storyboard frame.');};
+ },'skcard');}
 function addVersion(it,from){const a=verStart(it,from),A=it.marks[a];
  const B=A.sp?it.marks[spBase(it,a)]:A;if(!B.mid)B.mid=uid();const m={x:B.x,y:B.y,rot:B.rot||0,sp:B.mid,size:'',type:A.type||'',angle:A.angle||'',move:'',desc:''};it.marks.push(m);
  sel={id:it.id,mark:it.marks.length-1};commit();renderShotSel();toast(`Version ${verCode(scene(),nVer(it)-1)} added at the same spot.`);
@@ -1595,7 +1626,7 @@ function objPop(cx,cy){
    h=`<div class="hd">Dolly Marks</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this dolly mark" aria-label="Remove this dolly mark"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`
     +sec('Actions',B('trackto','Track To…')+B('trackfrom','Track From…')+B('pan','Add Pan'))
     +sec('Shot List',B('shotdesc','Edit Shot Description…')+B('addver','Add Version…')+(nv>1?B('delmark','Remove This Version'):''))
-    +sec('Storyboard',B('frame',va.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
+    +sec('Storyboard',B('frame',va.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+B('sketch',va.sb?'Sketch on the Frame…':'Sketch a Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
     +(s.setups.length>1?sec('Shot Order',(s.setups[0].id!==it.setupId?B('shotUp','Move Shot Earlier'):'')+(s.setups[s.setups.length-1].id!==it.setupId?B('shotDown','Move Shot Later'):'')):'')
     +sec('Settings',B('edit','Camera Details…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages;}
@@ -1620,6 +1651,7 @@ function objAct(o){
  if(it&&it.type==='cam'&&o==='trackto'){const [,rb]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'to',at:rb});return;}
  if(it&&it.type==='cam'&&o==='trackfrom'){const [ra]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'from',at:ra});return;}
  if(it&&it.type==='cam'&&o==='addver'){addVersion(it,sel.mark||0);return;}
+ if(it&&it.type==='cam'&&o==='sketch'){closePop();sketchFrame(it,sel.mark||0);return;}
  if(o==='astep'){stepSub();return;}
  closePop();
  switch(o){
@@ -3096,7 +3128,17 @@ let IMF=null;
 function effSteps(it){const M=it.marks||[],e=new Array(M.length);let nx=Infinity;for(let i=M.length-1;i>=0;i--){if(M[i].st!=null)nx=+M[i].st;e[i]=M[i].st!=null?+M[i].st:nx;}if(it.type==='char'&&M.length&&M[0].st==null)e[0]=1;return e;}
 function lastIdx(st,N){let j=-1;st.forEach((e,i)=>{if(e<=N)j=i;});return j;}
 function animActors(sc){return pageItems(sc).filter(it=>(it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length);}
-function maxStep(sc){let m=1;for(const it of animActors(sc))for(const q of it.marks)if(q.st!=null)m=Math.max(m,+q.st);return m;}
+/* per page: section labels and speeds for each time */
+function tlOf(sc,make){const pid=sc.pageId||'p';if(!sc.tl)sc.tl={};if(!sc.tl[pid]&&make)sc.tl[pid]={lab:{},spd:{}};return sc.tl[pid]||{lab:{},spd:{}};}
+const SPD_F=[.45,.7,1,1.45,2.1];
+function spdOf(sc,N){const q=(tlOf(sc).spd||{})[N]||{};const a=q.a||3,same=q.same!==false;return {a,c:same?a:(q.c||3),same};}
+function spdF(sc,N,cam){const q=spdOf(sc,N);return SPD_F[(cam?q.c:q.a)-1]||1;}
+/* move every time at or after `from` by `d`; times equal to `drop` lose their time first */
+function shiftTime(sc,from,d,drop){
+ for(const it of animActors(sc))for(const q of it.marks){if(q.st==null)continue;if(drop!=null&&+q.st===drop){delete q.st;continue;}if(+q.st>=from)q.st=+q.st+d;}
+ const T=tlOf(sc,true);for(const key of ['lab','spd']){const o=T[key]||{},n={};for(const k in o){const v=+k;if(drop!=null&&v===drop)continue;n[v>=from?v+d:v]=o[k];}T[key]=n;}
+}
+function maxStep(sc){let m=1;for(const it of animActors(sc))for(const q of it.marks)if(q.st!=null)m=Math.max(m,+q.st);const T=tlOf(sc);for(const k in (T.lab||{}))m=Math.max(m,+k);for(const k in (T.spd||{}))m=Math.max(m,+k);return m;}
 function legSample(a,b,soft){const P=[a,...legPts(a,b),b];if(P.length<3||!soft)return P.map(p=>({x:p.x,y:p.y}));const out=[{x:a.x,y:a.y}];
  for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2,c1={x:p1.x+(p2.x-p0.x)/6,y:p1.y+(p2.y-p0.y)/6},c2={x:p2.x-(p3.x-p1.x)/6,y:p2.y-(p3.y-p1.y)/6};
   for(let k=1;k<=14;k++){const t=k/14,u=1-t;out.push({x:u*u*u*p1.x+3*u*u*t*c1.x+3*u*t*t*c2.x+t*t*t*p2.x,y:u*u*u*p1.y+3*u*u*t*c1.y+3*u*t*t*c2.y+t*t*t*p2.y});}}return out;}
@@ -3106,14 +3148,14 @@ function timeline(it,N){
  if(cur<0)return null;
  if(isCam&&!st.some(e=>e===N))return {cam:true,idle:true};
  let s0=prev>=0?prev:(isCam?st.findIndex(e=>e===N):0);if(s0<0)s0=0;
- const sp=170*anim.speed,segs=[],legs=[];let face=it.type==='char'?effFacing(it,s0):(it.marks[s0].rot||0);
- if(prev<0)segs.push({k:'in',d:.35/anim.speed});
+ const F=anim.speed*spdF(scene(),N,isCam),sp=170*F,segs=[],legs=[];let face=it.type==='char'?effFacing(it,s0):(it.marks[s0].rot||0);
+ if(prev<0)segs.push({k:'in',d:.35/F});
  for(let i=s0+1;i<=cur;i++){const a=it.marks[i-1],b=it.marks[i];
-  if(it.type==='char'&&b.t){segs.push({k:'turn',r0:face,r1:b.rot,d:.55/anim.speed});if(b.back)segs.push({k:'turn',r0:b.rot,r1:face,d:.5/anim.speed});else face=b.rot;continue;}
+  if(it.type==='char'&&b.t){segs.push({k:'turn',r0:face,r1:b.rot,d:.55/F});if(b.back)segs.push({k:'turn',r0:b.rot,r1:face,d:.5/F});else face=b.rot;continue;}
   const pts=legSample(a,b,!it.hard);let len=0;for(let k=1;k<pts.length;k++)len+=Math.hypot(pts[k].x-pts[k-1].x,pts[k].y-pts[k-1].y);
   if(len>1){segs.push({k:'walk',pts,len,d:Math.max(.25,len/sp),r0:a.rot||0,r1:b.rot||0});legs.push(i);}
   if(it.type==='char'){const tr=b.rot||0;face=tr;}else face=b.rot||0;}
- if(isCam&&st[cur]===N)for(const q of (it.marks[cur].pans||[])){segs.push({k:'turn',r0:face,r1:q.rot,d:.6/anim.speed});face=q.rot;}
+ if(isCam&&st[cur]===N)for(const q of (it.marks[cur].pans||[])){segs.push({k:'turn',r0:face,r1:q.rot,d:.6/F});face=q.rot;}
  return {s0,cur,segs,legs,dur:segs.reduce((a,s)=>a+s.d,0),cam:isCam,start:{x:it.marks[s0].x,y:it.marks[s0].y,rot:it.type==='char'?effFacing(it,s0):(it.marks[s0].rot||0)}};
 }
 function poseAt(it,tl,t){let x=tl.start.x,y=tl.start.y,r=tl.start.rot,op=1;
@@ -3137,9 +3179,9 @@ function animLayer(sc,N,frac){
    for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],col,false,20,!it.hard,'class="deco"');
    cams+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g><g class="deco" transform="translate(0,${-34})"><rect x="${-pw/2}" y="-9" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2" y="2.8" text-anchor="middle">${tag}</text></g></g>`;}}
  return `<g>${paths}${cams}${bodies}</g>`;}
-function animBase(sc){IMF='noActors';const a=itemsMarkup(sc);IMF='onlyActors';const g=itemsMarkup(sc);IMF=null;return a+`<g class="deco" opacity=".16">${g}</g>`;}
+function animBase(sc){IMF='noActors';const a=itemsMarkup(sc);if(P.ui.timeOnly){IMF=null;return a;}IMF='onlyActors';const g=itemsMarkup(sc);IMF=null;return a+`<g class="deco" opacity=".16">${g}</g>`;}
 function drawAnim(){const s=scene();if(!anim.base)anim.base=animBase(s);$('#items').innerHTML=anim.base+animLayer(s,anim.step,anim.frac);}
-function setStep(n){stopPlay();anim.base=null;if(!n||n===anim.step&&anim.frac>=1){anim.step=0;anim.frac=1;renderAnimBar();renderCanvas();return;}const was=anim.step;anim.step=n;anim.frac=1;renderAnimBar();renderCanvas();if(!was)toast('Animation view. Tap the step again or press Esc to go back to editing.');}
+function setStep(n){stopPlay();anim.base=null;if(!n){anim.step=0;anim.frac=1;renderAnimBar();renderCanvas();return;}const was=anim.step;anim.step=n;anim.frac=1;renderAnimBar();renderCanvas();if(!was)toast('Animation view. Tap this time again for its menu. Esc goes back to editing.');}
 function stopPlay(){anim.playing=false;cancelAnimationFrame(anim.raf);renderAnimBar();}
 function play(){
  const s=scene(),mx=maxStep(s);
@@ -3152,9 +3194,29 @@ function play(){
   drawAnim();anim.raf=requestAnimationFrame(tick);};
  drawAnim();anim.raf=requestAnimationFrame(tick);}
 function renderAnimBar(){const el=$('#animBar');if(!el)return;const s=scene(),mx=maxStep(s),K=Math.max(mx+1,3);
- el.innerHTML=`<button id="aGear" title="Animation settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button><button id="aPlay" class="${anim.playing?'on':''}" title="${anim.playing?'Pause':'Play the blocking'} (Space)">${anim.playing?'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="3"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/></svg>'}</button><span class="asteps">${Array.from({length:K},(_,i)=>i+1).map(n=>`<button class="ast${anim.step===n?' cur':''}${n>mx?' dim':''}" data-n="${n}" title="Show step ${n}">${n}</button>`).join('')}</span>`;
- el.querySelector('#aPlay').onclick=play;el.querySelector('.asteps').onclick=e=>{const b=e.target.closest('[data-n]');if(b)setStep(+b.dataset.n);};
+ el.innerHTML=`<button id="aGear" title="Animation settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button><button id="aPlay" class="${anim.playing?'on':''}" title="${anim.playing?'Pause':'Play the blocking'} (Space)">${anim.playing?'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="3"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/></svg>'}</button><button id="aVis" class="${P.ui.timeOnly?'on':''}" title="${P.ui.timeOnly?'Showing only this time. Tap to show other times faded':'Other times shown faded. Tap to show only this time'}"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>${P.ui.timeOnly?'':'<path d="M4 20L20 4"/>'}</svg></button><span class="asteps">${(()=>{const L=tlOf(s).lab||{};return Array.from({length:K},(_,i)=>i+1).map(n=>(L[n]?`<span class="aslab" title="${esc(L[n])}">${esc(trunc(L[n],18))}</span>`:'')+`<button class="ast${anim.step===n?' cur':''}${n>mx?' dim':''}" data-n="${n}" title="${anim.step===n?'Edit time '+n:'Show time '+n}">${n}</button>`).join('');})()}</span>`;
+ el.querySelector('#aPlay').onclick=play;el.querySelector('.asteps').onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;const n=+b.dataset.n;if(n===anim.step&&!anim.playing&&anim.frac>=1)timeMenu(b,n);else setStep(n);};
+ el.querySelector('#aVis').onclick=()=>{P.ui.timeOnly=!P.ui.timeOnly;saveLocal();anim.base=null;if(!anim.step)setStep(1);else{renderAnimBar();drawAnim();}toast(P.ui.timeOnly?'Showing only what happens at this time.':'Other times are shown faded.');};
  el.querySelector('#aGear').onclick=e=>{const b=e.currentTarget;if(popFor===b){closePop();return;}openPop(`<h4>Animation</h4><div class="ls" style="width:290px"><div class="hd">Speed</div>${[['.6','Slow'],['1','Normal'],['1.7','Fast']].map(([v,l])=>`<button data-sp="${v}">${l}<span class="rad${+v===anim.speed?' on':''}"></span></button>`).join('')}<div class="hd">Settings</div><button data-lp="1">Loop<span class="chk${anim.loop?' on':''}">${anim.loop?'✓':''}</span></button>${anim.step?'<button data-x2="1">Back to editing</button>':''}<div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">Nothing animates until you give it a step: double tap a position or camera › Animation Step. Positions in between are walked through on the way.</div></div>`,b,p=>{p.querySelector('.ls').addEventListener('click',ev=>{const x=ev.target.closest('button');if(!x)return;if(x.dataset.sp){anim.speed=+x.dataset.sp;}else if(x.dataset.lp){anim.loop=!anim.loop;}else if(x.dataset.x2){setStep(0);}closePop();});});};}
+function timeMenu(btn,N){const s=scene(),L=tlOf(s).lab||{},q=spdOf(s,N),hasAny=animActors(s).some(it=>it.marks.some(m=>+m.st===N));
+ const bars=(k,lv,off)=>`<span class="spdb${off?' off':''}">${[1,2,3,4,5].map(i=>`<i data-${k}="${i}" class="${i<=lv?'on':''}" style="height:${6+i*3.4}px"></i>`).join('')}</span>`;
+ const html=`<h4>Edit Time ${N}</h4><div class="ls" style="width:300px"><div class="hd">Time</div><button data-t="before">↰ Insert Time Before</button><button data-t="after">↳ Insert Time After</button><button data-t="del">${IC.x}Delete Time</button>
+  <div class="hd">Label</div><button data-t="lab">${L[N]?'Edit Section Label…':'Insert Section Label…'}</button>${L[N]?'<button data-t="unlab">Remove Section Label</button>':''}
+  <div class="hd">Animation Speed</div><div class="spdrow">Actor Speed${bars('a',q.a)}</div><div class="spdrow">Camera Speed${bars('c',q.c,q.same)}</div><button data-t="same">Same Speed<span class="chk${q.same?' on':''}">${q.same?'✓':''}</span></button>
+  <div class="hd">View</div><button data-t="exit">Back to Editing</button></div>`;
+ const re=()=>{renderAnimBar();const b2=document.querySelector(`#animBar .ast[data-n="${N}"]`);if(b2)timeMenu(b2,N);};
+ const done=(msg)=>{anim.base=null;commit();renderAnimBar();if(anim.step)drawAnim();if(msg)toast(msg);};
+ popFor=null;openPop(html,btn,p=>{p.querySelector('.ls').addEventListener('click',e=>{const sp=e.target.closest('[data-a],[data-c]');const T=tlOf(s,true);
+  if(sp){const o=T.spd[N]=Object.assign({a:3,c:3,same:true},T.spd[N]||{});if(sp.dataset.a){o.a=+sp.dataset.a;}else{o.c=+sp.dataset.c;o.same=false;}commit();re();return;}
+  const x=e.target.closest('[data-t]');if(!x)return;const t=x.dataset.t;
+  if(t==='before'){shiftTime(s,N,1);closePop();done(`Inserted an empty time ${N}. What was at ${N} is now at ${N+1}.`);}
+  else if(t==='after'){shiftTime(s,N+1,1);closePop();anim.step=N+1;done(`Inserted an empty time ${N+1}.`);}
+  else if(t==='del'){shiftTime(s,N+1,-1,N);closePop();anim.step=Math.max(1,Math.min(N,maxStep(s)));done(hasAny?`Time ${N} deleted. Its moves now happen on the way to the next time.`:`Time ${N} deleted.`);}
+  else if(t==='lab'){closePop();askText('Section label',`Shown before time ${N}`,L[N]||'e.g. Kanan enters',v=>{tlOf(s,true).lab[N]=v;done();});const inp=document.querySelector('#atx');if(inp&&L[N])inp.value=L[N];}
+  else if(t==='unlab'){delete T.lab[N];closePop();done();}
+  else if(t==='same'){const o=T.spd[N]=Object.assign({a:3,c:3,same:true},T.spd[N]||{});o.same=!o.same;if(o.same)o.c=o.a;commit();re();}
+  else if(t==='exit'){closePop();setStep(0);}
+ });});}
 function stepSub(){const it=itemById(sel.id);if(!it||!it.marks)return;const i=sel.mark||0,m=it.marks[i],eff=m.st!=null?+m.st:null;
  pop.innerHTML=`<h4><button class="back">‹ Back</button>Animation Step</h4><div class="stepgrid">${Array.from({length:24},(_,k)=>k+1).map(n=>`<button data-n="${n}" class="${n===eff?'on':''}">${n}</button>`).join('')}</div><div class="ls" style="width:300px"><button data-n="auto">No step (not animated)<span class="chk${m.st==null?' on':''}">${m.st==null?'✓':''}</span></button></div>`;
  pop.querySelector('.back').onclick=()=>objPop(popAt.x,popAt.y);
@@ -3199,7 +3261,7 @@ function shotPop(cx,cy){
   <div class="hd">Shot / Version</div><div class="sv2"><button data-sf="shots"${many?'':' disabled'}>Shot ${esc(shotCode(s,it))}<span class="pgv">›</span></button><button data-sf="vers"${n>1?'':' disabled'}>Version ${verCode(s,verNum(it,vi))}<span class="pgv">›</span></button></div>
   <div class="hd">This Version</div>${row('size',m.size)}${row('type',m.type)}${row('angle',m.angle)}${row('move',m.move)}
   <div class="hd">Description</div><button data-sf="desc" class="sdesc"><span>${m.desc?esc(trunc(String(m.desc),120)):'<i>Not Set</i>'}</span><span class="pgv">›</span></button>
-  <div class="hd">Storyboard</div><button data-sf="frame">${m.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…'}</button>
+  <div class="hd">Storyboard</div><button data-sf="frame">${m.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…'}</button><button data-sf="sketch">${m.sb?'Sketch on the Frame…':'Sketch a Frame…'}</button>
   <div class="hd">Label</div>${it.lab?'<button data-sf="labreset">Reattach Label to the Camera</button>':'<button data-sf="labfree">Detach Label</button>'}<button data-sf="camdesc">Show Descriptions on the Floor Plan<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button>
   <div class="hd">Add / Remove</div><button data-sf="addver">Add Version…</button>${n>1?`<button data-sf="delver">${IC.x}Remove This Version</button>`:''}<button data-sf="del">${IC.x}Delete From Shot List</button></div>`;
  pop.classList.add('on');popFor=null;placePopAt(cx,cy);
@@ -3208,6 +3270,7 @@ function shotPop(cx,cy){
   else if(a==='shots')shotList(false);
   else if(a==='vers')shotList(true);
   else if(a==='desc'){const at=popAt;modal(`<h3>Description</h3><p class="mut">Shot ${esc(shotCode(s,it))}${n>1?' · version '+verCode(s,verNum(it,vi)):''}</p><label class="fld"><textarea id="sdT" rows="5">${esc(m.desc||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const t=card.querySelector('#sdT');t.focus();t.setSelectionRange(t.value.length,t.value.length);card.querySelector('#ok').onclick=()=>{m.desc=t.value;closeModal();commit();shotPop(at.x,at.y);};});}
+  else if(a==='sketch'){closePop();sketchFrame(it,vi);}
   else if(a==='frame'){closePop();act('sbAdd',{dataset:{id:it.id,v:String(vi)}});}
   else if(a==='camdesc'){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();back();}
   else if(a==='labreset'){delete it.lab;closePop();commit();toast('Label is back with its camera.');}
