@@ -1,5 +1,5 @@
-// The Director’s Notebook offline cache. Version 20261117035126
-const V='bb-20261117035126';
+// The Director’s Notebook offline cache. Version 20261117040716
+const V='bb-20261117040716';
 const SHELL=["./", "index.html", "manifest.webmanifest", "vendor/firebase-app-compat.js", "vendor/firebase-auth-compat.js", "vendor/firebase-firestore-compat.js", "vendor/jspdf.umd.min.js", "vendor/pdf.min.js", "vendor/pdf.worker.min.js", "icons/dn-192.png", "icons/dn-512.png", "icons/dn-touch.png"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

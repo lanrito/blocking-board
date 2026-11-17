@@ -379,7 +379,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117035126';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117040716';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1043,8 +1043,9 @@ function labIsFree(it,mk){const h=labHost(it,mk);return !!(h&&h.lab);}
 function labDetach(it,mk){const h=labHost(it,mk);if(!h)return;
  if(it.type==='cam'){const p0=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,nVer(it)).length);h.lab={x:p0.x,y:p0.y};}
  else if(it.type==='char'){const [a,b]=runOf(it,mk||0),L=behind(effFacing(it,b),44);h.lab={x:L.x,y:L.y};}
+ else if(it.type==='ink'){const ra=rad(it.rot||0);h.lab={x:0,y:Math.abs(it.w/2*Math.sin(ra))+Math.abs(it.h/2*Math.cos(ra))+11};}
  else h.lab={x:0,y:-(Math.min(it.w||40,it.h||40)/2+18)};}
-function labCan(it){return !!it&&(it.type==='cam'||it.type==='char'||((it.type==='prop'||it.type==='set'||it.type==='light')&&!!it.label&&it.kind!=='dollytrack'));}
+function labCan(it){return !!it&&(it.type==='cam'||it.type==='char'||((it.type==='prop'||it.type==='set'||it.type==='light'||it.type==='ink')&&!!it.label&&it.kind!=='dollytrack'));}
 /* right-click on a name that is still attached (it is drawn, not a piece): find whose it is */
 function labelAt(x,y){for(const t of document.querySelectorAll('#items text.nm, #items text.nt')){const r=t.getBoundingClientRect();if(x>=r.left-3&&x<=r.right+3&&y>=r.top-2&&y<=r.bottom+2){const g=t.closest('[data-id]');if(g)return g;}}return null;}
 function capOf(m){return [m.size?(ABBR[m.size]||m.size):'',m.angle||'',m.type||''].filter(Boolean).join(' ');}
@@ -1128,8 +1129,12 @@ function itemsMarkup(sc,pid){
    const p=A.marks[Math.min(it.am||0,A.marks.length-1)],q=B.marks[Math.min(it.bm||0,B.marks.length-1)],dx=q.x-p.x,dy=q.y-p.y,L=Math.hypot(dx,dy)||1,ex=dx/L*90,ey=dy/L*90,ln=`x1="${p.x-ex}" y1="${p.y-ey}" x2="${q.x+ex}" y2="${q.y+ey}"`;
    let ang=Math.atan2(dy,dx)*180/Math.PI;if(ang>90)ang-=180;if(ang<-90)ang+=180;
    sh+=`<g class="L-label" data-id="${it.id}"><line ${ln} stroke="#c93a36" stroke-width="2" stroke-dasharray="10 5 2 5" stroke-opacity=".85"/><line ${ln} stroke="transparent" stroke-width="20"/><text class="ax deco" transform="translate(${q.x+ex*.75},${q.y+ey*.75}) rotate(${ang})" y="-6" text-anchor="middle">180°</text></g>`;
-  }else if(it.type==='ink'){const kx=it.w/(it.bw||it.w),ky=it.h/(it.bh||it.h),d=o=>'M'+o.p.map(q=>q[0]+','+q[1]).join('L');
-   sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0}) scale(${kx},${ky})">${it.strokes.map(o=>`<path d="${d(o)}" fill="none" stroke="#000" stroke-opacity="0" stroke-width="${o.w+14}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><path class="deco" d="${d(o)}" fill="none" stroke="${o.c}" stroke-width="${o.w}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`).join('')}</g>`;
+  }else if(it.type==='ink'){const kx=it.w/(it.bw||it.w),ky=it.h/(it.bh||it.h),d=o=>'M'+o.p.map(q=>q[0]+','+q[1]).join('L'),ra=rad(it.rot||0);
+   const fl=it.lab&&it.label?it.lab:null,lt=it.label?esc(String(it.label).toUpperCase()):'',lhw=it.label?it.label.length*3.6+9:0,ly=Math.abs(it.w/2*Math.sin(ra))+Math.abs(it.h/2*Math.cos(ra))+14;
+   if(fl&&Math.hypot(fl.x,fl.y)>Math.max(it.w,it.h)/2+12)sh+=`<line class="deco L-${layerOf(it)}" x1="${it.x}" y1="${it.y}" x2="${it.x+fl.x}" y2="${it.y+fl.y}" stroke="#4b4d53" stroke-opacity=".45" stroke-width="1"/>`;
+   const att=it.label&&!fl?`<text class="sl" y="${ly.toFixed(1)}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${lt}</text>`:'';
+   sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${att}<g transform="scale(${kx},${ky})">${it.strokes.map(o=>`<path d="${d(o)}" fill="none" stroke="#000" stroke-opacity="0" stroke-width="${o.w+14}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><path class="deco" d="${d(o)}" fill="none" stroke="${o.c}" stroke-width="${o.w}" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`).join('')}</g></g>`;
+   if(fl)sh+=`<g class="L-${layerOf(it)} L-free${it.locked?' L-lk':''}" data-id="${it.id}" data-lab="1" transform="translate(${it.x+fl.x},${it.y+fl.y})"><rect x="${-lhw}" y="-11" width="${lhw*2}" height="18" fill="transparent"/><text class="sl" y="3" text-anchor="middle">${lt}</text></g>`;
   }else if(it.type==='text'){
    const fs=it.size||16,tw=String(it.text).length*fs*.62+12;
    sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})"><rect x="${-tw/2}" y="${-fs*.75}" width="${tw}" height="${fs*1.5}" fill="transparent"/><text class="ft" font-size="${fs}" fill="${it.color||'#2B2B2B'}" text-anchor="middle" y="${fs*.35}">${esc(it.text)}</text></g>`;
@@ -1153,7 +1158,7 @@ function itemsMarkup(sc,pid){
    const vlines=i=>{let l=labLines(it.marks[i],verNum(it,i),n);it.marks.forEach((q,j)=>{if(q.sp&&spBase(it,j)===i)l=l.concat(labLines(q,verNum(it,j),n));});return l;};
    it.marks.forEach((m,i)=>{
     if(m.sp){if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))} · V${verCode(sc,verNum(it,i))}</text></g>`;}return;}
-    if(i>0&&m.tk){const p=it.marks[i-1];paths+=`<line class="deco" x1="${p.x}" y1="${p.y}" x2="${m.x}" y2="${m.y}" stroke="${col}" stroke-opacity=".22" stroke-width="10" stroke-linecap="round"/>`+arrow(p,m,dk,true,20,false,`data-id="${it.id}" data-track="${i}"`);}
+    if(i>0&&m.tk){const p=it.marks[i-1];paths+=`<path class="deco" d="${trackD([p,...legPts(p,m),m],!it.hard)}" fill="none" stroke="${col}" stroke-opacity=".22" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`+arrow(p,m,dk,true,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);}
     else if(i>0)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     const a=rad(m.rot||0);
     if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))}${n>1?' · V'+verCode(sc,verNum(it,i)):''}</text></g>`;}
@@ -1290,7 +1295,7 @@ function inspHTML(){
   ${pageSelect(it)}<div class="btns">${lockBtn}${it.lab?'<button data-act="labReset">Reset label</button>':''}<button class="danger" data-act="del">Delete camera</button></div>`;}
  const name=it.type==='wall'?'Wall':it.type==='text'?'Text':it.type==='ink'?'Drawing':(LIB[it.kind]||{}).n||'Item';
  let h=x+`<div class="ph">${esc(name)}</div>`;
- if(it.type==='prop'||it.type==='set'||it.type==='light')h+=`<label class="fld">Label<input data-f="it.label" value="${esc(it.label||'')}" placeholder="Optional" autocomplete="off"></label>`;
+ if(it.type==='prop'||it.type==='set'||it.type==='light'||it.type==='ink')h+=`<label class="fld">Label<input data-f="it.label" value="${esc(it.label||'')}" placeholder="Optional" autocomplete="off"></label>`;
  if(it.kind==='dollytrack')h+=`<label class="fld">Length in feet<input type="number" inputmode="numeric" min="4" step="4" data-f="it.trackft" value="${trackFt(it)}"></label><p class="mut" id="tpcs" style="margin-top:6px">${trackPieces(trackFt(it))} · drag the end handle to add or remove track</p><label class="row">Curve<input type="range" min="-100" max="100" step="1" value="${Math.round(trackK(it)/(Math.PI/it.w)*100)}" data-f="it.trackbend"></label><p class="mut" id="tcrv" style="margin-top:4px">${trackRadiusTxt(it)} · or drag the ◆ in the middle of the track</p>${Math.abs(trackK(it))>1e-7?'<div class="btns"><button data-act="tstraight">Straighten</button></div>':''}`;
  if(it.type==='prop'&&it.kind!=='image'&&it.kind!=='dollytrack')h+=`<div class="lbl">Fill</div>${swatches('it.fill',FILL_COLORS,it.fill||PCOL[it.kind]||'#CFD8E3',true)}`;
  if(it.type==='light'&&LIB[it.kind].beam)h+=`<label class="row">Beam<input type="range" min="0" max="600" step="10" value="${it.beam===false?0:(it.reach||220)}" data-f="it.reach"></label>`;
@@ -1627,7 +1632,7 @@ function objPop(cx,cy){
   else{const name=it.type==='wall'?'Wall':it.type==='text'?'Text':it.type==='ink'?'Drawing':(LIB[it.kind]||{}).n||'Item';title='Edit '+name;
    const isBox=BOX(it.type)&&it.type!=='mask',ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;
    h=(it.type==='wall'&&!it.locked?sec('Wall',(wallJoined(s,it)?B('selrun','Move All Joined Walls')+(unhook===it.id?'':B('wunhook','Unhook This Wall')):'')+(unhook===it.id||wallAway(it)?B('wrehook','Rehook This Wall'):'')+B('wcorner','Add a Corner Here')+([1,2].some(e=>wallJoint(s,it,e).length===1)?B('wuncorner','Remove Nearest Corner'):'')+B('wextrude','Extrude')):'')+(MOVABLE(it.type)?sec('Actions',B('walkto','Move To…')+(sel.mark?'':B('movefrom','Move From…'))):'')
-    +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')+sec('Object',B('del','Delete',IC.x)+(sel.mark?B('delmark','Remove This Position'):'')+B('dup','Duplicate',IC.dup)+(it.type==='prop'||it.type==='set'||it.type==='light'?B('label',it.label?'Edit Label…':'Add Label…',IC.lbl):'')+lk+B('front','Bring to Front')+B('back','Send to Back'))
+    +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')+sec('Object',B('del','Delete',IC.x)+(sel.mark?B('delmark','Remove This Position'):'')+B('dup','Duplicate',IC.dup)+(it.type==='prop'||it.type==='set'||it.type==='light'||it.type==='ink'?B('label',it.label?'Edit Label…':'Add Label…',IC.lbl):'')+lk+B('front','Bring to Front')+B('back','Send to Back'))
     +(labCan(it)?sec('Label',labIsFree(it)?B('labback','Reattach Label'):B('labfree','Detach Label')):'')
     +(it.type==='ink'?sec('Drawing',B('inkmore','Draw More on This')+B('rsize','Reset Size')+ck('keepar','Keep Proportions',it.ar))+colorGrid(INK_COLS,(it.strokes[0]||{}).c,'ink'):sec('Settings',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+ck('scal','Scalable',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Edit…')))
     +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#2B2D33'],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages;}
@@ -3317,8 +3322,8 @@ function stepSub(){const it=itemById(sel.id);if(!it||!it.marks)return;const i=se
  pop.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{if(b.dataset.n==='auto')delete m.st;else m.st=+b.dataset.n;anim.base=null;commit();renderAnimBar();objPop(popAt.x,popAt.y);});}
 
 /* ---------- layers: lock and opacity ---------- */
-const LAYERS=[['char','Characters'],['arrow','Arrows'],['cam','Cameras'],['sb','Storyboards'],['prop','Props'],['set','Set'],['light','Lighting'],['label','Labels']];
-function layerOf(it){return it.type==='char'?'char':it.type==='cam'?'cam':it.type==='prop'?'prop':it.type==='light'?'light':(it.type==='set'||it.type==='wall'||it.type==='mask')?'set':'label';}
+const LAYERS=[['char','Characters'],['arrow','Arrows'],['cam','Cameras'],['sb','Storyboards'],['prop','Props'],['set','Set'],['light','Lighting'],['ink','Drawings'],['label','Labels']];
+function layerOf(it){return it.type==='char'?'char':it.type==='cam'?'cam':it.type==='prop'?'prop':it.type==='light'?'light':it.type==='ink'?'ink':(it.type==='set'||it.type==='wall'||it.type==='mask')?'set':'label';}
 function lay(s){const L=(s&&s.layers)||{};return {lock:L.lock||{},op:L.op||{},lk:L.lk==null?100:L.lk,desc:L.desc==null?100:L.desc};}
 function layerLocked(it){return !!lay(scene()).lock[layerOf(it)];}
 function layerCss(s,exp){const L=lay(s);let c=`.L-lk{--lk:${L.lk/100}}.L-desc{opacity:${L.desc/100}}`;
