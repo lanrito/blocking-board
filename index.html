@@ -379,7 +379,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117043159';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117043315';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -2294,7 +2294,6 @@ function analyzeScript(ps){
   const present=new Set(named);for(const n in sc.speak)if(!sc.speak[n].vo)present.add(n);
   for(const n of named)C[n].scenes.add(si);
   sc.present=[...present].sort((a,b)=>((sc.speak[b]||{}).lines||0)-((sc.speak[a]||{}).lines||0)||natCmp(a,b));
-  const act=sc.paras.find(p=>p.t==='action');sc.synopsis=act?(act.x.length>180?act.x.slice(0,178).replace(/\s+\S*$/,'')+'…':act.x):'';
  });
  const chars=Object.values(C).map(c=>{let g='';
   if(FEM.test(c.name)&&!MAS.test(c.name))g='f';else if(MAS.test(c.name)&&!FEM.test(c.name))g='m';
@@ -2343,7 +2342,7 @@ function importReview(ps,chars,fname){
    const xg={},xBy={};card.querySelectorAll('.xn').forEach(inp=>{const i=+inp.dataset.i,n=Math.max(0,Math.min(200,parseInt(inp.value,10)||0)),lab=(card.querySelector(`.xl[data-i="${i}"]`).value.trim()||'BG').toUpperCase();if(!n)return;
     if(!xg[lab]){const col=distinctColor(usedC,EXTRA_COLORS);usedC.push(col);const c={id:uid(),name:lab,color:col,extra:true};P.characters.push(c);xg[lab]=c;}(xBy[xrows[i].si]=xBy[xrows[i].si]||[]).push({c:xg[lab],n});});
    let first=null;
-   ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.synopsis=sc.synopsis||'';s.folder=fo.id;
+   ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.folder=fo.id;
     if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of sc.present.filter(n=>ids[n])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}
      let yy=y+(x>0?150:60);for(const g of (xBy[i]||[])){placeExtras(s,g.c.id,g.n,300,yy,'cluster','mix',pg);yy+=Math.ceil(g.n/Math.ceil(Math.sqrt(g.n*1.4)))*48+70;}}
     if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
