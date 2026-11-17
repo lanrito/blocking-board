@@ -45,6 +45,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .brcr button{border:0;background:none;color:var(--accent);padding:3px 4px;font-size:13px}
 .brsearch{margin:8px 14px 6px;position:relative}.brsearch svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:17px;height:17px}
 .brsearch input{width:100%;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--chip);padding:0 12px 0 36px;font-size:16px;box-sizing:border-box}
+.card.ovcard{width:min(1080px,100%);height:min(88vh,880px);padding:0;display:flex;flex-direction:column;overflow:hidden}#ov{display:flex;flex-direction:column;min-height:0;flex:1}#ov .ovtabs{display:flex;gap:6px;padding:4px 16px 10px;align-items:center;flex-wrap:wrap}#ov .ovtabs button{height:34px;padding:0 14px;border-radius:17px;border:1px solid var(--line);background:var(--panel);font-size:14px}#ov .ovtabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}#ov .ovtabs .sp{flex:1}#ov .ovsum{padding:0 18px 10px;color:var(--mut);font-size:13.5px}#ov .ovl{flex:1;overflow:auto;padding:0 10px 16px;-webkit-overflow-scrolling:touch}#ov .ovg{display:grid;grid-template-columns:minmax(200px,1.6fr) repeat(4,minmax(110px,1fr)) 58px;align-items:stretch}#ov .ovhd{position:sticky;top:0;background:var(--panel);z-index:1;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8a8b90;border-bottom:1px solid var(--line)}#ov .ovhd>div{padding:8px 8px}#ov .ovr{border-bottom:1px solid var(--line)}#ov .ovr>*{padding:10px 8px;min-width:0;text-align:left;background:none;border:0;font:inherit;color:inherit;border-radius:8px;cursor:pointer}#ov .ovr>*:hover{background:var(--chip)}#ov .ovn b{display:flex;align-items:center;gap:7px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ov .ovn small{display:block;color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}#ov .ovn i{width:9px;height:9px;border-radius:50%;flex:none}#ov .ovm{display:block;height:6px;border-radius:3px;background:#e6e6e2;overflow:hidden;margin:5px 0 4px}#ov .ovm>span{display:block;height:100%;background:var(--accent)}#ov .ovm.full>span{background:#30a46c}#ov .ovc{display:block;font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ov .ovc b{color:var(--ink);font-weight:600}#ov .ovc.no{color:#b3b3ae}#ov .ovq{font-weight:700;font-size:14px;text-align:center}#ov .ovq.no{color:#c4c4bf;font-weight:400}#ov .ovsub{grid-column:1/-1;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);padding:16px 8px 6px}#ov .ovqs{padding:6px 8px 12px;border-bottom:1px solid var(--line)}#ov .ovqs h4{margin:8px 0 6px;font-size:15px;display:flex;align-items:center;gap:8px;cursor:pointer}#ov .ovqs h4 i{width:9px;height:9px;border-radius:50%;flex:none}#ov .ovqs h4 small{color:var(--mut);font-weight:400;font-size:12.5px}#ov .ovqs ul{margin:0;padding-left:22px}#ov .ovqs li{margin:3px 0;line-height:1.4;font-size:14.5px}#ov .ovempty{padding:40px 24px;text-align:center;color:var(--mut);line-height:1.5}#vidRec .vbar{height:8px;border-radius:4px;background:#e6e6e2;overflow:hidden;margin:14px 0 6px}#vidRec .vbar>span{display:block;height:100%;width:0;background:var(--accent);transition:width .2s linear}@media (max-width:760px){#ov .ovg{grid-template-columns:minmax(150px,1.4fr) repeat(4,minmax(86px,1fr)) 44px}#ov .ovl{overflow-x:auto}#ov .ovg{min-width:640px}}
 #brTools{display:flex;gap:8px;padding:2px 14px 10px;flex-wrap:wrap}#brTools:empty{display:none}
 #brTools button{height:34px;padding:0 13px;border-radius:17px;border:1px solid var(--line);background:var(--panel);font-size:14px}
 #brTools button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -379,7 +380,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117053850';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117131058';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -2210,11 +2211,94 @@ function brRender(){
  const q=br.q.trim(),tview=br.at==='__tpl',trash=br.at==='__trash'||tview,f=trash?null:fById(br.at);
  const title=q?'Search':tview?'Templates':trash?'Trash':f?f.name:'All scenes',path=f?fPath(f.id).slice(0,-1):[];
  $('#brTop').innerHTML=`<div class="brh"><button class="brb" data-a="up"${!q&&(f||trash)?'':' style="visibility:hidden"'} aria-label="Back">‹</button><h3>${esc(title)}</h3><button class="brb" data-x aria-label="Close">✕</button></div>${!q&&(f||trash)?`<div class="brcr"><button data-go="">All scenes</button>${path.map(x=>`<span>›</span><button data-go="${x.id}">${esc(x.name)}</button>`).join('')}</div>`:''}`;
- $('#brTools').innerHTML=q?'':tview?(scene().tpl?'':'<button data-a="savetpl">＋ Save open scene as template…</button>'):trash?(trashed().length?'<button data-a="empty" class="danger">Empty Trash</button>':''):`<button data-a="newscene">＋ New scene</button><button data-a="newfolder">＋ New folder</button><button data-a="import">Import script…</button>${fScenes(br.at).length>1||br.pick?`<button data-a="pick" class="${br.pick?'on':''}">${br.pick?'Done':'Select'}</button>`:''}`;
+ $('#brTools').innerHTML=q?'':tview?(scene().tpl?'':'<button data-a="savetpl">＋ Save open scene as template…</button>'):trash?(trashed().length?'<button data-a="empty" class="danger">Empty Trash</button>':''):`${f?'<button data-a="overview">Overview</button>':''}<button data-a="newscene">＋ New scene</button><button data-a="newfolder">＋ New folder</button><button data-a="import">Import script…</button>${fScenes(br.at).length>1||br.pick?`<button data-a="pick" class="${br.pick?'on':''}">${br.pick?'Done':'Select'}</button>`:''}`;
  $('#brL').innerHTML=q?brSearch(q):tview?brTemplates():trash?brTrash():brFolder(br.at);
  const n=br.pick?br.pick.size:0,all=fScenes(br.at).length;
  $('#brFoot').innerHTML=br.pick&&!q&&!trash?`<span>${n} selected</span><button data-a="pickall">${n&&n===all?'Select none':'Select all'}</button><button data-a="pmove"${n?'':' disabled'}>Move to…</button><button data-a="ptrash" class="danger"${n?'':' disabled'}>Move to Trash</button>`:'';
 }
+/* ---------- project overview: every scene in a folder (an episode or a film), and every open question ---------- */
+let ovTab='sc';
+function ovQs(s){const x=txOf(s.id),c=x&&x.nb&&x.nb.q;if(!c||c.del||!c.h)return [];
+ return rtPrune(rtParse(String(c.h).split(TX_MARK).join(''))).map(b=>rtBText(b).replace(/\s+/g,' ').trim()).filter(t=>t&&!/^[-–•*]+$/.test(t));}
+function ovStats(s){const x=txOf(s.id),full=c=>!!(c&&!c.del&&c.h&&rtText(rtPrune(rtParse(c.h))));
+ const nbK=NB_COLS.map(c=>c[0]).filter(k=>k!=='q'),nb=nbK.filter(k=>full(x&&x.nb&&x.nb[k])||(k==='syn'&&!!String(s.synopsis||'').trim())).length;
+ const secs=stSecs(s),st=secs.filter(q=>q.h!=null&&!!rtText(rtPrune(rtParse(q.h)))).length;
+ const chars=new Set(s.items.filter(i=>i.type==='char').map(i=>i.charId)).size,cams=s.items.filter(i=>i.type==='cam').length,set=s.items.filter(i=>!ACTOR(i.type)&&i.type!=='axis').length+(s.bgId?1:0);
+ let R=[];try{R=rowsOf(s);}catch(e){}
+ return {nb,nbN:nbK.length,st,stN:secs.length,chars,cams,set,shots:R.length,setups:new Set(R.map(r=>r.st&&r.st.id)).size,frames:R.filter(r=>r.m&&r.m.sb).length,qs:ovQs(s)};}
+function overviewDialog(fid){const f=fById(fid);if(!f){toast('Put this scene in a folder to see an overview of the episode or film.');return;}
+ const list=folderScenes(fid),S=list.map(s=>({s,k:ovStats(s)})),nq=S.reduce((a,o)=>a+o.k.qs.length,0);
+ const pc=(a,b)=>b?Math.round(a/b*100):0,meter=(a,b,lbl)=>`<span class="ovm${a&&a>=b?' full':''}"><span style="width:${pc(a,b)}%"></span></span><span class="ovc${a?'':' no'}">${a?`<b>${a}</b> of ${b} ${lbl}`:'Not started'}</span>`;
+ const dot=s=>{const t=storyOf(s);return `<i style="background:${t?esc(t.color):'transparent'}"></i>`;};
+ const sum=()=>{const n=S.length,c=k=>S.filter(o=>k(o.k)).length,sh=S.reduce((a,o)=>a+o.k.shots,0),su=S.reduce((a,o)=>a+o.k.setups,0);
+  return `${plural(n,'scene')} · Breakdown started in ${c(k=>k.nb)} · Strategy in ${c(k=>k.st)} · Floor plan in ${c(k=>k.chars||k.cams)} · ${plural(sh,'shot')} in ${plural(su,'setup')}`;};
+ const scenesHTML=()=>{if(!S.length)return `<div class="ovempty">No scenes in ${esc(f.name)} yet.</div>`;let h=`<div class="ovg ovhd"><div>Scene</div><div>Breakdown</div><div>Strategy</div><div>Floor Plan</div><div>Shot List</div><div style="text-align:center">Qs</div></div>`,sub=fid;
+  for(const {s,k} of S){const sf=sFolder(s);if(sf!==sub){sub=sf;if(sf!==fid)h+=`<div class="ovg"><div class="ovsub">${esc(fPath(sf).slice(fPath(fid).length).map(x=>x.name).join(' › '))}</div></div>`;}
+   const fp=k.chars||k.cams?`<span class="ovc"><b>${k.chars}</b> ${k.chars===1?'character':'characters'} · <b>${k.cams}</b> ${k.cams===1?'camera':'cameras'}</span>`:k.set?'<span class="ovc">Set only</span>':'<span class="ovc no">Not started</span>';
+   const sl=k.shots?`<span class="ovc"><b>${k.shots}</b> ${k.shots===1?'shot':'shots'} · <b>${k.setups}</b> ${k.setups===1?'setup':'setups'}</span>${k.frames?`<span class="ovc">${k.frames} with storyboards</span>`:''}`:'<span class="ovc no">No shots</span>';
+   h+=`<div class="ovg ovr"><button class="ovn" data-os="${s.id}" data-om="nb"><b>${dot(s)}${esc(sceneLabel(s))}</b><small>${esc(s.heading||'')}</small></button><button data-os="${s.id}" data-om="nb">${meter(k.nb,k.nbN,'columns')}</button><button data-os="${s.id}" data-om="st">${meter(k.st,k.stN,'sections')}</button><button data-os="${s.id}" data-om="diagram">${fp}</button><button data-os="${s.id}" data-om="list">${sl}</button><button class="ovq${k.qs.length?'':' no'}" data-os="${s.id}" data-om="q">${k.qs.length||'–'}</button></div>`;}
+  return h;};
+ const qsHTML=()=>{const W=S.filter(o=>o.k.qs.length);if(!W.length)return `<div class="ovempty">No questions yet.<br><small>Write them in the Questions column of a scene’s Breakdown. Turn the column on with the Questions column box above the page.</small></div>`;
+  return W.map(({s,k})=>`<section class="ovqs"><h4 data-os="${s.id}" data-om="q">${dot(s)}${esc(sceneLabel(s))}<small>${esc(s.heading||'')}</small></h4><ul>${k.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></section>`).join('');};
+ const draw=card=>{const q=ovTab==='q';card.querySelector('#ovT').innerHTML=`<button data-ovt="sc"${q?'':' class="on"'}>Scenes</button><button data-ovt="q"${q?' class="on"':''}>Questions${nq?' ('+nq+')':''}</button><span class="sp"></span>${q&&nq?'<button data-ov="copy">Copy</button><button data-ov="qpdf">Export PDF…</button>':''}`;
+  card.querySelector('#ovS').textContent=q?(nq?`${plural(nq,'question')} from ${plural(S.filter(o=>o.k.qs.length).length,'scene')}`:''):sum();card.querySelector('#ovL').innerHTML=q?qsHTML():scenesHTML();};
+ modal(`<div id="ov"><div class="brh"><button class="brb" data-ov="back" aria-label="Back">‹</button><h3>${esc(f.name)} · Overview</h3><button class="brb" data-x aria-label="Close">✕</button></div><div class="ovtabs" id="ovT"></div><div class="ovsum" id="ovS"></div><div class="ovl" id="ovL"></div></div>`,card=>{
+  draw(card);
+  card.addEventListener('click',e=>{const t=e.target.closest('[data-ovt],[data-ov],[data-os]');if(!t)return;
+   if(t.dataset.ovt){ovTab=t.dataset.ovt;draw(card);card.querySelector('#ovL').scrollTop=0;return;}
+   if(t.dataset.ov==='back'){openBrowser(fid);return;}
+   if(t.dataset.ov==='copy'){const txt=ovQText(f,S);(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Questions copied. Paste them into an email or a document.'),()=>toast('Couldn’t copy here. Use Export PDF instead.'));return;}
+   if(t.dataset.ov==='qpdf'){ovQPdf(f,S);return;}
+   if(t.dataset.os){const m=t.dataset.om;closeModal();openScene(t.dataset.os);if(m==='q'){P.ui.nbQ=true;saveLocal();setMode('nb');}else setMode(m);}});
+ },'ovcard');}
+function ovQText(f,S){return `Questions · ${f.name}\n\n`+S.filter(o=>o.k.qs.length).map(({s,k})=>`${sceneLabel(s)}${s.heading?' ('+s.heading+')':''}\n`+k.qs.map(q=>'• '+q).join('\n')).join('\n\n')+'\n';}
+async function ovQPdf(f,S){const W=S.filter(o=>o.k.qs.length);if(!W.length)return;toast('Making the PDF…');
+ try{const {jsPDF}=await loadJsPDF(),doc=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'}),PW=612,PH=792,M=54,TW=PW-2*M;let y=M,pg=1;
+  const pr=prodOpts(W[0].s),acc=pr.accent||PROD_DEF.accent,rgb=[1,3,5].map(i=>parseInt(acc.slice(i,i+2),16));
+  const foot=()=>{doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(140);doc.text(`${f.name} · Questions`,M,PH-30);doc.text(`Page ${pg}`,PW-M,PH-30,{align:'right'});doc.setTextColor(0);};
+  const need=h=>{if(y+h>PH-50){foot();doc.addPage();pg++;y=M;}};
+  doc.setFont('helvetica','bold');doc.setFontSize(22);doc.text('Questions for the Showrunner',M,y+8);y+=30;doc.setFont('helvetica','normal');doc.setFontSize(12);doc.setTextColor(90);
+  doc.text([pr.name,f.name].filter(Boolean).join(' · ')+'  ·  '+new Date().toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'}),M,y);doc.setTextColor(0);y+=14;
+  doc.setDrawColor(...rgb);doc.setLineWidth(2);doc.line(M,y,PW-M,y);y+=24;
+  for(const {s,k} of W){const T=storyOf(s);need(46);doc.setFont('helvetica','bold');doc.setFontSize(13);if(T){const c=T.color||'#999';doc.setFillColor(...[1,3,5].map(i=>parseInt((c.length===7?c:'#999999').slice(i,i+2),16)));doc.circle(M+4,y-4,4,'F');}
+   doc.text(sceneLabel(s),M+(T?14:0),y);if(s.heading){doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(110);doc.text(s.heading,PW-M,y,{align:'right',maxWidth:TW*.45});doc.setTextColor(0);}y+=18;
+   doc.setFont('helvetica','normal');doc.setFontSize(11.5);
+   for(const q of k.qs){const L=doc.splitTextToSize(q,TW-18);need(L.length*15+4);doc.text('•',M+4,y);doc.text(L,M+18,y);y+=L.length*15+4;}
+   y+=12;}
+  foot();await save(`${f.name} - Questions.pdf`,doc.output('blob'));}
+ catch(e){toast('The PDF couldn’t be made.');}}
+
+/* ---------- the blocking as a video ---------- */
+let vidStop=false;
+async function exportVideo(){const s=scene(),mx=maxStep(s);stopPlay();
+ if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){toast('This browser can’t record video. Try Safari or Chrome.');return;}
+ const seg=[];let T=.9;for(let N=1;N<=mx;N++){const moves=animActors(s).some(it=>{const tl=timeline(it,N);return tl&&!tl.idle&&tl.segs.some(q=>q.k!=='in');});if(!moves)continue;const d=stepDur(s,N);seg.push({N,t0:T,t1:T+d});T+=d+.6;}
+ if(!seg.length){toast('Nothing moves on this page yet. Give a character or camera a second position and set its time in the animation bar, then try again.');return;}
+ const total=T+.8,W=1280,H=720,HD=64,pid=s.pageId,bb=bbox(s,pid)||{x:-300,y:-200,w:600,h:400},pad=30,dW=W-48,dH=H-HD-24,k=Math.min(dW/(bb.w+pad*2),dH/(bb.h+pad*2),3),tx=24+dW/2-(bb.x+bb.w/2)*k,ty=HD+dH/2-(bb.y+bb.h/2)*k;
+ const head=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${layerCss(s,true)}</style>`,G=`<g transform="translate(${tx},${ty}) scale(${k})">`;
+ let bg='';if(s.bgId&&s.bg&&images[s.bgId]){const b=s.bg;bg=`<image href="${images[s.bgId]}" xlink:href="${images[s.bgId]}" x="${b.x}" y="${b.y}" width="${b.w*b.s}" height="${b.h*b.s}" opacity="${b.op}" preserveAspectRatio="none"/>`;}
+ const toImg=async svg=>{const u=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));try{return await loadImg(u);}finally{URL.revokeObjectURL(u);}};
+ const at=t=>{if(t<seg[0].t0)return {N:seg[0].N,f:0};let cur=seg[0];for(const q of seg){if(t>=q.t0)cur=q;}return {N:cur.N,f:Math.min(1,Math.max(0,(t-cur.t0)/(cur.t1-cur.t0)))};};
+ vidStop=false;modal(`<div id="vidRec"><h3>Recording the blocking</h3><p class="mut">Keep the app open until it’s done. It plays in real time: about ${Math.ceil(total)} seconds.</p><div class="vbar"><span></span></div><p class="mut" id="vidT" style="font-size:13px">Getting ready…</p><div class="btns end"><button id="vidX">Cancel</button></div></div>`,card=>{card.querySelector('#vidX').onclick=()=>{vidStop=true;};});
+ let base;try{anim.base=null;base=await toImg(`${head}<rect width="${W}" height="${H}" fill="#fff"/>${G}${bg}${animBase(s)}</g></svg>`);}catch(e){closeModal();toast('The video couldn’t be made.');return;}
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),FT='-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif';
+ const label=sceneLabel(s)+(s.pages.length>1&&pid!=='all'?'  ·  '+pageName(s,pid):'');
+ const paint=(img,N)=>{g.fillStyle='#fff';g.fillRect(0,0,W,H);g.drawImage(base,0,0,W,H);if(img)g.drawImage(img,0,0,W,H);
+  g.fillStyle='rgba(255,255,255,.94)';g.fillRect(0,0,W,HD-8);g.fillStyle='#1c1c1e';g.font=`700 24px ${FT}`;g.textBaseline='middle';g.textAlign='left';g.fillText(label,28,30,W-260);
+  g.textAlign='right';g.font=`600 20px ${FT}`;g.fillStyle='#2f6fde';g.fillText(`Time ${N} of ${mx}`,W-28,30);g.fillStyle='#e3e3df';g.fillRect(0,HD-8,W,2);};
+ let last='',lastImg=null;
+ const frame=async t=>{const {N,f}=at(t),key=N+':'+f.toFixed(3);if(key!==last){last=key;lastImg=await toImg(`${head}${G}${animLayer(s,N,f)}</g></svg>`);}paint(lastImg,N);};
+ const type=['video/mp4;codecs=avc1.42E01E','video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm'].find(t=>{try{return MediaRecorder.isTypeSupported(t);}catch(e){return false;}})||'';
+ let rec,chunks=[];try{await frame(0);const st=c.captureStream(30);rec=new MediaRecorder(st,type?{mimeType:type,videoBitsPerSecond:5e6}:{});}catch(e){closeModal();toast('This browser can’t record video. Try Safari or Chrome.');return;}
+ rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};const stopped=new Promise(r=>{rec.onstop=r;});rec.start(500);
+ const t0=performance.now(),bar=document.querySelector('#vidRec .vbar>span'),tl=document.querySelector('#vidT');
+ while(!vidStop){const t=(performance.now()-t0)/1000;if(t>=total)break;await frame(t);if(bar)bar.style.width=Math.min(100,t/total*100)+'%';if(tl)tl.textContent=`${Math.floor(t)} of ${Math.ceil(total)} seconds`;await new Promise(r=>requestAnimationFrame(()=>r()));}
+ if(!vidStop){await frame(total);await new Promise(r=>setTimeout(r,250));}
+ rec.stop();await stopped;closeModal();if(vidStop){toast('Recording cancelled.');return;}
+ const mime=(rec.mimeType||type||'video/webm').split(';')[0],ext=/mp4/.test(mime)?'mp4':'webm';
+ if(!chunks.length){toast('The video came out empty. Try again with the app in front.');return;}
+ const name=[s.number?'Sc '+s.number:'',(s.title||'').trim(),s.pages.length>1&&pid!=='all'?pageName(s,pid):'','blocking'].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]+/g,'');
+ await save(`${name}.${ext}`,new Blob(chunks,{type:mime}));}
 function brGo(id){br.at=id||null;br.q='';br.pick=null;br.sub=null;const q=$('#brq');if(q)q.value='';brRender();$('#brL').scrollTop=0;}
 function brClick(e){
  if(Date.now()-brDragEnd<400)return;
@@ -2225,6 +2309,7 @@ function brClick(e){
  if(sm){br.sub={k:'sact',id:sm.dataset.sm};brRender();return;}
  if(go){brGo(go.dataset.go);return;}
  if(a){const k=a.dataset.a;
+  if(k==='overview'){overviewDialog(br.at);return;}
   if(k==='up'){brGo(br.at==='__trash'?null:fParent(fById(br.at)));return;}
   if(k==='trash'){brGo('__trash');return;}
   if(k==='tpls'){brGo('__tpl');return;}
@@ -2998,10 +3083,10 @@ function docxParse(docXml,numXml){
   if(el.localName==='p'){
    const bl=para(el),t=rtText(bl);if(!t)continue;
    const hm=DX_HEAD.exec(t);
-   if(hm&&!/^SCENE STRATEGY/i.test(t)){const num=hm[1].replace(/\s+/g,' ').replace(/\band\b/i,'&').trim();let rest=hm[2].trim(),title='';const qm=/["“]([^"”]+)["”]\s*$/.exec(rest);if(qm){title=qm[1].trim();rest=rest.slice(0,qm.index).replace(/[\s\-–—]+$/,'');}
+   if(hm&&!/^(SCENE|SHOOTING) STRATEGY/i.test(t)){const num=hm[1].replace(/\s+/g,' ').replace(/\band\b/i,'&').trim();let rest=hm[2].trim(),title='';const qm=/["“]([^"”]+)["”]\s*$/.exec(rest);if(qm){title=qm[1].trim();rest=rest.slice(0,qm.index).replace(/[\s\-–—]+$/,'');}
     if(!sc||sc.number!==num){sc={number:num,heading:rest,title,nb:{},secs:[],cuts:[],story:null};scenes.push(sc);}md='';sec=null;continue;}
    if(/^DIRECTOR.?S NOTEBOOK/i.test(t)){need();md='nb';sec=null;continue;}
-   if(/^SCENE STRATEGY/i.test(t)){need();md='st';sec=null;continue;}
+   if(/^(SCENE|SHOOTING) STRATEGY/i.test(t)){need();md='st';sec=null;continue;}
    if(md!=='st')continue;
    const cm=DX_CUT.exec(t);
    if(cm){let cut=cm[0].length;const b0=clone(bl[0]);while(cut>0&&b0.r.length){const r=b0.r[0];if(r.t.length<=cut){cut-=r.t.length;b0.r.shift();}else{r.t=r.t.slice(cut);cut=0;}}
@@ -3064,7 +3149,7 @@ async function importDocx(file){
  let parsed;
  try{const get=await unzip(await file.arrayBuffer()),doc=await get('word/document.xml');if(!doc)throw new Error('doc');parsed=docxParse(doc,await get('word/numbering.xml'));}
  catch(e){toast(e&&e.message==='old'?'This browser is too old to open Word files. Update it and try again.':'That file couldn’t be read as a Word document (.docx).');return;}
- if(!parsed.length){toast('No Director’s Notebook or Scene Strategy pages were found in that file.');return;}
+ if(!parsed.length){toast('No Director’s Notebook or Shooting Strategy pages were found in that file.');return;}
  const fid=sFolder(scene()),{matched,withText}=docxPlan(parsed,fid),add=parsed.length-matched,where=fid?`“${fById(fid).name}”`:'the top level (no folder)';
  modal(`<h3>Import from Word</h3><p><b>${parsed.length} scene${parsed.length===1?'':'s'}</b> found in ${esc(file.name)}.</p><p class="mut">${matched?`${matched} match${matched===1?'es a scene':' scenes'} already in ${esc(where)} by scene number and get${matched===1?'s':''} the text. `:''}${add?`${add} new scene${add===1?'':'s'} will be added to ${esc(where)}.`:''}</p>${withText?`<label class="imopt"><input type="checkbox" id="dxR"> Replace the notebook and strategy already written in ${withText} of them</label><p class="mut" style="margin-left:24px">Left unticked, those ${withText} keep what they have.</p>`:''}<div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Import</button></div>`,card=>{
   card.querySelector('#ok').onclick=()=>{const rep=!!(card.querySelector('#dxR')&&card.querySelector('#dxR').checked);closeModal();const r=docxApply(parsed,fid,rep);if(r.first){P.sceneId=r.first.s.id;noteRecent(P.sceneId);}sel=null;msel=null;commit();txFlush();if(mode!=='nb')setMode('nb');else renderDocs(true);
@@ -3076,8 +3161,8 @@ $('#fDocx').addEventListener('change',e=>{const f=e.target.files[0];e.target.val
 
 /* ---------- export / backup ---------- */
 /* ---------- productions: letterhead on every exported page ---------- */
-const PROD_DEF={name:'',note:'',contacts:[],accent:'#2F6FD6',floorT:'Floor Plan',floorS:'Where does everything go?',listT:'Shot List',listS:'What camera set-ups capture the vision?',nbT:'Scene Breakdown',nbS:'What does the scene mean?',stT:'Scene Strategy',stS:'How do we make the meaning visible?'};
-const PROD_OLD={nbT:['Director’s Notebook'],nbS:['What does this scene mean?'],stS:['How do we make the meaning of the scene visible?'],listS:['What specific camera set-ups capture the vision']};
+const PROD_DEF={name:'',note:'',contacts:[],accent:'#2F6FD6',floorT:'Floor Plan',floorS:'Where does everything go?',listT:'Shot List',listS:'What camera set-ups capture the vision?',nbT:'Scene Breakdown',nbS:'What does the scene mean?',stT:'Shooting Strategy',stS:'How do we make the meaning visible?'};
+const PROD_OLD={stT:['Scene Strategy'],nbT:['Director’s Notebook'],nbS:['What does this scene mean?'],stS:['How do we make the meaning of the scene visible?'],listS:['What specific camera set-ups capture the vision']};
 function prodNorm(pr){const o=Object.assign({},PROD_DEF,pr||{});for(const k in PROD_OLD)if(PROD_OLD[k].includes(o[k]))o[k]=PROD_DEF[k];return o;}
 function prodOpts(s){return prodNorm(prodFor(s));}
 function prodById(id){return id?(P.productions||[]).find(p=>p.id===id)||null:null;}
@@ -3267,7 +3352,7 @@ function prodEdit(pr0,back){const isNew=!pr0,pr=Object.assign({id:uid()},PROD_DE
   <label class="fld">Note line (top right, in red)<input id="pnNote" value="${esc(pr.note||'')}" placeholder="*The following blocking and shot list is subject to last minute inspiration!*"></label>
   <div class="lbl">Contact lines (top right)</div><div id="pnC">${(pr.contacts||[]).map(crow).join('')}</div><button class="sm" id="pnAdd" style="margin-top:8px">Add a line</button>
   <div class="lbl">Accent color</div><input type="color" id="pnAcc" value="${esc(pr.accent||PROD_DEF.accent)}" style="width:64px;height:34px;padding:0;border:0;background:none">
-  <div class="lbl">Page titles</div><div style="display:flex;gap:6px"><input id="pnFT" value="${esc(pr.floorT||'')}" placeholder="Floor Plan" style="width:38%"><input id="pnFS" value="${esc(pr.floorS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnLT" value="${esc(pr.listT||'')}" placeholder="Shot List" style="width:38%"><input id="pnLS" value="${esc(pr.listS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnNT" value="${esc(pr.nbT||'')}" placeholder="Scene Breakdown" style="width:38%"><input id="pnNS" value="${esc(pr.nbS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnST" value="${esc(pr.stT||'')}" placeholder="Scene Strategy" style="width:38%"><input id="pnSS" value="${esc(pr.stS||'')}" placeholder="Subtitle" style="flex:1"></div>
+  <div class="lbl">Page titles</div><div style="display:flex;gap:6px"><input id="pnFT" value="${esc(pr.floorT||'')}" placeholder="Floor Plan" style="width:38%"><input id="pnFS" value="${esc(pr.floorS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnLT" value="${esc(pr.listT||'')}" placeholder="Shot List" style="width:38%"><input id="pnLS" value="${esc(pr.listS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnNT" value="${esc(pr.nbT||'')}" placeholder="Scene Breakdown" style="width:38%"><input id="pnNS" value="${esc(pr.nbS||'')}" placeholder="Subtitle" style="flex:1"></div><div style="display:flex;gap:6px;margin-top:6px"><input id="pnST" value="${esc(pr.stT||'')}" placeholder="Shooting Strategy" style="width:38%"><input id="pnSS" value="${esc(pr.stS||'')}" placeholder="Subtitle" style="flex:1"></div>
   <div class="lbl">Stories (the Breakdown’s color code)</div><div id="pnS">${pr.stories.map(srow).join('')}</div><button class="sm" id="pnSAdd" style="margin-top:8px">Add a story</button>
   <div class="lbl">Folders that use it</div>${fl.length?`<div class="rgrp" style="max-height:180px;overflow:auto">${fl.map(f=>{const other=f.prod&&f.prod!==pr.id&&prodById(f.prod);return `<label class="rrow"><span><b>${esc(folderPathName(f))}</b>${other?`<small>Now uses ${esc(other.name||'another production')}</small>`:''}</span><input type="checkbox" data-f="${f.id}"${f.prod===pr.id?' checked':''}></label>`;}).join('')}</div>`:'<p class="mut">Make folders in Open scene… and you can give them a production here.</p>'}
   <div class="btns end">${isNew?'':'<button class="danger" id="pnDel" style="margin-right:auto">Delete</button>'}<button id="pnCancel">Cancel</button><button class="pri" id="pnOk">Save</button></div>`,card=>{card.classList.add('prodcard');
@@ -3330,12 +3415,12 @@ $('#fJson').addEventListener('change',async e=>{
 function menu(){
  const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
  openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
-  <button data-m="open">Open scene… <span class="kb">⌘O</span></button><button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><button data-m="docx">Import a breakdown and strategy from Word (.docx)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button>
+  <button data-m="open">Open scene… <span class="kb">⌘O</span></button>${sFolder(s)?`<button data-m="overview">${esc(fById(sFolder(s)).name)} overview & questions…</button>`:''}<button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
+  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><button data-m="docx">Import a breakdown and strategy from Word (.docx)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button><button data-m="video">Save the blocking as a video…</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}<span id="stgTxt"></span></div></div>`,b,p=>{stgFill();
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
-   ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,backup,restore:()=>$('#fJson').click(),
+   ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,video:exportVideo,overview:()=>overviewDialog(sFolder(s)),backup,restore:()=>$('#fJson').click(),
      open:()=>openBrowser(),docx:()=>$('#fDocx').click(),keys:keysDialog,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
  });
 }
@@ -3475,7 +3560,7 @@ function timeMenu(btn,N){const s=scene(),L=tlOf(s).lab||{},q=spdOf(s,N),hasAny=a
  const html=`<h4>Edit Time ${N}</h4><div class="ls" style="width:300px"><div class="hd">Time</div><button data-t="before">↰ Insert Time Before</button><button data-t="after">↳ Insert Time After</button><button data-t="del">${IC.x}Delete Time</button>
   <div class="hd">Label</div><button data-t="lab">${L[N]?'Edit Section Label…':'Insert Section Label…'}</button>${L[N]?'<button data-t="unlab">Remove Section Label</button>':''}
   <div class="hd">Animation Speed</div><div class="lays"><div class="lrow"><span class="ln">Actor Speed</span>${bars('a',q.a)}</div><div class="lrow${q.same?' dis':''}"><span class="ln">Camera Speed</span>${bars('c',q.c,q.same)}</div></div><button data-t="same">Same Speed<span class="chk${q.same?' on':''}">${q.same?'✓':''}</span></button>
-  <div class="hd">Playback</div>${[['.6','Slow'],['1','Normal'],['1.7','Fast']].map(([v,l])=>`<button data-t="sp:${v}">${l}<span class="rad${+v===anim.speed?' on':''}"></span></button>`).join('')}<button data-t="loop">Loop<span class="chk${anim.loop?' on':''}">${anim.loop?'✓':''}</span></button>
+  <div class="hd">Playback</div>${[['.6','Slow'],['1','Normal'],['1.7','Fast']].map(([v,l])=>`<button data-t="sp:${v}">${l}<span class="rad${+v===anim.speed?' on':''}"></span></button>`).join('')}<button data-t="loop">Loop<span class="chk${anim.loop?' on':''}">${anim.loop?'✓':''}</span></button><button data-t="video">Save as Video…</button>
   <div class="hd">View</div><button data-t="exit">Back to Editing</button></div>`;
  const re=()=>{renderAnimBar();const b2=document.querySelector(`#animBar .ast[data-n="${N}"]`);if(b2)timeMenu(b2,N);};
  const done=(msg)=>{anim.base=null;commit();renderAnimBar();if(anim.step)drawAnim();if(msg)toast(msg);};
@@ -3493,6 +3578,7 @@ function timeMenu(btn,N){const s=scene(),L=tlOf(s).lab||{},q=spdOf(s,N),hasAny=a
   else if(t==='exit'){closePop();setStep(0);}
   else if(t.startsWith('sp:')){anim.speed=+t.slice(3);re();}
   else if(t==='loop'){anim.loop=!anim.loop;re();}
+  else if(t==='video'){closePop();exportVideo();}
  });});}
 function stepSub(){const it=itemById(sel.id);if(!it||!it.marks)return;const i=sel.mark||0,m=it.marks[i],eff=m.st!=null?+m.st:null;
  pop.innerHTML=`<h4><button class="back">‹ Back</button>Animation Step</h4><div class="stepgrid">${Array.from({length:24},(_,k)=>k+1).map(n=>`<button data-n="${n}" class="${n===eff?'on':''}">${n}</button>`).join('')}</div><div class="ls" style="width:300px"><button data-n="auto">No step (not animated)<span class="chk${m.st==null?' on':''}">${m.st==null?'✓':''}</span></button></div>`;
