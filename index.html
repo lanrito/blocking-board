@@ -394,7 +394,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117195130';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117200521';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1011,6 +1011,10 @@ const FW0=220,FMIN=120,FMAX=1100;
 function fsz(s){return clamp(Math.round((s&&s.fsz)||FW0),FMIN,FMAX);}
 const fszH=w=>Math.round(w*9/16);
 function fW(s,m){return clamp(Math.round((m&&m.sbw)||fsz(s)),FMIN,FMAX);}
+const FK={a:'sba',w:'sbw',c:'sbc',fh:'sbfh',fv:'sbfv',nf:'sbnf',det:'sbdet'};
+function fGet(m,k,key){if(!k)return m[FK[key]];const e=fx(m,k);return e&&e[key];}
+function fSet(m,k,key,v){const off=v==null||v===false||v==='';if(!k){if(off)delete m[FK[key]];else m[FK[key]]=v;return;}const id=fImg(m,k);if(!id)return;m.sbx=m.sbx||{};const e=Object.assign({},m.sbx[id]);if(off)delete e[key];else e[key]=v;m.sbx[id]=e;}
+function fImgTag(src,W,H,m,k,x,y){const fh=fGet(m,k,'fh'),fv=fGet(m,k,'fv');x=x||0;y=y||0;const im=`<image href="${src}" xlink:href="${src}" x="${x}" y="${y}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;return fh||fv?`<g transform="translate(${fh?2*x+W:0},${fv?2*y+H:0}) scale(${fh?-1:1},${fv?-1:1})">${im}</g>`:im;}
 function fImg(m,k){return k?(m.sbs||[])[k-1]:m.sb;}
 function fx(m,k){const id=fImg(m,k);return id&&m.sbx&&m.sbx[id];}
 function fWk(s,m,k){if(!k)return fW(s,m);const e=fx(m,k);return clamp(Math.round((e&&e.w)||fW(s,m)),FMIN,FMAX);}
@@ -1060,8 +1064,8 @@ function frameSnap(s,it,i,m,k,p,g){
  if(bx){const lo=Math.min(out.y-H/2,...R.filter(r=>[r.x0,r.cx,r.x1].some(v=>Math.abs(v-bx.at)<.5)).map(r=>r.y0)),hi=Math.max(out.y+H/2,...R.filter(r=>[r.x0,r.cx,r.x1].some(v=>Math.abs(v-bx.at)<.5)).map(r=>r.y1));G.push({x1:bx.at,y1:lo-12/view.k,x2:bx.at,y2:hi+12/view.k});}
  if(by){const lo=Math.min(out.x-W/2,...R.filter(r=>[r.y0,r.cy,r.y1].some(v=>Math.abs(v-by.at)<.5)).map(r=>r.x0)),hi=Math.max(out.x+W/2,...R.filter(r=>[r.y0,r.cy,r.y1].some(v=>Math.abs(v-by.at)<.5)).map(r=>r.x1));G.push({x1:lo-12/view.k,y1:by.at,x2:hi+12/view.k,y2:by.at});}
  g.guides=G.length?G:null;return out;}
-function frameSVG(sc,it,i,m,lay,k,cap){const id=fImg(m,k);if(!id||!images[id])return '';const FW=fWk(sc,m,k),FH=fszH(FW),c=fPos(it,i,m,lay,k),A=fAnchor(it,i,k),e=frameEdge(A,c,FW,FH);
- return `<line class="deco L-sb" x1="${A.x}" y1="${A.y}" x2="${e.x}" y2="${e.y}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1"${k?` data-fk="${k}"`:''} transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[id]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">${cap}</text></g>`;}
+function frameSVG(sc,it,i,m,lay,k,cap){const id=fImg(m,k);if(!id||!images[id])return '';const FW=fWk(sc,m,k),FH=fszH(FW),c=fPos(it,i,m,lay,k),A=fAnchor(it,i,k),e=frameEdge(A,c,FW,FH),cc=fGet(m,k,'c');
+ return `${fGet(m,k,'det')?'':`<line class="deco L-sb" x1="${A.x}" y1="${A.y}" x2="${e.x}" y2="${e.y}" stroke="#8f9096" stroke-width="0.8"/>`}<g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1"${k?` data-fk="${k}"`:''} transform="translate(${c.x-FW/2},${c.y-FH/2})">${fGet(m,k,'nf')?'':`<rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/>`}${fImgTag(images[id],FW,FH,m,k)}<text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">${cc?esc(cc):cap}</text></g>`;}
 function framesSVG(sc,it,i,m,lay,base){const F=m.sp?[]:shotFrames(it,i),n=F.length;let h='';for(let k=0;k<1+(m.sbs||[]).length;k++){const id=fImg(m,k);if(!id||!images[id])continue;const at=F.findIndex(f=>f.j===i&&f.k===k);h+=frameSVG(sc,it,i,m,lay,k,esc(base)+(n>1&&at>=0?` · ${at+1} of ${n}`:''));}return h;}
 function frameEdge(m,c,FW,FH){const dx=m.x-c.x,dy=m.y-c.y;if(Math.abs(dx)<FW/2&&Math.abs(dy)<FH/2+8)return {x:c.x,y:c.y+FH/2};const t=Math.min(dx?(FW/2+3)/Math.abs(dx):1e9,dy?(FH/2+(dy>0?18:3))/Math.abs(dy):1e9);return {x:c.x+dx*t,y:c.y+dy*t};}
 function framePt(it,i,m,lay){if(m.sba)return m.sba;if(m.sbp)return {x:m.x+m.sbp.x,y:m.y+m.sbp.y};const p=lay&&lay[it.id+':'+i];return p||{x:m.x,y:m.y-220};}
@@ -1421,10 +1425,11 @@ function uiMarkup(){
  if(gesture&&gesture.type==='frame'&&gesture.guides&&gesture.moved)for(const q of gesture.guides)h+=`<line class="sguide" x1="${q.x1}" y1="${q.y1}" x2="${q.x2}" y2="${q.y2}"/>`;
  if(!sel)return h;const s=scene(),k=view.k;
  {const it=sel.id!=='__bg'?itemById(sel.id):null,i=sel.mark||0,m=it&&it.type==='cam'&&it.marks[i];
-  const fk=sel.fk||0;if(m&&!sel.lab&&frameOn()&&m.sb&&images[m.sb]&&images[fImg(m,fk)]&&!it.locked){const FW=fWk(s,m,fk),FH=fszH(FW),lay=frameLayout(s,s.pageId),c=fPos(it,i,m,lay,fk);
+  const fk=sel.fk||0;if(m&&sel.frame&&frameOn()&&m.sb&&images[m.sb]&&images[fImg(m,fk)]){const FW=fWk(s,m,fk),FH=fszH(FW),lay=frameLayout(s,s.pageId),c=fPos(it,i,m,lay,fk);
    const g=gesture,lw=g&&g.type==='handle'&&g.h==='fsz'&&g.lockW;if(lw){for(const f of frameList(s))if(!(f.m===m&&f.k===fk)&&fWk(s,f.m,f.k)===lw&&document.querySelector(`#items g[data-frame][data-id="${f.it.id}"][data-mark="${f.i}"]${f.k?`[data-fk="${f.k}"]`:':not([data-fk])'}`)){const q=fPos(f.it,f.i,f.m,lay,f.k),W=lw,H=fszH(W);h+=`<rect class="fmatch" x="${q.x-W/2-4/k}" y="${q.y-H/2-4/k}" width="${W+8/k}" height="${H+8/k}" rx="${3/k}"/>`;}
     h+=`<rect class="fmatch" x="${c.x-FW/2-4/k}" y="${c.y-FH/2-4/k}" width="${FW+8/k}" height="${FH+8/k}" rx="${3/k}"/><g transform="translate(${c.x},${c.y-FH/2-14/k}) scale(${1/k})"><rect x="-38" y="-11" width="76" height="20" rx="10" fill="#1f9d55"/><text y="4" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Same size</text></g>`;}
-   h+=`<rect class="ring" x="${c.x-FW/2-4/k}" y="${c.y-FH/2-4/k}" width="${FW+8/k}" height="${FH+8/k}" rx="${3/k}"/>`+hnd('fsz',c.x+FW/2,c.y+FH/2);}}
+   h+=`<rect class="ring" x="${c.x-FW/2-4/k}" y="${c.y-FH/2-4/k}" width="${FW+8/k}" height="${FH+8/k}" rx="${3/k}"/>`+(it.locked?lockBadge(c.x+FW/2,c.y-FH/2):hnd('fsz',c.x+FW/2,c.y+FH/2));}
+  if(sel.frame)return h;}
  if(sel.id==='__bg'){const b=s.bg;if(!b)return h;const w=b.w*b.s,hh=b.h*b.s;return h+`<rect class="ring" x="${b.x}" y="${b.y}" width="${w}" height="${hh}"/>`+(b.locked?lockBadge(b.x+w,b.y):hnd('bgscale',b.x+w,b.y+hh));}
  const it=itemById(sel.id);if(!it)return h;
  if(it.marks&&sel.lab&&it.type==='cam'){const L=document.querySelector(`#items .L-desc[data-lab][data-id="${it.id}"] rect`);if(L){const r=L.getBoundingClientRect(),a=toWorld(r.left,r.top),b=toWorld(r.right,r.bottom),p=3/k;h+=`<rect class="ring lring" x="${a.x-p}" y="${a.y-p}" width="${b.x-a.x+2*p}" height="${b.y-a.y+2*p}" rx="${4/k}"/>`;}return h;}
@@ -1503,13 +1508,13 @@ function shotFrames(it,vi){const out=[];if(!it||!it.marks)return out;vi=verStart
 function sbHTML(id,vi,m){const it=itemById(id)||(findCam(id)||{}).it,src=m.sb&&images[m.sb];
  if(!src&&!(it&&shotFrames(it,vi).length))return `<div class="sbw"><button class="sb" data-act="sbAdd" data-id="${id}" data-v="${vi}">+ Add frame</button></div>`;
  const F=it?shotFrames(it,vi):[{j:vi,k:0,id:m.sb,p:0}],n=F.length;
- const one=(f,i)=>`<div class="sbf"><button class="sb has" data-act="${f.k?'sbOpt':'sbAdd'}" data-id="${id}" data-v="${f.j}"${f.k?` data-k="${f.k-1}"`:''} title="${f.p?'Dolly position '+(f.p+1):'Frame '+(i+1)}"><img src="${images[f.id]}" alt="Storyboard frame ${i+1}"></button>${f.k?'':`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${f.j}" aria-label="Remove frame">×</button>`}${n>1?`<span class="sbn">${i+1}${f.p?` · pos ${f.p+1}`:''}</span>`:''}</div>`;
+ const one=(f,i)=>{const fm=it?it.marks[f.j]:m,fh=fGet(fm,f.k,'fh'),fv=fGet(fm,f.k,'fv');return `<div class="sbf"><button class="sb has" data-act="${f.k?'sbOpt':'sbAdd'}" data-id="${id}" data-v="${f.j}"${f.k?` data-k="${f.k-1}"`:''} title="${f.p?'Dolly position '+(f.p+1):'Frame '+(i+1)}"><img src="${images[f.id]}" alt="Storyboard frame ${i+1}"${fh||fv?` style="transform:scale(${fh?-1:1},${fv?-1:1})"`:''}></button>${f.k?'':`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${f.j}" aria-label="Remove frame">×</button>`}${n>1?`<span class="sbn">${i+1}${f.p?` · pos ${f.p+1}`:''}</span>`:''}</div>`;};
  return `<div class="sbw sbst">${F.map(one).join('')}<button class="sbt add sbadd" data-act="${src?'sbMore':'sbAdd'}" data-id="${id}" data-v="${vi}" title="Add another frame">+</button></div>`;}
 function sbOpt(id,vi,k){const c=findCam(id);if(!c)return;const m=c.it.marks[vi],x=(m.sbs||[])[k];if(!x||!images[x])return;const n=sbAll(m).length;
  modal(`<h3>Shot ${esc(shotCode(c.s,c.it))} · frame ${k+2} of ${n}</h3><img class="sbbig" src="${images[x]}" alt="Storyboard frame"><div class="btns end"><button id="sbR" class="danger">Remove</button><button id="sbP">Replace…</button><button id="sbM">Make Main Frame</button><button class="pri" data-x>Done</button></div>`,card=>{
   card.querySelector('#sbR').onclick=()=>{m.sbs.splice(k,1);if(!m.sbs.length)delete m.sbs;sbxTidy(m);closeModal();commit();};
   card.querySelector('#sbP').onclick=()=>{closeModal();pendingSb={id,vi,k};$('#fSb').click();};
-  card.querySelector('#sbM').onclick=()=>{const e=(m.sbx||{})[x]||{},old={a:m.sba,w:m.sbw};m.sbs[k]=m.sb;m.sb=x;m.sbx=m.sbx||{};delete m.sbx[x];m.sbx[m.sbs[k]]=old;if(e.a)m.sba=e.a;if(e.w)m.sbw=e.w;else delete m.sbw;sbxTidy(m);closeModal();if(frameOn())freezeFrames(c.s);commit();toast('That frame is now the main one. It shows on the floor plan and in the shot list.');};});}
+  card.querySelector('#sbM').onclick=()=>{const e=(m.sbx||{})[x]||{},old={};for(const key in FK){if(m[FK[key]]!=null)old[key]=m[FK[key]];if(e[key]!=null)m[FK[key]]=e[key];else if(key!=='a')delete m[FK[key]];}m.sbs[k]=m.sb;m.sb=x;m.sbx=m.sbx||{};delete m.sbx[x];m.sbx[m.sbs[k]]=old;sbxTidy(m);closeModal();if(frameOn())freezeFrames(c.s);commit();toast('That frame is now the main one. It shows on the floor plan and in the shot list.');};});}
 function pageSelect(it){const s=scene();return `<div class="lbl">Shows on <span style="font-weight:400">· tap a page for only that page; Shift-tap to add more</span></div><div class="pgck"><button data-act="pgset" data-v="all" class="${it.pgs?'':'on'}">All pages</button>${s.pages.map((p,i)=>`<button data-act="pgset" data-v="${p.id}" class="${it.pgs&&it.pgs.includes(p.id)?'on':''}">${i+1} · ${esc(p.name)}</button>`).join('')}</div>`;}
 function inspHTML(){
  const s=scene(),x='<button class="x" data-act="closeInsp" aria-label="Close">×</button>';
@@ -1640,7 +1645,7 @@ function act(a,b){
    if(!vis(c.it,s)){s.pageId=(c.it.pgs&&c.it.pgs[0])||'all';saveLocal();render();fit();}sel={id:c.it.id,mark:vi};
    if(narrow())$('#app').classList.remove('side-open');renderUI();renderInsp();renderShotSel();break;}
   case 'sbAdd':pendingSb={id:b.dataset.id,vi:+b.dataset.v};$('#fSb').click();break;
-  case 'sbDel':{const c=findCam(b.dataset.id);if(c){const m=c.it.marks[+b.dataset.v];const ex=(m.sbs||[]).filter(x=>images[x]);if(ex.length){m.sb=ex.shift();const e=(m.sbx||{})[m.sb];if(e&&e.a)m.sba=e.a;if(e&&e.w)m.sbw=e.w;if(ex.length)m.sbs=ex;else delete m.sbs;sbxTidy(m);}else{delete m.sb;delete m.sbs;delete m.sbx;}commit();}break;}
+  case 'sbDel':{const c=findCam(b.dataset.id);if(c){const was=sel;sbDelete(c.it,+b.dataset.v,0);if(mode==='list')sel=was;}break;}
   case 'sbMore':pendingSb={id:b.dataset.id,vi:+b.dataset.v,add:true};$('#fSb').click();break;
   case 'sbOpt':sbOpt(b.dataset.id,+b.dataset.v,+b.dataset.k);break;
   case 'labReset':delete it.lab;commit();break;
@@ -2008,6 +2013,22 @@ function applyColor(v){const s=scene(),it=itemById(sel&&sel.id);if(!it)return;
  else if(it.type==='ink'){for(const o of it.strokes)o.c=v;}
  else{if(hex7(v)===hex7(PCOL[it.kind]||''))delete it.fill;else it.fill=v;}
  commit();objPop(popAt.x,popAt.y);}
+function sbDelete(it,i,k){const m=it.marks[i];if(!m)return;
+ if(k){m.sbs.splice(k-1,1);if(!m.sbs.length)delete m.sbs;sbxTidy(m);}
+ else{const ex=(m.sbs||[]).filter(x=>images[x]);for(const key in FK)if(key!=='a'&&key!=='w')delete m[FK[key]];if(ex.length){m.sb=ex.shift();const e=(m.sbx||{})[m.sb]||{};if(e.a)m.sba=e.a;else delete m.sba;if(e.w)m.sbw=e.w;else delete m.sbw;for(const key in FK)if(key!=='a'&&key!=='w'&&e[key])m[FK[key]]=e[key];if(ex.length)m.sbs=ex;else delete m.sbs;sbxTidy(m);}else{delete m.sb;delete m.sbs;delete m.sbx;delete m.sba;delete m.sbw;}}
+ sel={id:it.id,mark:i};closePop();commit();toast('Frame removed.');}
+function sbPop(cx,cy){const s=scene(),it=sel&&itemById(sel.id),i=sel&&sel.mark||0,k=sel&&sel.fk||0,m=it&&it.marks&&it.marks[i];if(!m||!images[fImg(m,k)])return;popAt={x:cx,y:cy};
+ const B=(o,l,ic)=>`<button data-o="${o}">${ic||''}${l}</button>`,ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`,sec=(t,b)=>`<div class="hd">${t}</div>${b}`;
+ pop.innerHTML=`<h4>Edit Storyboard</h4><div class="ls" style="width:290px">`+sec('Storyboard',B('det',fGet(m,k,'det')?'Attach':'Detach')+B('rsz','Reset Size')+B('cap','Edit Caption…')+B('imp','Import Image…'))+sec('Object',B('del','Delete',IC.x))+sec('Settings',ck('fh','Flip Horizontally',fGet(m,k,'fh'))+ck('fv','Flip Vertically',fGet(m,k,'fv'))+ck('nf','Frame',!fGet(m,k,'nf')))+`</div>`;
+ pop.classList.add('on');popFor=null;placePopAt(cx,cy);
+ pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-o]');if(!x)return;const o=x.dataset.o;if(it.locked&&o!=='imp'){toast('This camera is locked.');return;}
+  if(o==='det'){fSet(m,k,'det',!fGet(m,k,'det'));closePop();commit();}
+  else if(o==='rsz'){fSetW(m,k,FW0);closePop();commit();}
+  else if(o==='cap'){const def=`Shot ${shotCode(s,it)}`;closePop();modal(`<h3>Caption</h3><p class="mut">Leave it empty to go back to the shot number.</p><label class="fld">Caption<input id="cpx" value="${esc(fGet(m,k,'c')||'')}" placeholder="${esc(def)}" autocomplete="off"></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const inp=card.querySelector('#cpx'),go=()=>{fSet(m,k,'c',inp.value.trim());closeModal();commit();};card.querySelector('#ok').onclick=go;inp.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});setTimeout(()=>{inp.focus();inp.select();},30);});}
+  else if(o==='imp'){closePop();pendingSb=k?{id:it.id,vi:i,k:k-1}:{id:it.id,vi:i};$('#fSb').click();}
+  else if(o==='del')sbDelete(it,i,k);
+  else if(o==='fh'||o==='fv'){fSet(m,k,o,!fGet(m,k,o));commit();sbPop(cx,cy);}
+  else if(o==='nf'){fSet(m,k,'nf',!fGet(m,k,'nf'));commit();sbPop(cx,cy);}};}
 function objPop(cx,cy){
  if(!sel||tool||mode==='list')return;popAt={x:cx,y:cy};const s=scene();
  const sec=(t,b)=>b?`<div class="hd">${t}</div>${b}`:'',B=(o,l,i)=>`<button data-o="${o}">${i||''}${l}</button>`;
@@ -2974,7 +2995,7 @@ let pendingSb=null;
 $('#fSb').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f||!pendingSb)return;const t=pendingSb;pendingSb=null;
  try{const c=findCam(t.id);if(!c)return;const {data}=await shrinkImage(f,720,110000),m=c.it.marks[t.vi],id=addImage(data);
-  const fresh=!m.sb||!images[m.sb];if(t.add&&m.sb&&images[m.sb])(m.sbs=m.sbs||[]).push(id);else if(t.k!=null&&m.sbs&&m.sbs[t.k]!=null)m.sbs[t.k]=id;else m.sb=id;
+  const fresh=!m.sb||!images[m.sb];if(t.add&&m.sb&&images[m.sb])(m.sbs=m.sbs||[]).push(id);else if(t.k!=null&&m.sbs&&m.sbs[t.k]!=null){const o=m.sbs[t.k];m.sbs[t.k]=id;if(m.sbx&&m.sbx[o]){m.sbx[id]=m.sbx[o];delete m.sbx[o];}}else m.sb=id;
   let msg='';if(t.add&&frameOn()&&m.sb&&images[m.sb]){const k=(m.sbs||[]).length;if(!fx(m,k))fSetW(m,k,fWk(c.s,m,0));placeFrame(c.s,c.it,t.vi,k);msg=`Frame ${k+1} added to Shot ${shotCode(c.s,c.it)} on the floor plan.`;}
   else if(fresh&&!t.add&&t.k==null){const was=frameOn();if(!was){P.ui.frames=true;renderTop();}delete m.sba;if(!m.sbw)m.sbw=commonFW(c.s,m);placeFrame(c.s,c.it,t.vi);
    msg=`Frame added on the floor plan next to Shot ${shotCode(c.s,c.it)}${was?'':' (Frames is back on)'}. Drag it anywhere; drag its corner to resize it.`;}
@@ -3573,7 +3594,7 @@ function sheetSVG(s,pid,port,full,opt){opt=opt||{};
 const SBMAX=5;
 function sbN(r){return Math.max(1,Math.min(SBMAX,shotFrames(r.it,r.vi).length));}
 function sbStackSVG(r,x,y,IW,IH){const F=shotFrames(r.it,r.vi);if(!F.length)return `<rect x="${x}" y="${y}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;
- let h='';F.slice(0,SBMAX).forEach((f,i)=>{const src=images[f.id],yy=y+i*(IH+8);h+=`<image href="${src}" xlink:href="${src}" x="${x}" y="${yy}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`;if(F.length>1)h+=`<rect x="${x+6}" y="${yy+IH-26}" width="${f.p?74:26}" height="20" rx="10" fill="rgba(0,0,0,.62)"/><text x="${x+(f.p?43:19)}" y="${yy+IH-11.5}" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,Helvetica,Arial,sans-serif">${i+1}${f.p?` · pos ${f.p+1}`:''}</text>`;});
+ let h='';F.slice(0,SBMAX).forEach((f,i)=>{const src=images[f.id],yy=y+i*(IH+8);h+=fImgTag(src,IW,IH,r.it.marks[f.j],f.k,x,yy);if(F.length>1)h+=`<rect x="${x+6}" y="${yy+IH-26}" width="${f.p?74:26}" height="20" rx="10" fill="rgba(0,0,0,.62)"/><text x="${x+(f.p?43:19)}" y="${yy+IH-11.5}" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,Helvetica,Arial,sans-serif">${i+1}${f.p?` · pos ${f.p+1}`:''}</text>`;});
  if(F.length>SBMAX)h+=`<text x="${x}" y="${y+SBMAX*(IH+8)+6}" class="x-lt">+${F.length-SBMAX} more frames</text>`;return h;}
 function listPagesSVG(s,o){
  o=o||{};const port=!!o.port,sb=o.sb!==false,rows=rowsOf(s),W=port?1275:1650,H=port?1650:1275,M=48,TW=W-2*M,out=[];if(!rows.length)return out;
@@ -4072,7 +4093,7 @@ function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;co
 let firstDown=null,shiftSolo=false;
 function menuFor(el,x,y){if(tool||offCanvas())return;if(!el||!el.dataset||!el.dataset.id)el=labelAt(x,y);if(!el||!el.dataset||!el.dataset.id){closePop();return;}
  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0;
- if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;renderUI();
+ if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;if(el.dataset.frame){sel.frame=true;const fk=+(el.dataset.fk||0);if(fk)sel.fk=fk;renderUI();renderShotSel();sbPop(x,y);return;}renderUI();
  if(el.dataset.lab&&itemById(id).type==='cam'){sel.lab=true;renderUI();renderShotSel();shotPop(x,y);return;}objPop(x,y);}
 function selScreenPos(){const it=sel&&sel.id!=='__bg'?itemById(sel.id):null,r=svg.getBoundingClientRect();let w={x:0,y:0};
  if(it){if(it.marks){const m=it.marks[sel.mark||0]||it.marks[0];w={x:m.x,y:m.y};}else if(it.type==='wall')w={x:(it.x1+it.x2)/2,y:(it.y1+it.y2)/2};else w={x:it.x,y:it.y};}else return {x:r.left+r.width/2,y:r.top+r.height/2};
@@ -4212,9 +4233,9 @@ svg.addEventListener('pointerdown',e=>{
  if(el){
   if(el.dataset.track){const id=el.dataset.id,i=+el.dataset.track,it=itemById(id);sel={id,mark:it&&it.marks?i:i,track:i};renderUI();renderInsp();renderShotSel();
    if(it&&!it.locked){gesture={type:'track',id,i,w0:w,sx:e.clientX,sy:e.clientY,moved:false};return;}}
-  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0,isLab=!!el.dataset.lab&&(itemById(id)||{}).type==='cam',fk=el.dataset.frame?+(el.dataset.fk||0):0,same=sel&&sel.id===id&&sel.mark===mk&&!sel.track&&(sel.pan||0)===pj&&!!sel.lab===isLab&&(sel.fk||0)===fk,now=Date.now();
+  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0,isLab=!!el.dataset.lab&&(itemById(id)||{}).type==='cam',fk=el.dataset.frame?+(el.dataset.fk||0):0,same=sel&&sel.id===id&&sel.mark===mk&&!sel.track&&(sel.pan||0)===pj&&!!sel.lab===isLab&&(sel.fk||0)===fk&&!!sel.frame===!!el.dataset.frame,now=Date.now();
   const tk=id+':'+mk+':'+pj+(el.dataset.badge!=null?':b':''),dbl=same&&lastTap.id===tk&&now-lastTap.t<420;lastTap={id:tk,t:dbl?0:now};downAgain=same?el:null;
-  if(!same){sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(isLab)sel.lab=true;if(fk)sel.fk=fk;renderUI();renderInsp();renderShotSel();}
+  if(!same){sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(isLab)sel.lab=true;if(fk)sel.fk=fk;if(el.dataset.frame)sel.frame=true;renderUI();renderInsp();renderShotSel();}
   const locked=id==='__bg'?(scene().bg||{}).locked:((itemById(id)||{}).locked||(itemById(id)||{}).type==='axis');
   if(sel&&sel.id===id)sel.badge=el.dataset.badge!=null;
   if(locked){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl};return;}
@@ -4325,7 +4346,8 @@ addEventListener('keydown',e=>{
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='a'){e.preventDefault();const s=scene(),ids=pageItems(s).filter(i=>i.type!=='axis'&&!layerLocked(i)).map(i=>i.id);if(ids.length){sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();}return;}
  if(e.key==='Escape'){if(lassoArmed){setLasso(false);return;}if(msel){clearMsel();return;}if(tool)endTool();else if(pop.classList.contains('on'))closePop();else if(sel)select(null);return;}
  if(e.key==='Enter'&&tool){endTool();return;}
- if((e.key==='Delete'||e.key==='Backspace')&&sel&&sel.id!=='__bg'&&!sel.lab){const it=itemById(sel.id);if(it&&!it.locked){e.preventDefault();deleteSel(false);}}
+ if((e.key==='Delete'||e.key==='Backspace')&&sel&&sel.frame){e.preventDefault();const it=itemById(sel.id);if(it&&!it.locked)sbDelete(it,sel.mark||0,sel.fk||0);}
+ else if((e.key==='Delete'||e.key==='Backspace')&&sel&&sel.id!=='__bg'&&!sel.lab){const it=itemById(sel.id);if(it&&!it.locked){e.preventDefault();deleteSel(false);}}
 });
 
 function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split')&&opt.list!==false)renderList();renderDocs();renderTop();renderCanvas();renderPageBits();renderShots();if(opt.insp!==false)renderInsp();updateStatus();}
