@@ -374,7 +374,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117031602';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117031706';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1267,7 +1267,7 @@ function inspHTML(){
   <div class="btns"><button data-act="moveMode">Move… (tap where they go)</button>${n>1?'<button data-act="delMark">Remove this mark</button>':''}</div>
   ${pageSelect(it)}<div class="btns">${lockBtn}<button class="danger" data-act="del">Remove from diagram</button></div>
   <p class="mut" style="margin-top:10px">Name and color apply everywhere this character appears. Drag the round handle to turn them.</p>`;}
- if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?',color:'#888'},n=it.marks.length,vi=sel.mark||0,m=it.marks[vi]||it.marks[0];
+ if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?',color:'#888'},n=nVer(it),vi=verStart(it,sel.mark||0),m=it.marks[vi]||it.marks[0];
   return x+`<div class="ph"><i class="dot" style="background:${st.color}"></i>Shot ${esc(shotCode(s,it))}<span class="mut">· version ${verCode(s,verNum(it,vi))}${nVer(it)>1?' of '+nVer(it):''}</span></div>
   <div class="vgrid"><label class="fld">Shot size${sizeSelect('data-f="v.size"',m.size||'')}</label>
   <label class="fld">Shot type<input data-f="v.type" list="dl-type" value="${esc(m.type||'')}" autocomplete="off"></label>
@@ -1275,8 +1275,8 @@ function inspHTML(){
   <label class="fld">Movement<input data-f="v.move" list="dl-move" value="${esc(m.move||'')}" autocomplete="off"></label></div>
   <label class="fld">Description<textarea data-f="v.desc" rows="3">${esc(m.desc||'')}</textarea></label>
   <div class="lbl">Storyboard frame</div>${sbHTML(it.id,vi,m)}
-  <div class="lbl">Versions <span class="mut">· each camera position is a version of the shot</span></div>
-  <div class="btns"><button data-act="moveMode">+ Add version (tap where it goes)</button>${n>1?'<button data-act="delMark">Remove this version</button>':''}</div>
+  <div class="lbl">Versions <span class="mut">· a new version uses the same camera position</span></div>
+  <div class="btns"><button data-act="addVer">+ Add version</button><button data-act="trackto">Track to…</button>${n>1?'<button data-act="delMark">Remove this version</button>':''}</div>
   ${numCfg(s).auto?'':`<label class="fld">Setup number<input data-f="setup.num" value="${esc(String(st.num))}" maxlength="6" autocapitalize="characters" autocomplete="off"></label>`}<label class="fld">Camera letter<input data-f="cam.letter" value="${esc(it.letter)}" maxlength="2" autocapitalize="characters" autocomplete="off"></label>
   <div class="lbl">Setup ${st.num} color <span class="mut">· every camera in setup ${st.num}</span></div>${swatches('setup.color',SETUP_COLORS,st.color,true)}
   ${pageSelect(it)}<div class="btns">${lockBtn}${it.lab?'<button data-act="labReset">Reset label</button>':''}<button class="danger" data-act="del">Delete camera</button></div>`;}
@@ -1369,6 +1369,7 @@ function act(a,b){
   case 'lock':if(sel.id==='__bg')s.bg.locked=!s.bg.locked;else if(it)it.locked=!it.locked;commit();break;
   case 'del':deleteSel(true);break;
   case 'moveMode':startTool({t:'move',id:it.id});break;
+  case 'addVer':addVersion(it,sel.mark||0);break;
   case 'trackto':{const [,rb]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'to',at:rb});break;}
   case 'delMark':if(it.type==='char'){const [a,b]=runOf(it,sel.mark||0);if(it.marks.length>b-a+1){it.marks.splice(a,b-a+1);shiftAxis(s,it.id,b+1,-(b-a+1));if(a<it.marks.length&&it.marks[a].t)delete it.marks[a].t;sel.mark=Math.max(0,Math.min(a,it.marks.length-1));}}
   else if(it.type==='cam'){const [a,b]=camRun(it,sel.mark||0);if(nVer(it)>1){const kids=it.marks.map((q,j)=>q.sp&&j>b&&spBase(it,j)===a?j:-1).filter(j=>j>=0);if(kids.length){const K=it.marks[kids[0]];delete K.sp;K.mid=uid();for(const j of kids.slice(1))it.marks[j].sp=K.mid;}it.marks.splice(a,b-a+1);if(it.marks[0].tk)delete it.marks[0].tk;sel.mark=Math.min(a,it.marks.length-1);}}
@@ -1597,7 +1598,7 @@ function objPop(cx,cy){
     +sec('Storyboard',B('frame',va.sb?'Replace Storyboard Frame…':'Add Storyboard Frame…')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
     +(s.setups.length>1?sec('Shot Order',(s.setups[0].id!==it.setupId?B('shotUp','Move Shot Earlier'):'')+(s.setups[s.setups.length-1].id!==it.setupId?B('shotDown','Move Shot Later'):'')):'')
-    +sec('Settings',stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages;}
+    +sec('Settings',B('edit','Camera Details…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages;}
   else if(it.type==='axis'){title='Axis Line';h=sec('Object',B('del','Delete',IC.x));}
   else{const name=it.type==='wall'?'Wall':it.type==='text'?'Text':(LIB[it.kind]||{}).n||'Item';title='Edit '+name;
    const isBox=BOX(it.type)&&it.type!=='mask',ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;
