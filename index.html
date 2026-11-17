@@ -387,7 +387,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117165416';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117172538';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -511,6 +511,26 @@ const LIB={
  dumpster:{n:'Dumpster',w:130,h:75,s:'<rect class="pgr" x="1" y="4" width="98" height="92" rx="3"/><path class="pl" d="M50,4V96M1,20H99"/>'},
  mailbox:{n:'Mailbox',w:26,h:26,s:'<rect class="pblue" x="4" y="10" width="92" height="80" rx="18"/>'},
  busstop:{n:'Bus Shelter',w:190,h:60,s:'<path class="pf" d="M2,2H98V40H92V10H8V40H2Z"/><rect class="pw" x="14" y="16" width="72" height="16"/>'},
+ // buildings, seen from above (roofs)
+ househip:{n:'House (hip roof)',w:732,h:549,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><path class="pl" d="M1,1L32,50L1,99M99,1L68,50L99,99M32,50H68"/><rect class="pd" x="76" y="14" width="8" height="12"/>'},
+ housegable:{n:'House (gable roof)',w:732,h:549,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect x="1" y="50" width="98" height="49" fill="#000" fill-opacity=".13"/><path class="pl" d="M1,50H99"/><rect class="pd" x="72" y="20" width="8" height="12"/><rect class="pw" x="36" y="99" width="28" height="0"/>'},
+ houseL:{n:'House (L-shaped)',w:914,h:732,s:'<path class="pf" d="M1,1H99V54H52V99H1Z"/><path class="pl" d="M1,1L27,27H72L99,1M99,54L72,27M27,27V72M1,99L27,72L52,99"/><rect class="pd" x="10" y="40" width="7" height="9"/>'},
+ garage:{n:'Garage',w:402,h:402,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect x="50" y="1" width="49" height="98" fill="#000" fill-opacity=".13"/><path class="pl" d="M50,1V99"/>'},
+ rowhouse:{n:'Brownstone / Row House',w:366,h:914,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="7" y="3" width="86" height="94"/><rect class="pw" x="30" y="34" width="40" height="16"/><rect class="pd" x="34" y="66" width="22" height="9"/><rect class="pd" x="70" y="8" width="16" height="6"/>'},
+ rowblock:{n:'Row of Brownstones',w:1463,h:914,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><path class="pl" d="M25,1V99M50,1V99M75,1V99"/>'+[0,25,50,75].map(x=>`<rect class="pw" x="${x+8}" y="34" width="10" height="16"/><rect class="pd" x="${x+9}" y="66" width="6" height="9"/><rect class="pd" x="${x+17}" y="8" width="4" height="6"/>`).join('')},
+ apartment:{n:'Apartment Building',w:1829,h:1463,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="4" y="4" width="92" height="92"/><rect class="pd" x="40" y="38" width="22" height="20"/><circle class="pd" cx="80" cy="22" r="9"/><circle class="pl" cx="80" cy="22" r="5"/><rect class="pw" x="12" y="70" width="12" height="9"/><rect class="pw" x="28" y="70" width="12" height="9"/><rect class="pw" x="14" y="14" width="10" height="8"/>'},
+ office:{n:'Office Tower',w:2195,h:2195,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="5" y="5" width="90" height="90"/><rect class="pd" x="30" y="30" width="40" height="40"/><rect class="pl" x="36" y="36" width="28" height="28"/><rect class="pw" x="12" y="12" width="10" height="8"/><rect class="pw" x="78" y="80" width="10" height="8"/><circle class="pl" cx="20" cy="80" r="9"/>'},
+ warehouse:{n:'Warehouse',w:2744,h:1829,s:'<rect class="pf" x="1" y="1" width="98" height="98"/>'+[22,44,66,88].map(y=>`<rect class="pw" x="10" y="${y-9}" width="80" height="6"/>`).join('')+[18,38,58,78].map(x=>`<rect class="pd" x="${x}" y="96" width="10" height="3"/>`).join('')},
+ store:{n:'Store / Strip Mall',w:2195,h:914,s:'<rect class="pf" x="1" y="1" width="98" height="86"/><rect class="pw" x="1" y="87" width="98" height="12"/><path class="pl" d="M25,1V99M50,1V99M75,1V99"/><rect class="pd" x="8" y="20" width="10" height="16"/><rect class="pd" x="58" y="20" width="10" height="16"/>'},
+ gasstation:{n:'Gas Station',w:1463,h:1097,s:'<rect class="pd" x="20" y="2" width="60" height="22"/><rect class="pf" x="6" y="36" width="88" height="56" fill-opacity=".75"/><rect class="pw" x="18" y="58" width="16" height="12"/><rect class="pw" x="42" y="58" width="16" height="12"/><rect class="pw" x="66" y="58" width="16" height="12"/>'},
+ church:{n:'Church',w:1097,h:1829,s:'<path class="pf" d="M35,1H65V30H99V48H65V99H35V48H1V30H35Z"/><path class="pl" d="M50,1V99M1,39H99"/><rect class="pd" x="38" y="84" width="24" height="15"/><path class="pl" d="M38,84L62,99M62,84L38,99"/>'},
+ // streets and sidewalks, drawn to scale from their real size
+ street:{n:'Street (2 lanes)',w:1829,h:768,f:(w,h)=>streetSVG(w,h,1),s:'<rect x="0" y="0" width="100" height="24" fill="#d9d6cf"/><rect x="0" y="76" width="100" height="24" fill="#d9d6cf"/><rect x="0" y="24" width="100" height="52" fill="#5d636b"/><path d="M0,48H100M0,52H100" stroke="#e3b43a" stroke-width="2"/>'},
+ avenue:{n:'Avenue (4 lanes)',w:2195,h:1463,f:(w,h)=>streetSVG(w,h,2),s:'<rect x="0" y="0" width="100" height="14" fill="#d9d6cf"/><rect x="0" y="86" width="100" height="14" fill="#d9d6cf"/><rect x="0" y="14" width="100" height="72" fill="#5d636b"/><path d="M0,49H100M0,51H100" stroke="#e3b43a" stroke-width="1.6"/><path d="M0,32H100M0,68H100" stroke="#fff" stroke-width="1.6" stroke-dasharray="10 12"/>'},
+ sidewalk:{n:'Sidewalk',w:1097,h:183,f:(w,h)=>sidewalkSVG(w,h),s:'<rect x="0" y="30" width="100" height="36" fill="#d9d6cf"/><path d="M20,30V66M40,30V66M60,30V66M80,30V66" stroke="#bdb8ae" stroke-width="1.4"/><rect x="0" y="66" width="100" height="5" fill="#a29d94"/>'},
+ inter4:{n:'Intersection (4-way)',w:2012,h:2012,f:(w,h)=>junctionSVG(w,h,{n:1,e:1,s:1,w:1}),s:'<path d="M28,0H72V28H100V72H72V100H28V72H0V28H28Z" fill="#d9d6cf"/><path d="M38,0H62V38H100V62H62V100H38V62H0V38H38Z" fill="#5d636b"/>'+[0,1,2,3].map(i=>`<rect x="${40+i*6}" y="28" width="3" height="9" fill="#fff"/><rect x="${40+i*6}" y="63" width="3" height="9" fill="#fff"/><rect x="28" y="${40+i*6}" width="9" height="3" fill="#fff"/><rect x="63" y="${40+i*6}" width="9" height="3" fill="#fff"/>`).join('')},
+ interT:{n:'Intersection (T)',w:2012,h:1463,f:(w,h)=>junctionSVG(w,h,{e:1,s:1,w:1}),s:'<path d="M0,10H100V54H72V100H28V54H0Z" fill="#d9d6cf"/><path d="M0,20H100V44H62V100H38V44H0Z" fill="#5d636b"/>'+[0,1,2,3].map(i=>`<rect x="28" y="${22+i*6}" width="9" height="3" fill="#fff"/><rect x="63" y="${22+i*6}" width="9" height="3" fill="#fff"/><rect x="${40+i*6}" y="55" width="3" height="9" fill="#fff"/>`).join('')},
+ parking:{n:'Parking Lot',w:1646,h:1097,f:(w,h)=>parkingSVG(w,h),s:'<rect x="0" y="0" width="100" height="100" fill="#666c74"/><path d="M10,0V34M28,0V34M46,0V34M64,0V34M82,0V34M10,100V66M28,100V66M46,100V66M64,100V66M82,100V66" stroke="#fff" stroke-width="2"/>'},
  crosswalk:{n:'Crosswalk',w:220,h:140,s:[0,1,2,3,4,5].map(i=>`<rect class="pw" x="${4+i*16}" y="2" width="10" height="96"/>`).join('')},
  stroller:{n:'Stroller',w:36,h:60,s:'<rect class="pf" x="10" y="2" width="80" height="62" rx="20"/><path class="pl ph" d="M10,90H90"/><path class="pl" d="M30,64V90M70,64V90"/>'},
  // nature & animals
@@ -586,7 +606,9 @@ const CATS={
   ['Medical',['hospbed','gurney','ivpole','wheelchair','patientmon']],
   ['Restaurant & bar',['booth','barcounter','cafetable','plate','cup','glass','bottle','candle']],
   ['Vehicles',['car','suv','taxi','police','ambulance','minibus','bus','semi','trailer','moto','bicycle','boat','tank','helicopter','plane','fighter','jet']],
-  ['Street',['streetlamp','hydrant','cone','trashcan','dumpster','mailbox','busstop','crosswalk','stroller']],
+  ['Streets & sidewalks',['street','avenue','inter4','interT','sidewalk','crosswalk','parking']],
+  ['Buildings (seen from above)',['househip','housegable','houseL','garage','rowhouse','rowblock','apartment','office','warehouse','store','gasstation','church']],
+  ['Street',['streetlamp','hydrant','cone','trashcan','dumpster','mailbox','busstop','stroller']],
   ['Nature & animals',['tree','bush','hedge','rock','pond','dog','cat','horse']],
   ['Hand props',['image','book','briefcase','suitcase','bag','box','keys','cash','flashlight','camprop','knife','bat']],
   ['Weapons',['gun','rifle','shotgun','sword']],
@@ -1185,7 +1207,7 @@ function trackShape(it){
  return g;
 }
 function trackRadiusTxt(it){const k=trackK(it);if(Math.abs(k)<1e-7)return 'Straight';const ft=1/Math.abs(k)/FT;return `Curved · radius about ${ft<10?ft.toFixed(1):Math.round(ft)} ft`;}
-const PCOL={"arrow":"#E5484D","carrow":"#E5484D","window":"#BFE0F2","doorclosed":"#C9A27A","dbldoorclosed":"#C9A27A","village":"#5B6573","fresnel":"#3A3D44","ledpanel":"#2F3640","softbox":"#E9E6DF","kino":"#4B5563","sqtable": "#B7834D", "ovaltable": "#A9703F", "roundtable": "#C08A55", "coffeetable": "#8B5A33", "cafetable": "#C9A27A", "conftable": "#7A4E2D", "desk": "#9C6B3F", "chair": "#8C6239", "armchair": "#B0563F", "sofa": "#4F6D8F", "bench": "#9A7B4F", "barstool": "#5B4636", "bedsingle": "#A9C4E0", "beddouble": "#C7B2D6", "nightstand": "#8B5A33", "dresser": "#7E5233", "bookshelf": "#6E4527", "tv": "#26282D", "floorlamp": "#E8C468", "rug": "#B5534A", "plant": "#4E9A4A", "piano": "#2B2D33", "grandpiano": "#1F1F23", "counter": "#D9D2C5", "island": "#CFC6B5", "fridge": "#E6E8EB", "stove": "#C9CDD2", "sink": "#DCE6EE", "toilet": "#F4F6F8", "bathtub": "#EEF3F7", "shower": "#CFE3F0", "cubicle": "#9AA7B5", "filing": "#8A96A3", "whiteboard": "#F7F8FA", "copier": "#BFC5CC", "cooler": "#8EC5EA", "laptop": "#A8AFB8", "keyboard": "#3A3D44", "monitor": "#2E3138", "phone": "#1F2125", "paper": "#FAFAF7", "hospbed": "#D6E6F2", "gurney": "#C5D0DA", "ivpole": "#A9B2BC", "wheelchair": "#3F4650", "patientmon": "#2E3138", "booth": "#8E2F35", "barcounter": "#6B4226", "plate": "#F4F1EA", "cup": "#E9E2D0", "glass": "#CDE7F2", "bottle": "#3E7A4C", "candle": "#F3E3B3", "car": "#3E63DD", "suv": "#2F3A4A", "taxi": "#F5C518", "police": "#1E2A44", "ambulance": "#F4F5F7", "minibus": "#F0A23B", "bus": "#3D7EA6", "semi": "#C2412D", "trailer": "#D5D9DE", "moto": "#B42318", "bicycle": "#1F8A70", "boat": "#A8693A", "tank": "#5E6B3A", "helicopter": "#3B4A5A", "plane": "#E9ECEF", "fighter": "#7D8793", "jet": "#F2F4F6", "streetlamp": "#3A3D44", "hydrant": "#D62828", "cone": "#F77F00", "trashcan": "#4A6B52", "dumpster": "#2F6B3E", "mailbox": "#2B4C9B", "busstop": "#8FA8B8", "crosswalk": "#F4F4F4", "stroller": "#5A6E8C", "tree": "#6BAA4F", "bush": "#5E9E50", "hedge": "#3F7D3A", "rock": "#8E8A84", "pond": "#79B8E0", "dog": "#B08055", "cat": "#E39A4F", "horse": "#7B4A2D", "book": "#8E2F35", "briefcase": "#4A3324", "suitcase": "#2F4858", "bag": "#B5523B", "box": "#C9A26B", "keys": "#C9A227", "cash": "#6FA36B", "flashlight": "#2E3138", "camprop": "#2B2D33", "knife": "#A9B2BC", "bat": "#C49A6C", "gun": "#1F2125", "rifle": "#3B2E25", "shotgun": "#5A3E2B", "sword": "#B8C0C8", "actormark": "#F5C518", "dolly": "#4A4F57", "crane": "#F2A900", "cstand": "#8C949D", "lightstand": "#3A3D44", "flag": "#1F1F23", "silk": "#F2F2EE", "applebox": "#C9A26B", "dirchair": "#3A3D44", "boom": "#6B7280", "village": "#2B2D33", "soundcart": "#4B5563", "generator": "#E6B800", "tent": "#2F5D8C", "equipment": "#5B6573", "bars": "#5B6573", "stairs": "#BFA27A", "column": "#D9D4CA", "pillar": "#CFC8BB", "railing": "#7A5C3E", "fence": "#A57C52", "curtain": "#8E2F35", "elevator": "#A9B2BC"};
+const PCOL={"househip":"#9C8F84","housegable":"#9C8F84","houseL":"#A08C7C","garage":"#8F8F8C","rowhouse":"#8E8A86","rowblock":"#8E8A86","apartment":"#A7A9AD","office":"#9FA7B1","warehouse":"#B4B7BA","store":"#B0ADA6","gasstation":"#D8DCE0","church":"#8B7F78","arrow":"#E5484D","carrow":"#E5484D","window":"#BFE0F2","doorclosed":"#C9A27A","dbldoorclosed":"#C9A27A","village":"#5B6573","fresnel":"#3A3D44","ledpanel":"#2F3640","softbox":"#E9E6DF","kino":"#4B5563","sqtable": "#B7834D", "ovaltable": "#A9703F", "roundtable": "#C08A55", "coffeetable": "#8B5A33", "cafetable": "#C9A27A", "conftable": "#7A4E2D", "desk": "#9C6B3F", "chair": "#8C6239", "armchair": "#B0563F", "sofa": "#4F6D8F", "bench": "#9A7B4F", "barstool": "#5B4636", "bedsingle": "#A9C4E0", "beddouble": "#C7B2D6", "nightstand": "#8B5A33", "dresser": "#7E5233", "bookshelf": "#6E4527", "tv": "#26282D", "floorlamp": "#E8C468", "rug": "#B5534A", "plant": "#4E9A4A", "piano": "#2B2D33", "grandpiano": "#1F1F23", "counter": "#D9D2C5", "island": "#CFC6B5", "fridge": "#E6E8EB", "stove": "#C9CDD2", "sink": "#DCE6EE", "toilet": "#F4F6F8", "bathtub": "#EEF3F7", "shower": "#CFE3F0", "cubicle": "#9AA7B5", "filing": "#8A96A3", "whiteboard": "#F7F8FA", "copier": "#BFC5CC", "cooler": "#8EC5EA", "laptop": "#A8AFB8", "keyboard": "#3A3D44", "monitor": "#2E3138", "phone": "#1F2125", "paper": "#FAFAF7", "hospbed": "#D6E6F2", "gurney": "#C5D0DA", "ivpole": "#A9B2BC", "wheelchair": "#3F4650", "patientmon": "#2E3138", "booth": "#8E2F35", "barcounter": "#6B4226", "plate": "#F4F1EA", "cup": "#E9E2D0", "glass": "#CDE7F2", "bottle": "#3E7A4C", "candle": "#F3E3B3", "car": "#3E63DD", "suv": "#2F3A4A", "taxi": "#F5C518", "police": "#1E2A44", "ambulance": "#F4F5F7", "minibus": "#F0A23B", "bus": "#3D7EA6", "semi": "#C2412D", "trailer": "#D5D9DE", "moto": "#B42318", "bicycle": "#1F8A70", "boat": "#A8693A", "tank": "#5E6B3A", "helicopter": "#3B4A5A", "plane": "#E9ECEF", "fighter": "#7D8793", "jet": "#F2F4F6", "streetlamp": "#3A3D44", "hydrant": "#D62828", "cone": "#F77F00", "trashcan": "#4A6B52", "dumpster": "#2F6B3E", "mailbox": "#2B4C9B", "busstop": "#8FA8B8", "crosswalk": "#F4F4F4", "stroller": "#5A6E8C", "tree": "#6BAA4F", "bush": "#5E9E50", "hedge": "#3F7D3A", "rock": "#8E8A84", "pond": "#79B8E0", "dog": "#B08055", "cat": "#E39A4F", "horse": "#7B4A2D", "book": "#8E2F35", "briefcase": "#4A3324", "suitcase": "#2F4858", "bag": "#B5523B", "box": "#C9A26B", "keys": "#C9A227", "cash": "#6FA36B", "flashlight": "#2E3138", "camprop": "#2B2D33", "knife": "#A9B2BC", "bat": "#C49A6C", "gun": "#1F2125", "rifle": "#3B2E25", "shotgun": "#5A3E2B", "sword": "#B8C0C8", "actormark": "#F5C518", "dolly": "#4A4F57", "crane": "#F2A900", "cstand": "#8C949D", "lightstand": "#3A3D44", "flag": "#1F1F23", "silk": "#F2F2EE", "applebox": "#C9A26B", "dirchair": "#3A3D44", "boom": "#6B7280", "village": "#2B2D33", "soundcart": "#4B5563", "generator": "#E6B800", "tent": "#2F5D8C", "equipment": "#5B6573", "bars": "#5B6573", "stairs": "#BFA27A", "column": "#D9D4CA", "pillar": "#CFC8BB", "railing": "#7A5C3E", "fence": "#A57C52", "curtain": "#8E2F35", "elevator": "#A9B2BC"};
 function lum(h){const [r,g,b]=rgbOf(h);return (r*299+g*587+b*114)/255000;}
 const _mc={};function mainCls(k){if(_mc[k])return _mc[k];const src=(LIB[k]||{}).s||'';if(/class="pf"/.test(src))return _mc[k]='pf';let best='pf',n=0;for(const c of ['pd','pgr','pbl','pbx','pgf','pw','pred','pblue','por','pyl','pbk']){const m=(src.match(new RegExp(`class="${c}"`,'g'))||[]).length;if(m>n){n=m;best=c;}}return _mc[k]=best;}
 const PMAIN={shower:'pw',hospbed:'pw',knife:'pw',window:'pw',doorclosed:'pgf',dbldoorclosed:'pgf',village:'pw'};
@@ -1195,8 +1217,57 @@ function colorize(s,kind,fill){const own=fill&&hex7(fill)!=='#CFD8E3'?fill:null;
  const main=own||PCOL[kind];if(!main)return s;const mc=PMAIN[kind]||mainCls(kind),dk=lum(main)<.3,st=dk?'#000':shade(main,-.45),det=dk?shade(main,.35):shade(main,-.3);
  s=s.replace(new RegExp(`class="${mc}"`,'g'),`class="${mc}" style="fill:${main};stroke:${st}"`);if(mc==='pf'||mc==='pw')s=s.replace(/class="pd"/g,`class="pd" style="fill:${det};stroke:${st}"`);
  return s;}
+/* ---------- streets, sidewalks, intersections and parking, drawn to scale (FT = one foot) ---------- */
+const RD={asph:'#5d636b',walk:'#d9d6cf',joint:'#bdb8ae',curb:'#a29d94',yel:'#e3b43a',wht:'#f4f4f2'};
+function walkBand(x,y,w,h,vert){/* concrete with a joint every 5 feet */let g=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${RD.walk}"/>`,st=5*FT,d='';
+ if(vert){for(let t=y+st;t<y+h-1;t+=st)d+=`M${x},${t.toFixed(1)}H${x+w}`;}else{for(let t=x+st;t<x+w-1;t+=st)d+=`M${t.toFixed(1)},${y}V${y+h}`;}
+ return g+(d?`<path d="${d}" stroke="${RD.joint}" stroke-width="${(.25*FT).toFixed(1)}"/>`:'');}
+function streetSVG(w,h,pairs){const curb=.5*FT,sw=Math.min(10*FT,h*(pairs>1?.13:.24)),road=h-2*sw,cy=h/2,lw=.5*FT;
+ let g=walkBand(0,0,w,sw)+walkBand(0,h-sw,w,sw)+`<rect x="0" y="${sw}" width="${w}" height="${road}" fill="${RD.asph}"/><path d="M0,${sw}H${w}M0,${h-sw}H${w}" stroke="${RD.curb}" stroke-width="${curb.toFixed(1)}"/>`;
+ g+=`<path d="M0,${(cy-.45*FT).toFixed(1)}H${w}M0,${(cy+.45*FT).toFixed(1)}H${w}" stroke="${RD.yel}" stroke-width="${lw.toFixed(1)}"/>`;
+ if(pairs>1){const park=Math.min(8*FT,road*.1),lane=(road/2-park)/2;
+  for(const y of [sw+park+lane,h-sw-park-lane])g+=`<path d="M0,${y.toFixed(1)}H${w}" stroke="${RD.wht}" stroke-width="${lw.toFixed(1)}" stroke-dasharray="${(10*FT).toFixed(1)} ${(30*FT).toFixed(1)}"/>`;
+  for(const y of [sw+park,h-sw-park])g+=`<path d="M0,${y.toFixed(1)}H${w}" stroke="${RD.wht}" stroke-width="${(.35*FT).toFixed(1)}"/>`;}
+ return g;}
+function sidewalkSVG(w,h){const c=Math.min(.6*FT,h*.15);return walkBand(0,0,w,h-c)+`<rect x="0" y="${h-c}" width="${w}" height="${c}" fill="${RD.curb}"/>`;}
+function junctionSVG(w,h,L){/* L: which legs exist (n, e, s, w); roads 22 feet, sidewalks 10 feet, corners rounded */
+ const r=Math.min(11*FT,Math.min(w,h)*.2),s=Math.min(10*FT,Math.min(w,h)*.12),rc=Math.min(15*FT,s*1.4),cx=w/2,cy=L.n?h/2:r+s,lw=.5*FT,cw=8*FT,f=v=>v.toFixed(1);
+ let g='';
+ /* sidewalks along every road edge */
+ g+=walkBand(L.w?0:cx-r-s,cy-r-s,(L.e?w:cx+r+s)-(L.w?0:cx-r-s),s)+walkBand(L.w?0:cx-r-s,cy+r,(L.e?w:cx+r+s)-(L.w?0:cx-r-s),s);
+ if(L.n)g+=walkBand(cx-r-s,0,s,cy-r-s,1)+walkBand(cx+r,0,s,cy-r-s,1);
+ if(L.s)g+=walkBand(cx-r-s,cy+r+s,s,h-cy-r-s,1)+walkBand(cx+r,cy+r+s,s,h-cy-r-s,1);
+ /* corner squares of sidewalk where two sidewalks meet */
+ for(const [ok,x,y] of [[L.n&&L.w,cx-r-s,cy-r-s],[L.n&&L.e,cx+r,cy-r-s],[L.s&&L.w,cx-r-s,cy+r],[L.s&&L.e,cx+r,cy+r]])if(ok)g+=`<rect x="${f(x)}" y="${f(y)}" width="${f(s)}" height="${f(s)}" fill="${RD.walk}"/>`;
+ /* asphalt, with rounded curbs at each corner that has two legs */
+ const W=L.w?0:cx-r,E=L.e?w:cx+r,N=L.n?0:cy-r,S=L.s?h:cy+r;
+ let d=`M${f(cx-r)},${f(N)}`;
+ d+=L.n&&L.w?`V${f(cy-r-rc)}A${f(rc)},${f(rc)} 0 0 1 ${f(cx-r-rc)},${f(cy-r)}H${f(W)}`:`V${f(cy-r)}H${f(W)}`;
+ d+=`V${f(cy+r)}`;
+ d+=L.s&&L.w?`H${f(cx-r-rc)}A${f(rc)},${f(rc)} 0 0 1 ${f(cx-r)},${f(cy+r+rc)}V${f(S)}`:`H${f(cx-r)}V${f(S)}`;
+ d+=`H${f(cx+r)}`;
+ d+=L.s&&L.e?`V${f(cy+r+rc)}A${f(rc)},${f(rc)} 0 0 1 ${f(cx+r+rc)},${f(cy+r)}H${f(E)}`:`V${f(cy+r)}H${f(E)}`;
+ d+=`V${f(cy-r)}`;
+ d+=L.n&&L.e?`H${f(cx+r+rc)}A${f(rc)},${f(rc)} 0 0 1 ${f(cx+r)},${f(cy-r-rc)}V${f(N)}`:`H${f(cx+r)}V${f(N)}`;
+ d+='Z';
+ g+=`<path d="${d}" fill="${RD.asph}" stroke="${RD.curb}" stroke-width="${f(.5*FT)}"/>`;
+ /* the edges of the asphalt that run along the sidewalk (no curb drawn across the open ends) */
+ /* crosswalks, in line with the sidewalks, and the center lines on each leg */
+ const zebra=(x,y,len,across,vert)=>{let z='';const n=Math.max(2,Math.floor((across-2*FT)/(4*FT)));const st=(across-(n*2-1)*2*FT)/2;for(let i=0;i<n;i++){const o=st+i*4*FT;z+=vert?`<rect x="${f(x+o)}" y="${f(y)}" width="${f(2*FT)}" height="${f(len)}" fill="${RD.wht}"/>`:`<rect x="${f(x)}" y="${f(y+o)}" width="${f(len)}" height="${f(2*FT)}" fill="${RD.wht}"/>`;}return z;};
+ const yl=(x1,y1,x2,y2)=>{const vx=x2-x1,vy=y2-y1,l=Math.hypot(vx,vy)||1,nx=-vy/l*.45*FT,ny=vx/l*.45*FT;return `<path d="M${f(x1+nx)},${f(y1+ny)}L${f(x2+nx)},${f(y2+ny)}M${f(x1-nx)},${f(y1-ny)}L${f(x2-nx)},${f(y2-ny)}" stroke="${RD.yel}" stroke-width="${f(lw)}"/>`;};
+ const gap=1.5*FT;
+ if(L.w){const x=cx-r-s-gap-cw;if(x>0){g+=zebra(x,cy-r,cw,2*r,0);g+=yl(0,cy,x-gap,cy);}}
+ if(L.e){const x=cx+r+s+gap;if(x+cw<w){g+=zebra(x,cy-r,cw,2*r,0);g+=yl(x+cw+gap,cy,w,cy);}}
+ if(L.n){const y=cy-r-s-gap-cw;if(y>0){g+=zebra(cx-r,y,cw,2*r,1);g+=yl(cx,0,cx,y-gap);}}
+ if(L.s){const y=cy+r+s+gap;if(y+cw<h){g+=zebra(cx-r,y,cw,2*r,1);g+=yl(cx,y+cw+gap,cx,h);}}
+ return g;}
+function parkingSVG(w,h){const sd=18*FT,sw=9*FT,rows=h>=2*sd+20*FT?2:1,lw=.4*FT,f=v=>v.toFixed(1);let g=`<rect width="${w}" height="${h}" fill="#666c74"/>`,d='';
+ const row=(y0,y1)=>{for(let x=sw/2;x<=w-sw/2+1;x+=sw)d+=`M${f(x)},${f(y0)}V${f(y1)}`;};
+ row(0,Math.min(sd,h));if(rows===2)row(h-sd,h);
+ return g+`<path d="${d}" stroke="${RD.wht}" stroke-width="${f(lw)}"/>`;}
 function boxShape(it){
  if(it.kind==='dollytrack')return trackShape(it);
+ if(LIB[it.kind]&&LIB[it.kind].f)return `<g transform="translate(${-it.w/2},${-it.h/2})"><rect width="${it.w}" height="${it.h}" fill="transparent"/>${LIB[it.kind].f(it.w,it.h)}</g>`;
  const L=LIB[it.kind]||LIB.sqtable;let s=L.s;
  if(it.kind==='image'&&it.img&&images[it.img])s=`<image href="${images[it.img]}" width="100" height="100" preserveAspectRatio="none"/><rect class="pl" width="100" height="100"/>`;
  else if(it.type==='mask')s=`<rect width="100" height="100" fill="${it.color||'#fff'}" fill-opacity="${it.op==null?1:it.op}"/>`;
