@@ -379,7 +379,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117045502';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117053850';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -678,8 +678,23 @@ const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}};
 const DEVICE=(()=>{let d=lsGet('blk.dev');if(!d){d=uid();lsSet('blk.dev',d);}return d;})();
 let sync={stamps:{},dirty:[]},lastJson={},localOk=true,imgDirty=false;
-function load(){
- try{const s=lsGet(LS.p);if(s)P=JSON.parse(s);}catch(e){P=null;}
+/* Scenes and text are saved in the small store while they fit, and in the large one (the same kind that holds images)
+   once they outgrow it. Exactly one of the two holds them; 'blk.big' says the large store is the one to read. */
+const LS_MAX=2e6,BIG='blk.big';let kvP=null,pSeq=0,pBig=false,pIn=0,pFail=false;
+const kvOpen=()=>kvP||(kvP=new Promise(res=>{try{const r=indexedDB.open('blocking-board-data',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('kv'))r.result.createObjectStore('kv');};r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);r.onblocked=()=>res(null);}catch(e){res(null);}}));
+const kvGet=k=>kvOpen().then(d=>d?new Promise(res=>{try{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result==null?null:q.result);q.onerror=()=>res(null);}catch(e){res(null);}}):null);
+const kvPut=(k,v)=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
+const kvDel=k=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
+function saveP(j){
+ if(j.length<=LS_MAX&&lsSet(LS.p,j)){pSeq++;pFail=false;if(pBig||pIn||lsGet(BIG)){pBig=false;try{localStorage.removeItem(BIG);}catch(e){}kvDel('p');}return true;}
+ const seq=++pSeq;pIn++;
+ kvPut('p',j).then(r=>{pIn--;if(seq!==pSeq)return; /* a newer save has taken over */
+  if(r){try{localStorage.removeItem(LS.p);}catch(e){}r=lsSet(BIG,'1');pBig=r;}
+  pFail=!r;if(pFail){localOk=false;updateStatus();}});
+ return !pFail;
+}
+function load(big){
+ pBig=!!big;try{const s=big||lsGet(LS.p);if(s)P=JSON.parse(s);}catch(e){P=null;}
  try{const s=lsGet(LS.img);if(s)images=JSON.parse(s)||{};}catch(e){images={};}
  try{const s=lsGet(LS.sync);if(s)sync=Object.assign({stamps:{},dirty:[]},JSON.parse(s));}catch(e){}
  if(!P||!Array.isArray(P.scenes)||!P.scenes.length){const s=blankScene(1);P={characters:[],folders:[],scenes:[s],sceneId:s.id,ui:{}};sync={stamps:{},dirty:[]};}
@@ -695,7 +710,7 @@ function detectChanges(){const d=docs(),now=Date.now();
  for(const k in d){const j=JSON.stringify(d[k]);if(j!==lastJson[k]){lastJson[k]=j;sync.stamps[k]=now;markDirty(k);}}
  for(const k of Object.keys(lastJson))if(!(k in d)){delete lastJson[k];sync.stamps[k]=now;markDirty(k);}}
 function saveLocal(){
- const ok=lsSet(LS.p,JSON.stringify(P))&&lsSet(LS.sync,JSON.stringify(sync));
+ const ok=saveP(JSON.stringify(P))&&lsSet(LS.sync,JSON.stringify(sync));
  let ok2=true;if(imgDirty){if(idb){const batch={};for(const k in images)if(!imgSaved.has(k)){batch[k]=images[k];imgSaved.add(k);}imgDirty=false;idbPut(batch).then(r=>{if(!r){localOk=false;updateStatus();}});}else{ok2=lsSet(LS.img,JSON.stringify(images));if(ok2)imgDirty=false;}}
  localOk=ok&&ok2;updateStatus();
 }
@@ -1145,7 +1160,7 @@ function itemsMarkup(sc,pid){
    const p=A.marks[Math.min(it.am||0,A.marks.length-1)],q=B.marks[Math.min(it.bm||0,B.marks.length-1)],dx=q.x-p.x,dy=q.y-p.y,L=Math.hypot(dx,dy)||1,ex=dx/L*90,ey=dy/L*90,ln=`x1="${p.x-ex}" y1="${p.y-ey}" x2="${q.x+ex}" y2="${q.y+ey}"`;
    let ang=Math.atan2(dy,dx)*180/Math.PI;if(ang>90)ang-=180;if(ang<-90)ang+=180;
    sh+=`<g class="L-label" data-id="${it.id}"><line ${ln} stroke="#c93a36" stroke-width="2" stroke-dasharray="10 5 2 5" stroke-opacity=".85"/><line ${ln} stroke="transparent" stroke-width="20"/><text class="ax deco" transform="translate(${q.x+ex*.75},${q.y+ey*.75}) rotate(${ang})" y="-6" text-anchor="middle">180°</text></g>`;
-  }else if(it.type==='ink'){const kx=it.w/(it.bw||it.w),ky=it.h/(it.bh||it.h),d=o=>'M'+o.p.map(q=>q[0]+','+q[1]).join('L'),ra=rad(it.rot||0);
+  }else if(it.type==='ink'){const kx=it.w/(it.bw||it.w),ky=it.h/(it.bh||it.h),d=o=>'M'+o.p.map(q=>q[0]+','+q[1]).join('L')+(o.cl?'Z':''),ra=rad(it.rot||0);
    const fl=it.lab&&it.label?it.lab:null,lt=it.label?esc(String(it.label).toUpperCase()):'',lhw=it.label?it.label.length*3.6+9:0,ly=Math.abs(it.w/2*Math.sin(ra))+Math.abs(it.h/2*Math.cos(ra))+14;
    if(fl&&Math.hypot(fl.x,fl.y)>Math.max(it.w,it.h)/2+12)sh+=`<line class="deco L-${layerOf(it)}" x1="${it.x}" y1="${it.y}" x2="${it.x+fl.x}" y2="${it.y+fl.y}" stroke="#4b4d53" stroke-opacity=".45" stroke-width="1"/>`;
    const att=it.label&&!fl?`<text class="sl" y="${ly.toFixed(1)}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${lt}</text>`:'';
@@ -1205,7 +1220,7 @@ function bendHandles(it){
 }
 function uiMarkup(){
  let h='';
- if(gesture&&gesture.type==='pen'&&gesture.pts.length)h+=`<path d="M${gesture.pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join('L')}" fill="none" stroke="${P.ui.penCol||INK_COLS[0]}" stroke-width="${P.ui.penW||4}" stroke-linecap="round" stroke-linejoin="round" class="deco"/>`;
+ if(gesture&&gesture.type==='pen'&&gesture.pts.length)h+=`<path d="${gesture.snap?'M'+gesture.snap.pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L')+(gesture.snap.closed?'Z':''):'M'+gesture.pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join('L')}" fill="none" stroke="${P.ui.penCol||INK_COLS[0]}" stroke-width="${P.ui.penW||4}" stroke-linecap="round" stroke-linejoin="round" class="deco"/>`;
  if(gesture&&gesture.type==='lasso'&&gesture.pts.length>1)h+=`<path d="M${gesture.pts.map(p=>p.x+','+p.y).join('L')}Z" fill="#2f6fde" fill-opacity=".07" stroke="#2f6fde" stroke-width="1.5" stroke-dasharray="6 4" vector-effect="non-scaling-stroke" class="deco"/>`;
  if(msel)for(const it of mselItems()){const b=msBox(it);if(b)h+=`<rect class="ring" x="${b.x0}" y="${b.y0}" width="${b.x1-b.x0}" height="${b.y1-b.y0}" rx="6"/>`+(it.locked?lockBadge(b.x1,b.y0):'');}
  if(tool&&tool.t==='wall'&&tool.last){h+=`<circle cx="${tool.last.x}" cy="${tool.last.y}" r="${6/view.k}" fill="#2f6fde"/>`;if(tool.hover)h+=`<line x1="${tool.last.x}" y1="${tool.last.y}" x2="${tool.hover.x}" y2="${tool.hover.y}" stroke="#2f6fde" stroke-width="${WALL_T}" stroke-opacity=".45" stroke-linecap="square"/>`;}
@@ -1427,17 +1442,141 @@ let penSeen=false;
 function penBanner(){const c=P.ui.penCol||INK_COLS[0],w=P.ui.penW||4;$('#bannerTxt').innerHTML=`<span class="pent">Draw</span>${INK_COLS.map(x=>`<button class="penc${x===c?' on':''}" data-pc="${x}" style="--c:${x}" aria-label="Pen color"></button>`).join('')}<span class="pensep"></span>${INK_W.map(([v,l])=>`<button class="penw${v===w?' on':''}" data-pw="${v}" title="${l}"><i style="width:${v+3}px;height:${v+3}px"></i></button>`).join('')}`;}
 $('#banner').addEventListener('click',e=>{const b=e.target.closest('[data-pc],[data-pw]');if(!b||!tool||tool.t!=='pen')return;if(b.dataset.pc)P.ui.penCol=b.dataset.pc;else P.ui.penW=+b.dataset.pw;saveLocal();penBanner();});
 /* finish a stroke: the strokes of one drawing session make one drawing */
-function penStroke(pts){if(pts.length===1)pts.push({x:pts[0].x+.5,y:pts[0].y+.5});const s=scene(),st={c:P.ui.penCol||INK_COLS[0],w:P.ui.penW||4,p:pts.map(q=>[q.x,q.y])};
- let it=tool.ink&&itemById(tool.ink);let all=[st];
- if(it){all=it.strokes.map(o=>({c:o.c,w:o.w,p:o.p.map(q=>[q[0]+it.x,q[1]+it.y])})).concat([st]);}
+/* ---------- hold-to-snap: turn a rough stroke into a clean line, path of straight runs, box, triangle, circle or oval ---------- */
+function shapeSnap(raw){
+ const D2=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+ if(!raw||raw.length<2)return null;
+ let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const p of raw){x0=Math.min(x0,p.x);y0=Math.min(y0,p.y);x1=Math.max(x1,p.x);y1=Math.max(y1,p.y);}
+ const D=Math.hypot(x1-x0,y1-y0);if(D<1e-6)return null;
+ /* the pen rests at the end while you hold: keep one point there, and drop near-repeats */
+ const end=raw[raw.length-1];let last=raw.length-1;while(last>0&&D2(raw[last-1],end)<.02*D)last--;
+ const pts=[];for(let i=0;i<last;i++){const p=raw[i];if(!pts.length||D2(p,pts[pts.length-1])>.004*D)pts.push({x:p.x,y:p.y});}pts.push({x:end.x,y:end.y});
+ if(pts.length<2)return null;let L=0;for(let i=1;i<pts.length;i++)L+=D2(pts[i],pts[i-1]);
+ const deg=r=>r*180/Math.PI;
+ function lineSnap(a,b){const ang=deg(Math.atan2(b.y-a.y,b.x-a.x)),len=D2(a,b),near=(t,tol)=>Math.abs(((ang-t)%180+270)%180-90)<tol;
+  let t=null;for(const [c,tol] of [[0,7],[90,7],[45,4],[135,4]])if(near(c,tol)){t=c;break;}
+  if(t==null)return [[a.x,a.y],[b.x,b.y]];
+  const r=t*Math.PI/180,sg=Math.cos(ang*Math.PI/180-r)<0?-1:1,mx=(a.x+b.x)/2,my=(a.y+b.y)/2,hx=Math.cos(r)*len/2*sg,hy=Math.sin(r)*len/2*sg;
+  return [[mx-hx,my-hy],[mx+hx,my+hy]];}
+ const resample=S=>{const R=[pts[0]];let acc=0;
+  for(let i=1;i<pts.length;i++){let a=pts[i-1];const b=pts[i];let d=D2(a,b);
+   while(acc+d>=S&&d>0){const t=(S-acc)/d,q={x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};R.push(q);a=q;d=D2(a,b);acc=0;}
+   acc+=d;}
+  if(D2(R[R.length-1],pts[pts.length-1])>S*.3)R.push(pts[pts.length-1]);return R;};
+ const pca=R=>{let cx=0,cy=0;for(const p of R){cx+=p.x;cy+=p.y;}cx/=R.length;cy/=R.length;let sxx=0,sxy=0,syy=0;for(const p of R){const dx=p.x-cx,dy=p.y-cy;sxx+=dx*dx;sxy+=dx*dy;syy+=dy*dy;}return {cx,cy,th:.5*Math.atan2(2*sxy,sxx-syy)};};
+ let S=D/64,R=resample(S);
+ {/* a long thin shape needs finer steps to find the corners at its short ends */
+  const P=pca(R),c=Math.cos(P.th),s=Math.sin(P.th);let va=Infinity,vb=-Infinity;for(const p of R){const v=-(p.x-P.cx)*s+(p.y-P.cy)*c;va=Math.min(va,v);vb=Math.max(vb,v);}
+  const fine=Math.max((vb-va)/9,D/260);if(fine<S&&L>1.5*D){S=fine;R=resample(S);}}
+ /* smooth out the jitter of a mouse or a fingertip, keeping the two ends */
+ for(let g=0;g<2&&R.length>4;g++){const Q=R.map((p,i)=>i===0||i===R.length-1?p:{x:(R[i-1].x+2*p.x+R[i+1].x)/4,y:(R[i-1].y+2*p.y+R[i+1].y)/4});R=Q;}
+ const n=R.length;if(n<4)return {kind:'line',closed:false,pts:lineSnap(pts[0],pts[pts.length-1])};
+ let Ls=0;for(let i=1;i<n;i++)Ls+=D2(R[i],R[i-1]);
+ /* farthest the stroke strays from the straight line between two of its points */
+ const stray=(a,b)=>{const A=R[a],B=R[b],vx=B.x-A.x,vy=B.y-A.y,l=Math.hypot(vx,vy)||1e-9;let m=0;for(let i=a+1;i<b;i++)m=Math.max(m,Math.abs((R[i].x-A.x)*vy-(R[i].y-A.y)*vx)/l);return m;};
+ const isLine=(a,b,k)=>stray(a,b)<=Math.max((k||.055)*D2(R[a],R[b]),.012*D);
+ const closed=D2(R[0],R[n-1])<Math.max(.24*D,S*3)&&Ls>1.5*D;
+ if(!closed&&stray(0,n-1)<=.08*D2(R[0],R[n-1])&&Ls<1.3*D2(R[0],R[n-1]))return {kind:'line',closed:false,pts:lineSnap(R[0],R[n-1])};
+ const angAt=(a,b,c)=>{const u={x:a.x-b.x,y:a.y-b.y},v={x:c.x-b.x,y:c.y-b.y},d=(u.x*v.x+u.y*v.y)/((Math.hypot(u.x,u.y)*Math.hypot(v.x,v.y))||1);return deg(Math.acos(Math.max(-1,Math.min(1,d))));};
+ /* corners (after ShortStraw) */
+ const W=3,straw=new Array(n).fill(Infinity);for(let i=W;i<n-W;i++)straw[i]=D2(R[i-W],R[i+W]);
+ const fin=straw.filter(v=>isFinite(v)).sort((a,b)=>a-b),th=fin.length?fin[Math.floor(fin.length/2)]*.95:0;
+ let C=[0];for(let i=W;i<n-W;i++){if(straw[i]<th){let m=i,mv=straw[i];while(i<n-W&&straw[i]<th){if(straw[i]<mv){mv=straw[i];m=i;}i++;}C.push(m);}}
+ C.push(n-1);
+ const far=(a,b)=>{const A=R[a],B=R[b],vx=B.x-A.x,vy=B.y-A.y;let m=-1,mv=0;for(let i=a+1;i<b;i++){const d=Math.abs((R[i].x-A.x)*vy-(R[i].y-A.y)*vx);if(d>mv){mv=d;m=i;}}return m;};
+ for(let guard=0,go=true;go&&guard<16;guard++){go=false;
+  for(let i=1;i<C.length;i++){const a=C[i-1],b=C[i];if(b-a>=4&&!isLine(a,b)){const m=far(a,b);if(m>a&&m<b){C.splice(i,0,m);go=true;break;}}}}
+ /* drop corners that barely turn (wobble on a straight run), least turn first */
+ for(let g=0;g<30&&C.length>2;g++){let bi=-1,bt=24;for(let i=1;i<C.length-1;i++){const t=180-angAt(R[C[i-1]],R[C[i]],R[C[i+1]]);if(t<bt){bt=t;bi=i;}}if(bi<0)break;C.splice(bi,1);}
+ /* how closely the stroke follows a set of straight edges */
+ const segDist=(p,a,b)=>{const vx=b.x-a.x,vy=b.y-a.y,l2=vx*vx+vy*vy||1e-9;let t=((p.x-a.x)*vx+(p.y-a.y)*vy)/l2;t=Math.max(0,Math.min(1,t));return Math.hypot(p.x-a.x-vx*t,p.y-a.y-vy*t);};
+ function fit(V,ring){const E=[];for(let i=1;i<V.length;i++)E.push([V[i-1],V[i]]);if(ring)E.push([V[V.length-1],V[0]]);let sum=0,mx=0;
+  for(const p of R){let d=Infinity;for(const [a,b] of E)d=Math.min(d,segDist(p,a,b));sum+=d;mx=Math.max(mx,d);}return {mean:sum/n/D,max:mx/D};}
+ const fits=f=>f.mean<.022&&f.max<.09;
+ /* a real corner turns on the spot; a curve cut into chords does not */
+ function sharp(ci,pi,ni){if(ci-5<0||ci+5>n-1)return true;const a=R[ci-5],b=R[ci-1],c=R[ci+1],d=R[ci+5],u={x:b.x-a.x,y:b.y-a.y},v={x:d.x-c.x,y:d.y-c.y},dt=(u.x*v.x+u.y*v.y)/((Math.hypot(u.x,u.y)*Math.hypot(v.x,v.y))||1),loc=deg(Math.acos(Math.max(-1,Math.min(1,dt)))),cho=180-angAt(R[pi],R[ci],R[ni]);return cho>=18&&loc/cho>=.6;}
+ if(closed){
+  /* the corners as a ring: the two ends become one point, and a start in the middle of an edge is dropped */
+  let VI=C.slice(0,-1),V=VI.map(i=>({x:R[i].x,y:R[i].y}));
+  for(let g=0;g<12&&V.length>3;g++){let hit=false;for(let i=0;i<V.length;i++){const m=V.length,p=V[(i+m-1)%m],q=V[i],r=V[(i+1)%m];if(D2(q,r)<.05*D){const j=(i+1)%m;if(VI[i]===0){V.splice(j,1);VI.splice(j,1);}else{V.splice(i,1);VI.splice(i,1);}hit=true;break;}if(angAt(p,q,r)>152){V.splice(i,1);VI.splice(i,1);hit=true;break;}}if(!hit)break;}
+  for(let g=0;g<8&&V.length>3;g++){let hit=false;const M=V.length,tr=i=>{const a=V[(i+M-1)%M],b=V[i],c=V[(i+1)%M];return (b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x);};
+   for(let i=0;i<M;i++){const j=(i+1)%M;if(j===0)continue;if(VI[j]-VI[i]<12&&VI[j]>VI[i]&&tr(i)*tr(j)>0){const p=V[(i+M-1)%M],q=V[(j+1)%M],d1x=V[i].x-p.x,d1y=V[i].y-p.y,d2x=V[j].x-q.x,d2y=V[j].y-q.y,den=d1x*d2y-d1y*d2x;let X={x:(V[i].x+V[j].x)/2,y:(V[i].y+V[j].y)/2};
+     if(Math.abs(den)>1e-9){const t=((q.x-p.x)*d2y-(q.y-p.y)*d2x)/den,Y={x:p.x+d1x*t,y:p.y+d1y*t};if(D2(Y,X)<.15*D)X=Y;}
+     V.splice(i,2,X);VI.splice(i,2,Math.round((VI[i]+VI[j])/2));hit=true;break;}}if(!hit)break;}
+  const m=V.length;
+  /* where the two ends meet, use the corner the edges on either side point to */
+  const i0=VI.indexOf(0);if(i0>=0&&m>=4){const p2=V[(i0+m-2)%m],p1=V[(i0+m-1)%m],q1=V[(i0+1)%m],q2=V[(i0+2)%m],d1x=p1.x-p2.x,d1y=p1.y-p2.y,d2x=q1.x-q2.x,d2y=q1.y-q2.y,den=d1x*d2y-d1y*d2x;
+   if(Math.abs(den)>1e-6){const t=((q2.x-p2.x)*d2y-(q2.y-p2.y)*d2x)/den,X={x:p2.x+d1x*t,y:p2.y+d1y*t};if(D2(X,V[i0])<.2*D)V[i0]=X;}}
+  /* oval: fit, and how far the stroke is from it */
+  const P=pca(R);let o=null;{const c=Math.cos(P.th),s=Math.sin(P.th);let ua=Infinity,ub=-Infinity,va=Infinity,vb=-Infinity;const Q=R.map(p=>{const dx=p.x-P.cx,dy=p.y-P.cy,u=dx*c+dy*s,v=-dx*s+dy*c;ua=Math.min(ua,u);ub=Math.max(ub,u);va=Math.min(va,v);vb=Math.max(vb,v);return {u,v};});
+   const ou=(ua+ub)/2,ov=(va+vb)/2;let a=(ub-ua)/2,b=(vb-va)/2;
+   if(a>1e-6&&b>1e-6){const rr=Q.map(q=>Math.hypot((q.u-ou)/a,(q.v-ov)/b)),mr=rr.reduce((x,y)=>x+y,0)/n;a*=mr;b*=mr;
+    let err=0,sweep=0;Q.forEach((q,i)=>{const r=rr[i]/mr,rad=Math.hypot(q.u-ou,q.v-ov);err+=Math.abs(r-1)*(r>1e-6?rad/r:0);
+     if(i){let d=Math.atan2((q.v-ov)/b,(q.u-ou)/a)-Math.atan2((Q[i-1].v-ov)/b,(Q[i-1].u-ou)/a);while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;sweep+=d;}});
+    o={cx:P.cx+ou*c-ov*s,cy:P.cy+ou*s+ov*c,a,b,th:P.th,err:err/n/D,sweep:Math.abs(deg(sweep))};}}
+  const ovalOut=()=>{let {a,b,th}=o;if(Math.min(a,b)/Math.max(a,b)>.84){a=b=(a+b)/2;th=0;}else{const dg=deg(th),k=Math.round(dg/90)*90;if(Math.abs(dg-k)<10)th=k*Math.PI/180;}
+   const c=Math.cos(th),s=Math.sin(th),out=[];for(let i=0;i<72;i++){const t=i/72*2*Math.PI,u=Math.cos(t)*a,v=Math.sin(t)*b;out.push([o.cx+u*c-v*s,o.cy+u*s+v*c]);}return {kind:a===b?'circle':'oval',closed:true,pts:out};};
+  /* box: turned the way its edges run, sides where the stroke actually runs */
+  const U0=R,med=a=>{if(!a.length)return null;a.sort((x,y)=>x-y);return a[Math.floor(a.length/2)];};
+  function boxAt(t){const c=Math.cos(t),s=Math.sin(t),U=U0.map(p=>({u:p.x*c+p.y*s,v:-p.x*s+p.y*c}));let ua=Infinity,ub=-Infinity,va=Infinity,vb=-Infinity;for(const q of U){ua=Math.min(ua,q.u);ub=Math.max(ub,q.u);va=Math.min(va,q.v);vb=Math.max(vb,q.v);}
+   const uc=(ua+ub)/2,vc=(va+vb)/2,ur=ub-ua,vr=vb-va;
+   const Lf=med(U.filter(q=>Math.abs(q.v-vc)<vr*.25&&q.u<uc).map(q=>q.u)),Rt=med(U.filter(q=>Math.abs(q.v-vc)<vr*.25&&q.u>uc).map(q=>q.u)),Tp=med(U.filter(q=>Math.abs(q.u-uc)<ur*.25&&q.v<vc).map(q=>q.v)),Bt=med(U.filter(q=>Math.abs(q.u-uc)<ur*.25&&q.v>vc).map(q=>q.v));
+   if(Lf==null||Rt==null||Tp==null||Bt==null||Rt-Lf<1e-6||Bt-Tp<1e-6)return null;let w=(Rt-Lf)/2,h=(Bt-Tp)/2;const cu=(Lf+Rt)/2,cv=(Tp+Bt)/2;let sum=0,mx=0;
+   for(const q of U){const du=Math.abs(q.u-cu)-w,dv=Math.abs(q.v-cv)-h,d=du<=0&&dv<=0?Math.min(-du,-dv):Math.hypot(Math.max(du,0),Math.max(dv,0));sum+=d;mx=Math.max(mx,d);}
+   const sq=Math.abs(w-h)/Math.max(w,h)<.12;if(sq)w=h=(w+h)/2;
+   return {err:sum/n/D,max:mx/D,kind:sq?'square':'box',pts:[[-w,-h],[w,-h],[w,h],[-w,h]].map(([u,v])=>[(cu+u)*c-(cv+v)*s,(cu+u)*s+(cv+v)*c])};}
+  let box=null;{const n90=t=>{t=((t%(Math.PI/2))+Math.PI/2)%(Math.PI/2);return t>Math.PI/4?t-Math.PI/2:t;},cand=[n90(P.th)];
+   if(m>=3){let sx=0,sy=0;for(let i=0;i<m;i++){const a=V[i],b=V[(i+1)%m],t=Math.atan2(b.y-a.y,b.x-a.x)*4,l=D2(a,b);sx+=Math.cos(t)*l;sy+=Math.sin(t)*l;}cand.push(n90(Math.atan2(sy,sx)/4));}
+   for(const t of cand){const b=boxAt(t);if(b&&(!box||b.err<box.err)){box=b;box.t=t;}}
+   if(box&&Math.abs(deg(box.t))<9){const z=boxAt(0);if(z&&z.err<.02&&z.err<=Math.max(box.err*1.6,box.err+.005))box=z;}}
+  const f=m>=3?fit(V,true):null,ok=f&&fits(f),oe=o&&o.sweep>300?o.err:Infinity;
+  if(box&&box.err<.02&&box.max<.1&&box.err<.8*oe&&!(m===3&&ok&&f.mean<box.err))return {kind:box.kind,closed:true,pts:box.pts};
+  if(ok&&m===3&&f.mean<oe)return {kind:'triangle',closed:true,pts:V.map(p=>[p.x,p.y])};
+  if(oe<.027)return ovalOut();
+  if(ok&&m>=4&&m<=6){let sh=true;for(let i=0;i<m;i++){if(VI[i]===0)continue;if(!sharp(VI[i],VI[(i+m-1)%m],VI[(i+1)%m])){sh=false;break;}}if(sh&&f.mean<oe)return {kind:'shape',closed:true,pts:V.map(p=>[p.x,p.y])};}
+  if(oe<.04)return ovalOut();
+  return null;}
+ /* open: a path of straight runs with real corners */
+ {const turn=(C,i)=>{const a=R[C[i-1]],b=R[C[i]],c=R[C[i+1]];return (b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x);};
+  /* a corner cut round shows up as two bends the same way, close together: make them one */
+  const soft=new Set();for(let g=0;g<12;g++){let hit=false;for(let i=1;i<C.length-2;i++){if(C[i+1]-C[i]<12&&turn(C,i)*turn(C,i+1)>0){const m=Math.round((C[i]+C[i+1])/2);soft.delete(C[i]);soft.delete(C[i+1]);C.splice(i,2,m);soft.add(m);hit=true;break;}}if(!hit)break;}
+  if(C.length>=3&&C.length<=8){
+   /* each run as the line through its middle part, so round corners do not bend it */
+   const runs=[];for(let i=1;i<C.length;i++){const a=C[i-1],b=C[i],k=Math.floor((b-a)*.2),A=R[a+k],B=R[b-k];runs.push({a:a+k,b:b-k,A,B,dx:B.x-A.x,dy:B.y-A.y});}
+   for(const r of runs){const len=Math.hypot(r.dx,r.dy);if(len<1e-6)return null;if(stray(r.a,r.b)>Math.max(.09*len,.02*D))return null;}
+   /* each run must head the same way for most of its length: a wave cut into chords does not */
+   for(let i=1;i<C.length;i++){const a=C[i-1],b=C[i];if(b-a<14)continue;const r=runs[i-1],cd=Math.atan2(r.dy,r.dx);let ok=0,tot=0;
+    for(let j=a+4;j<=b-4;j++){let d=Math.atan2(R[j+4].y-R[j-4].y,R[j+4].x-R[j-4].x)-cd;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;tot++;if(Math.abs(deg(d))<=11)ok++;}
+    if(tot&&ok/tot<.73)return null;}
+   for(let i=1;i<C.length-1;i++)if(!soft.has(C[i])&&!sharp(C[i],C[i-1],C[i+1]))return null;
+   const onto=(p,r)=>{const l2=r.dx*r.dx+r.dy*r.dy,t=((p.x-r.A.x)*r.dx+(p.y-r.A.y)*r.dy)/l2;return {x:r.A.x+r.dx*t,y:r.A.y+r.dy*t};};
+   const V=[onto(R[0],runs[0])];
+   for(let i=1;i<C.length-1;i++){const p=runs[i-1],q=runs[i],den=p.dx*q.dy-p.dy*q.dx;let X=null;if(Math.abs(den)>1e-9){const t=((q.A.x-p.A.x)*q.dy-(q.A.y-p.A.y)*q.dx)/den;X={x:p.A.x+p.dx*t,y:p.A.y+p.dy*t};}
+    V.push(X&&D2(X,R[C[i]])<.18*D?X:{x:R[C[i]].x,y:R[C[i]].y});}
+   V.push(onto(R[n-1],runs[runs.length-1]));
+   if(!fits(fit(V,false)))return null;
+   for(let i=1;i<V.length;i++){const a=V[i-1],b=V[i],dg=Math.abs(deg(Math.atan2(b.y-a.y,b.x-a.x)));if(dg<8||dg>172)b.y=a.y;else if(Math.abs(dg-90)<8)b.x=a.x;}
+   return {kind:'path',closed:false,pts:V.map(p=>[p.x,p.y])};}}
+ return null;
+}
+let penTip=false;
+function penArm(g){clearTimeout(g.tm);g.tm=setTimeout(()=>penHold(g),520);}
+function penHold(g){if(gesture!==g||g.snap||!tool||tool.t!=='pen')return;
+ let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const p of g.pts){x0=Math.min(x0,p.x);y0=Math.min(y0,p.y);x1=Math.max(x1,p.x);y1=Math.max(y1,p.y);}
+ if(Math.hypot(x1-x0,y1-y0)*view.k<22)return;
+ const r=shapeSnap(g.pts);if(!r)return;g.snap=r;$('#ui').innerHTML=uiMarkup();}
+function penStroke(pts,opt){opt=opt||{};if(pts.length===1)pts.push({x:pts[0].x+.5,y:pts[0].y+.5});const s=scene(),st={c:P.ui.penCol||INK_COLS[0],w:P.ui.penW||4,p:pts.map(q=>[q.x,q.y])};if(opt.closed)st.cl=1;
+ /* a snapped shape is its own drawing, so it moves on its own; freehand strokes of one session stay together */
+ let it=opt.own?null:(tool.ink&&itemById(tool.ink));let all=[st];
+ if(it){all=it.strokes.map(o=>Object.assign({},o,{p:o.p.map(q=>[q[0]+it.x,q[1]+it.y])})).concat([st]);}
  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const o of all)for(const q of o.p){x0=Math.min(x0,q[0]);y0=Math.min(y0,q[1]);x1=Math.max(x1,q[0]);y1=Math.max(y1,q[1]);}
  const cx=(x0+x1)/2,cy=(y0+y1)/2,w=Math.max(8,x1-x0),h=Math.max(8,y1-y0);
- const strokes=all.map(o=>({c:o.c,w:o.w,p:o.p.map(q=>[+(q[0]-cx).toFixed(1),+(q[1]-cy).toFixed(1)])}));
- if(!it){it={id:uid(),type:'ink',x:cx,y:cy,w,h,bw:w,bh:h,rot:0,ar:true,strokes,pgs:curPgs(),locked:false};s.items.push(it);tool.ink=it.id;}
+ const strokes=all.map(o=>Object.assign({},o,{p:o.p.map(q=>[+(q[0]-cx).toFixed(1),+(q[1]-cy).toFixed(1)])}));
+ if(!it){it={id:uid(),type:'ink',x:cx,y:cy,w,h,bw:w,bh:h,rot:0,ar:true,strokes,pgs:curPgs(),locked:false};s.items.push(it);if(!opt.own)tool.ink=it.id;}
  else Object.assign(it,{x:cx,y:cy,w,h,bw:w,bh:h,rot:0,strokes});
  commit({insp:false});}
 function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
- if(t.t==='pen'){penBanner();$('#bannerDone').textContent='Done';$('#banner').classList.add('on');$('#bPen').classList.add('on');renderUI();return;}
+ if(t.t==='pen'){if(!penTip&&!t.ink){penTip=true;setTimeout(()=>toast('Draw, then hold still at the end to snap it to a clean line, box, circle or triangle.'),50);}penBanner();$('#bannerDone').textContent='Done';$('#banner').classList.add('on');$('#bPen').classList.add('on');renderUI();return;}
  if(t.t==='move'){const it=itemById(t.id);const nm=it.type==='char'?String((charById(it.charId)||{}).name||'').toUpperCase():'';$('#bannerTxt').textContent=it.type==='char'?`Tap where ${nm} goes next.`:it.type==='cam'&&t.tk==='to'?'Tap where the camera tracks to.':it.type==='cam'&&t.tk==='from'?'Tap where the camera tracks in from.':it.type==='cam'?'Tap where the camera moves to. The new position becomes a new version.':'Tap where it moves to.';}
  else if(t.t==='from'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap where ${String((charById(it.charId)||{}).name||'').toUpperCase()} walks in from.`;}
  else if(t.t==='turn'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap the direction ${String((charById(it.charId)||{}).name||'').toUpperCase()} turns to.`;}
@@ -3194,7 +3333,7 @@ function menu(){
   <button data-m="open">Open scene… <span class="kb">⌘O</span></button><button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
   <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><button data-m="docx">Import a breakdown and strategy from Word (.docx)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
-  <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}</div></div>`,b,p=>{
+  <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}<span id="stgTxt"></span></div></div>`,b,p=>{stgFill();
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
    ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,backup,restore:()=>$('#fJson').click(),
      open:()=>openBrowser(),docx:()=>$('#fDocx').click(),keys:keysDialog,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
@@ -3550,7 +3689,7 @@ svg.addEventListener('pointerdown',e=>{
  if(pointers.size>2)return;
  const w=toWorld(e.clientX,e.clientY);
  const hEl=e.target.closest('[data-handle]');
- if(tool&&tool.t==='pen'){if(e.pointerType==='pen')penSeen=true;if(!(e.pointerType==='touch'&&penSeen)){gesture={type:'pen',pts:[w]};return;}}
+ if(tool&&tool.t==='pen'){if(e.pointerType==='pen')penSeen=true;if(!(e.pointerType==='touch'&&penSeen)){gesture={type:'pen',pts:[w],hx:e.clientX,hy:e.clientY};penArm(gesture);return;}}
  if(tool&&!(hEl&&hEl.dataset.handle.startsWith('cp:'))){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,tool:true,w};return;}
  if(hEl){const hn=hEl.dataset.handle,now=Date.now();if(hn.startsWith('cp:')&&lastTap.id===hn&&now-lastTap.t<380){const [,i,j]=hn.split(':').map(Number),it=itemById(sel.id),b=it&&posAt(it,i);if(b&&b.cp){b.cp.splice(j,1);commit({insp:false});}lastTap={id:null,t:0};return;}lastTap={id:hn,t:now};gesture={type:'handle',h:hn,sx:e.clientX,sy:e.clientY,moved:false};if(hn==='p1'||hn==='p2'){const hw=sel&&itemById(sel.id);if(hw&&hw.type==='wall'&&unhook===hw.id)gesture.detach=true;else if(hw&&hw.type==='wall'&&wallJoint(scene(),hw,hn==='p1'?1:2).length)armHold(gesture);}return;}
  const el=e.target.closest('[data-id]');
@@ -3583,7 +3722,11 @@ function armHold(g){clearTimeout(holdT);g.hold=true;holdT=setTimeout(()=>{if(ges
 svg.addEventListener('pointermove',e=>{
  if(tool&&tool.t==='wall'&&tool.last&&!pointers.size&&e.pointerType==='mouse'){tool.hover=wallToolPoint(toWorld(e.clientX,e.clientY)).p;$('#ui').innerHTML=uiMarkup();return;}
  if(!pointers.has(e.pointerId)||!gesture)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const g=gesture;
- if(g.type==='pen'){const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];for(const q of (evs.length?evs:[e]))g.pts.push(toWorld(q.clientX,q.clientY));$('#ui').innerHTML=uiMarkup();return;}
+ if(g.type==='pen'){const off=Math.hypot(e.clientX-g.hx,e.clientY-g.hy);
+  if(g.snap){if(off<26)return;g.snap=null;} /* keep drawing after a snap and it goes back to your own line */
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];for(const q of (evs.length?evs:[e]))g.pts.push(toWorld(q.clientX,q.clientY));
+  if(off>7){g.hx=e.clientX;g.hy=e.clientY;penArm(g);}
+  $('#ui').innerHTML=uiMarkup();return;}
  if(g.type==='pinch'){if(pointers.size<2)return;{const pts=[...pointers.values()];g.far=Math.max(g.far,...pts.map((q,i)=>g.start[i]?Math.hypot(q.x-g.start[i].x,q.y-g.start[i].y):0));}const [a,b]=[...pointers.values()],d=Math.hypot(a.x-b.x,a.y-b.y),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2},r=svg.getBoundingClientRect(),k=clamp(g.v0.k*d/g.d0,.04,8),wx=(g.m0.x-r.left-g.v0.x)/g.v0.k,wy=(g.m0.y-r.top-g.v0.y)/g.v0.k;view={k,x:m.x-r.left-wx*k,y:m.y-r.top-wy*k};applyView();$('#ui').innerHTML=uiMarkup();return;}
  if(g.type==='pan'){const dx=e.clientX-g.sx,dy=e.clientY-g.sy;if(!g.moved&&Math.hypot(dx,dy)<6)return;if(!g.moved&&g.labHint&&!labHinted){labHinted=true;toast('Labels stay with their camera. Right-click the label and choose Detach Label to move it.');}g.moved=true;view.x=g.vx+dx;view.y=g.vy+dy;applyView();return;}
  const w=toWorld(e.clientX,e.clientY);
@@ -3602,7 +3745,7 @@ function endPointer(e){
  if(!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);const g=gesture;if(!g)return;clearTimeout(holdT);if(g.detach&&g.moved)unhook=null;
  if(g.type==='pinch'){if(!pointers.size){gesture=null;if(g.far<14&&Date.now()-g.t0<450){view=Object.assign({},g.v0);applyView();menuFor(g.tapEl,g.m0.x,g.m0.y);}flushRemote();}return;}
  if(pointers.size)return;gesture=null;const wasDrag=dragging;dragging=false;
- if(g.type==='pen'){if(tool&&tool.t==='pen')penStroke(g.pts);renderUI();return;}
+ if(g.type==='pen'){clearTimeout(g.tm);if(tool&&tool.t==='pen'){if(g.snap)penStroke(g.snap.pts.map(q=>({x:q[0],y:q[1]})),{own:true,closed:g.snap.closed});else penStroke(g.pts);}renderUI();return;}
  if(g.type==='lasso'){if(g.pts.length>2)finishLasso(g.pts,e.clientX,e.clientY);else{setLasso(lassoArmed);renderUI();}flushRemote();return;}
  if(g.type==='mdrag'){if(g.moved)commit({insp:false});else multiPop(e.clientX,e.clientY);renderUI();flushRemote();return;}
  if(g.tool&&!g.moved&&tool){toolTap(g.w);flushRemote();return;}
@@ -3667,7 +3810,16 @@ addEventListener('keydown',e=>{
 
 function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split')&&opt.list!==false)renderList();renderDocs();renderTop();renderCanvas();renderPageBits();renderShots();if(opt.insp!==false)renderInsp();updateStatus();}
 
-load();if(ftInstall())saveLocal();cur=snapshot();render();initImages();if(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st')setMode(P.ui.mode);requestAnimationFrame(fit);initSync();
+function stgFill(){const el=document.getElementById('stgTxt');if(!el||!navigator.storage||!navigator.storage.estimate)return;const f=n=>n>=1073741824?(n/1073741824).toFixed(n<10737418240?1:0)+' GB':n>=1048576?(n/1048576).toFixed(n<10485760?1:0)+' MB':Math.max(1,Math.round(n/1024))+' KB';
+ navigator.storage.estimate().then(e=>{if(e&&e.quota&&document.body.contains(el))el.textContent=` Storage on this device: ${f(e.usage||0)} used of about ${f(e.quota)} the app can use.`;}).catch(()=>{});}
+function start(big){load(big);if(ftInstall())saveLocal();cur=snapshot();render();initImages();if(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st')setMode(P.ui.mode);requestAnimationFrame(fit);initSync();
+ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}}
+/* the scenes are in the large store but it will not open: never start empty over them without being told to */
+function bootFail(){if(document.getElementById('bootFail'))return;const d=document.createElement('div');d.id='bootFail';d.style.cssText='position:fixed;inset:0;z-index:999;background:#f6f5f1;display:flex;align-items:center;justify-content:center;padding:24px;font:16px/1.5 -apple-system,system-ui,sans-serif;color:#1c1c1e';
+ d.innerHTML='<div style="max-width:460px"><h2 style="margin:0 0 10px;font-size:22px">Your scenes couldn’t be opened</h2><p style="margin:0 0 18px">They are saved on this device, but the app couldn’t read them just now. Close any other windows of the app and try again.</p><button id="bfRetry" style="font:inherit;font-weight:600;padding:10px 18px;border-radius:10px;border:0;background:#2f6fde;color:#fff">Try again</button> <button id="bfNew" style="font:inherit;padding:10px 18px;border-radius:10px;border:1px solid #c9c8c3;background:#fff;margin-left:8px">Start empty instead</button><p style="margin:16px 0 0;font-size:13px;color:#6b6c72">Starting empty leaves the saved scenes where they are. If you sync, signing in brings your synced scenes back.</p></div>';
+ document.body.appendChild(d);d.querySelector('#bfRetry').onclick=()=>location.reload();d.querySelector('#bfNew').onclick=()=>{try{localStorage.removeItem(BIG);}catch(e){}d.remove();start();};}
+if(lsGet(LS.p)||!lsGet(BIG))start();
+else{let up=false;const t=setTimeout(()=>{if(!up)bootFail();},6000);kvGet('p').then(v=>{if(up)return;clearTimeout(t);if(v){up=true;const f=document.getElementById('bootFail');if(f)f.remove();start(v);}else bootFail();});}
 })();
 </script>
 </body>
