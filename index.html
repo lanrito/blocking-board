@@ -379,7 +379,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117040716';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117043159';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -628,9 +628,24 @@ function iconSVG(k){
 function blankScene(num){const pg={id:uid(),name:'Page 1'};return {id:uid(),number:String(num),title:'',heading:'',synopsis:'',code:'',day:'',setups:[],items:[],pages:[pg],bgId:null,bg:null,pageId:pg.id};}
 let P=null,images={},sel=null;
 const scene=()=>P.scenes.find(s=>s.id===P.sceneId)||P.scenes[0];
-const vis=(it,s,pid)=>{pid=pid||s.pageId;return pid==='all'||!it.pgs||it.pgs.includes(pid);};
-const curPgs=()=>{const s=scene();return s.pageId==='all'?null:[s.pageId];};
-function pagesSummary(it){const s=scene();if(!it.pgs)return 'All';return it.pgs.map(id=>s.pages.findIndex(p=>p.id===id)+1).filter(n=>n>0).sort((a,b)=>a-b).join(', ');}
+function posStarts(it){if(it.type==='char')return it.marks.map((m,i)=>m.t?-1:i).filter(i=>i>=0);if(it.type==='cam')return it.marks.map((m,i)=>m.tk?-1:i).filter(i=>i>=0);if(it.type==='prop'||it.type==='light')return [0,...(it.mv||[]).map((_,i)=>i+1)];return [0];}
+function posHostI(it,i){i=i||0;if(it.type==='char')return runOf(it,Math.min(i,it.marks.length-1))[0];if(it.type==='cam')return verStart(it,i);return i;}
+function posHostAt(it,k){return it.marks?it.marks[k]:posAt(it,k);}
+function hasPP(it){if(!it.marks&&!it.mv)return false;return posStarts(it).some(i=>{const h=posHostAt(it,i);return h&&h.vp!==undefined;});}
+/* a position's pages: its own, else those of the position it came from, else the item's */
+function posPg(it,i){if(!hasPP(it))return it.pgs;const st=posStarts(it),k=posHostI(it,i);for(let j=st.length-1;j>=0;j--){if(st[j]>k)continue;const h=posHostAt(it,st[j]);if(h&&h.vp!==undefined)return h.vp;}return it.pgs;}
+function posOn(it,i,pid){if(!pid||pid==='all')return true;const g=posPg(it,i);return !g||g.includes(pid);}
+function pgEdit(cur,v,add,s){if(v==='all')return null;if(!add)return [v];if(!cur)return s.pages.map(p=>p.id).filter(id=>id!==v);if(cur.includes(v))return cur.length>1?cur.filter(x=>x!==v):cur;return s.pages.map(p=>p.id).filter(id=>id===v||cur.includes(id));}
+function clearPP(it){if(!it.marks&&!it.mv){delete it.vp;return;}for(const i of posStarts(it)){const h=posHostAt(it,i);if(h)delete h.vp;}}
+/* fix every position's pages in place (new moves get the pages of the one they came from); fold back when all agree */
+function ppFill(sc){for(const it of sc.items){if(!(it.marks||it.mv)||!hasPP(it))continue;const st=posStarts(it),v=st.map(i=>posPg(it,i));
+ st.forEach((i,k)=>{const h=posHostAt(it,i);if(h&&h.vp===undefined)h.vp=v[k]?v[k].slice():null;});
+ const key=JSON.stringify(v[0]);if(v.every(x=>JSON.stringify(x)===key)){it.pgs=v[0]?v[0].slice():null;clearPP(it);}}}
+function setPosPage(it,i,v,add){const s=scene();ppFill(s);const st=posStarts(it);for(const j of st){const h=posHostAt(it,j);if(h&&h.vp===undefined)h.vp=it.pgs?it.pgs.slice():null;}
+ const h=posHostAt(it,posHostI(it,i));h.vp=pgEdit(h.vp,v,add,s);ppFill(s);}
+const vis=(it,s,pid)=>{pid=pid||s.pageId;if(pid==='all')return true;if(hasPP(it))return posStarts(it).some(i=>posOn(it,i,pid));return !it.pgs||it.pgs.includes(pid);};
+const curPgs=()=>null;
+function pagesSummary(it,i){const s=scene(),g=i!=null&&hasPP(it)?posPg(it,i):it.pgs;if(!g)return 'All';return g.map(id=>s.pages.findIndex(p=>p.id===id)+1).filter(n=>n>0).sort((a,b)=>a-b).join(', ');}
 const pageItems=(s,pid)=>s.items.filter(it=>vis(it,s,pid));
 const charById=id=>P.characters.find(c=>c.id===id);
 const setupIn=(s,id)=>s.setups.find(x=>x.id===id);
@@ -722,7 +737,7 @@ function addImage(data){const id=uid();images[id]=data;imgDirty=true;sync.stamps
 let undoS=[],redoS=[],cur=null;
 const snapshot=()=>JSON.stringify({c:P.characters,f:P.folders,s:P.scenes.map(stripScene)});
 function commit(opt){
- normShots(scene());const s=snapshot();
+ normShots(scene());ppFill(scene());const s=snapshot();
  if(s!==cur){if(cur!==null){undoS.push(cur);if(undoS.length>200)undoS.shift();}redoS=[];cur=s;detectChanges();saveLocal();schedulePush();}
  render(opt);
 }
@@ -1105,7 +1120,7 @@ function boxShape(it){
  return `<g transform="translate(${it.mir?it.w/2:-it.w/2},${-it.h/2}) scale(${(it.mir?-1:1)*it.w/100},${it.h/100})"><rect width="100" height="100" fill="transparent"/>${s}</g>`;
 }
 function itemsMarkup(sc,pid){
- let sh='',fov='',paths='',cams='',chars='',frames='';const lay=frameOn()?frameLayout(sc,pid||sc.pageId):null;
+ let sh='',fov='',paths='',cams='',chars='',frames='';const lay=frameOn()?frameLayout(sc,pid||sc.pageId):null,PG=pid||sc.pageId;
  for(const it of pageItems(sc,pid)){
   if(IMF){const a=ACTOR(it.type)||it.type==='axis';if(IMF==='noActors'?a:!a)continue;}
   if(BOX(it.type)){
@@ -1114,10 +1129,11 @@ function itemsMarkup(sc,pid){
    const lbl=it.kind==='dollytrack'?`<text class="sl" y="${trackBox(it).y1+12}" text-anchor="middle">${esc((it.label?it.label.toUpperCase()+' · ':'')+trackFt(it)+' FT TRACK'+(Math.abs(trackK(it))>1e-7?' (CURVED)':''))}</text>`:it.label?`<text class="sl" y="${it.type==='light'?it.h/2+14:4}" text-anchor="middle" transform="rotate(${-(it.rot||0)})">${esc(it.label.toUpperCase())}</text>`:'';
    const mv=it.mv||[],shp=boxShape(it);
    const fl=it.lab&&it.label&&it.kind!=='dollytrack'?it.lab:null,lt=fl?esc(String(it.label).toUpperCase()):'',lhw=fl?it.label.length*3.6+9:0;
-   if(fl&&Math.hypot(fl.x,fl.y)>Math.max(it.w,it.h)/2+12)sh+=`<line class="deco L-${layerOf(it)}" x1="${it.x}" y1="${it.y}" x2="${it.x+fl.x}" y2="${it.y+fl.y}" stroke="#4b4d53" stroke-opacity=".45" stroke-width="1"/>`;
-   sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${fl?'':lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
-   if(fl)sh+=`<g class="L-${layerOf(it)} L-free${it.locked?' L-lk':''}" data-id="${it.id}" data-lab="1" transform="translate(${it.x+fl.x},${it.y+fl.y})"><rect x="${-lhw}" y="-11" width="${lhw*2}" height="18" fill="transparent"/><text class="sl" y="3" text-anchor="middle">${lt}</text></g>`;
-   const ps=positions(it);for(let i=1;i<ps.length;i++){const q=ps[i];paths+=arrow(ps[i-1],q,'#5b6170',true,Math.min(it.w,it.h)/2+4,!it.hard,`data-id="${it.id}" data-track="${i}"`);
+   const on0=posOn(it,0,PG);
+   if(on0&&fl&&Math.hypot(fl.x,fl.y)>Math.max(it.w,it.h)/2+12)sh+=`<line class="deco L-${layerOf(it)}" x1="${it.x}" y1="${it.y}" x2="${it.x+fl.x}" y2="${it.y+fl.y}" stroke="#4b4d53" stroke-opacity=".45" stroke-width="1"/>`;
+   if(on0)sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})">${shp}${fl?'':lbl}${mv.length?`<g transform="rotate(${-(it.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">1</text></g>`:''}</g>`;
+   if(fl&&on0)sh+=`<g class="L-${layerOf(it)} L-free${it.locked?' L-lk':''}" data-id="${it.id}" data-lab="1" transform="translate(${it.x+fl.x},${it.y+fl.y})"><rect x="${-lhw}" y="-11" width="${lhw*2}" height="18" fill="transparent"/><text class="sl" y="3" text-anchor="middle">${lt}</text></g>`;
+   const ps=positions(it);for(let i=1;i<ps.length;i++){const q=ps[i];if(!posOn(it,i,PG))continue;if(posOn(it,i-1,PG))paths+=arrow(ps[i-1],q,'#5b6170',true,Math.min(it.w,it.h)/2+4,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     sh+=`<g class="L-${layerOf(it)}" data-id="${it.id}" data-mark="${i}" transform="translate(${q.x},${q.y}) rotate(${q.rot||0})" opacity=".55">${shp}<g transform="rotate(${-(q.rot||0)})"><circle class="deco" r="8" fill="#fff" stroke="#4b5563" stroke-width="1.5"/><text class="bd deco" y="3.2" text-anchor="middle">${i+1}</text></g></g>`;}
   }else if(it.type==='wall'){
    const ln=`x1="${it.x1}" y1="${it.y1}" x2="${it.x2}" y2="${it.y2}"`;
@@ -1140,8 +1156,8 @@ function itemsMarkup(sc,pid){
    sh+=`<g class="L-${layerOf(it)}${it.locked?' L-lk':''}" data-id="${it.id}" transform="translate(${it.x},${it.y}) rotate(${it.rot||0})"><rect x="${-tw/2}" y="${-fs*.75}" width="${tw}" height="${fs*1.5}" fill="transparent"/><text class="ft" font-size="${fs}" fill="${it.color||'#2B2B2B'}" text-anchor="middle" y="${fs*.35}">${esc(it.text)}</text></g>`;
   }else if(it.type==='char'){
    const c=charById(it.charId);if(!c)continue;const col=c.color,dk=shade(col,-.5),nm=esc(String(c.name||'?').toUpperCase()+(it.xn?' '+it.xn:'')),n=it.marks.length,off=charOff(sc,it);
-   const pcol=lum(col)>.8?shade(col,-.42):col;it.marks.forEach((m,i)=>{if(i>0&&!m.t)paths+=arrow(it.marks[i-1],m,pcol,true,19,!it.hard,`data-id="${it.id}" data-track="${i}"`);});
-   for(let a=0;a<n;){const [,b]=runOf(it,a),m=it.marks[a],f=effFacing(it,b),L=behind(f,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
+   const pcol=lum(col)>.8?shade(col,-.42):col;it.marks.forEach((m,i)=>{if(i>0&&!m.t&&posOn(it,i-1,PG)&&posOn(it,i,PG))paths+=arrow(it.marks[i-1],m,pcol,true,19,!it.hard,`data-id="${it.id}" data-track="${i}"`);});
+   for(let a=0;a<n;){if(!posOn(it,a,PG)){a=runOf(it,a)[1]+1;continue;}const [,b]=runOf(it,a),m=it.marks[a],f=effFacing(it,b),L=behind(f,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
     let turns='',ghosts='',sideSg=1;
     for(let j=a+1;j<=b;j++){const q=it.marks[j],r0=effFacing(it,j-1);if(q.hid)continue;const d=((q.rot-r0)%360+540)%360-180;sideSg=d>0?-1:1;
      ghosts+=`<g transform="rotate(${q.back?q.rot:r0})" opacity=".32" class="deco"><path d="M12.5,-6.5L22,0L12.5,6.5Z" fill="${dk}"/></g>`;
@@ -1155,15 +1171,18 @@ function itemsMarkup(sc,pid){
     a=b+1;}
   }else if(it.type==='cam'){
    camSync(it);const st=setupIn(sc,it.setupId);const col=st?st.color:'#999',dk=shade(col,-.42),lab=`Cam ${shotCode(sc,it)}`,n=nVer(it);
-   const vlines=i=>{let l=labLines(it.marks[i],verNum(it,i),n);it.marks.forEach((q,j)=>{if(q.sp&&spBase(it,j)===i)l=l.concat(labLines(q,verNum(it,j),n));});return l;};
+   const vlines=i=>{let l=posOn(it,i,PG)?labLines(it.marks[i],verNum(it,i),n):[];it.marks.forEach((q,j)=>{if(q.sp&&spBase(it,j)===i&&posOn(it,j,PG))l=l.concat(labLines(q,verNum(it,j),n));});return l;};
+   const spOn=i=>it.marks.some((q,j)=>q.sp&&spBase(it,j)===i&&posOn(it,j,PG)),drawnAt=i=>!it.marks[i].tk&&!it.marks[i].sp&&(posOn(it,i,PG)||spOn(i)),f0=Math.max(0,it.marks.findIndex((q,i)=>drawnAt(i)));
    it.marks.forEach((m,i)=>{
+    const on=posOn(it,i,PG);if(!on&&(m.sp||m.tk||!spOn(i)))return;
     if(m.sp){if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))} · V${verCode(sc,verNum(it,i))}</text></g>`;}return;}
-    if(i>0&&m.tk){const p=it.marks[i-1];paths+=`<path class="deco" d="${trackD([p,...legPts(p,m),m],!it.hard)}" fill="none" stroke="${col}" stroke-opacity=".22" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`+arrow(p,m,dk,true,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);}
-    else if(i>0)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
+    const prevOn=i>0&&posOn(it,i-1,PG)&&on;
+    if(i>0&&m.tk&&prevOn){const p=it.marks[i-1];paths+=`<path class="deco" d="${trackD([p,...legPts(p,m),m],!it.hard)}" fill="none" stroke="${col}" stroke-opacity=".22" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`+arrow(p,m,dk,true,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);}
+    else if(i>0&&!m.tk&&prevOn)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     const a=rad(m.rot||0);
-    if(frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))}${n>1?' · V'+verCode(sc,verNum(it,i)):''}</text></g>`;}
+    if(on&&frameOn()&&m.sb&&images[m.sb]){const c=framePt(it,i,m,lay);frames+=`<line class="deco L-sb" x1="${m.x}" y1="${m.y}" x2="${c.x}" y2="${c.y+FH/2}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1" transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[m.sb]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">Shot ${esc(shotCode(sc,it))}${n>1?' · V'+verCode(sc,verNum(it,i)):''}</text></g>`;}
     let lbl='',lead='';const ln=m.tk?[]:vlines(i);
-    if(i===0){const lp=camLabelPos(it,m,ln.length),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
+    if(i===f0){const lp=camLabelPos(it,m,ln.length),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
      if(it.lab&&Math.hypot(lp.x,lp.y)>58)lead=`<line class="deco" x1="0" y1="0" x2="${lp.x}" y2="${lp.y-8}" stroke="#2f5f8f" stroke-opacity=".45" stroke-width="1"/>`;
      const hw=Math.max(pw,...ln.map(l=>l.length*5.5))/2+7;lbl=`<g class="L-desc${it.lab?' L-free':''}" data-id="${it.id}" data-mark="0" data-lab="1" transform="translate(${lp.x},${lp.y})"><rect x="${-hw}" y="-20" width="${hw*2}" height="${22+ln.length*11}" fill="transparent"/><rect x="${-pw/2}" y="-17" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2 deco" y="-5.2" text-anchor="middle">${tag}</text>${ln.map((l,j)=>`<text class="sd deco" y="${9+j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
     else if(ln.length){const L=behind(m.rot,34),oy=L.s<-.35?-ln.length*11:L.s>.35?8:-(ln.length*11)/2+8;lbl=`<g class="deco L-desc" transform="translate(${L.x},${L.y+oy})">${ln.map((l,j)=>`<text class="sd" y="${j*11}" text-anchor="middle">${esc(l)}</text>`).join('')}</g>`;}
@@ -1310,7 +1329,7 @@ function renderInsp(){const el=$('#insp');if(!inspOpen||!sel||offCanvas()){el.cl
 function openInsp(){inspOpen=true;closePop();renderInsp();}
 
 /* ---------- shot list column ---------- */
-function rowsOf(s,pid){const out=[],cams=s.items.filter(it=>it.type==='cam'&&(!pid||vis(it,s,pid)));for(const st of s.setups){const list=cams.filter(c=>c.setupId===st.id).sort(byLetter);list.forEach((it,ci)=>{let vn=0;it.marks.forEach((m,vi)=>{if(m.tk)return;out.push({st,it,m,vi,vn:vn++,first:ci===0&&vi===0});});});}return out;}
+function rowsOf(s,pid){const out=[],cams=s.items.filter(it=>it.type==='cam'&&(!pid||vis(it,s,pid)));for(const st of s.setups){const list=cams.filter(c=>c.setupId===st.id).sort(byLetter);list.forEach((it,ci)=>{let vn=0;it.marks.forEach((m,vi)=>{if(m.tk)return;const v=vn++;if(pid&&pid!=='all'&&!posOn(it,vi,pid))return;out.push({st,it,m,vi,vn:v,first:ci===0&&vi===0});});});}return out;}
 function renderShots(){
  const s=scene(),rows=rowsOf(s);let h='';let prev=null;
  for(const r of rows){if(prev&&prev!==r.st)h+='<div class="sgap"></div>';prev=r.st;
@@ -1328,11 +1347,7 @@ bindShotDrag($('#shots'),'.sr[data-id]');bindShotDrag($('#listView'),'tr[data-id
 function findCam(id){for(const s of P.scenes){const it=s.items.find(i=>i.id===id);if(it)return {it,s};}return null;}
 function setPage(it,v,add){
  const s=scene();
- if(v==='all'){it.pgs=null;return;}
- if(!add){it.pgs=[v];return;}
- if(!it.pgs)it.pgs=s.pages.map(p=>p.id).filter(id=>id!==v);
- else if(it.pgs.includes(v)){if(it.pgs.length>1)it.pgs=it.pgs.filter(x=>x!==v);}
- else it.pgs=s.pages.map(p=>p.id).filter(id=>id===v||it.pgs.includes(id));
+ it.pgs=pgEdit(it.pgs,v,add,s);clearPP(it);
  if(it.pgs&&it.pgs.length===s.pages.length)it.pgs=null;
 }
 function setField(f,v){
@@ -1605,7 +1620,7 @@ function objPop(cx,cy){
  const sec=(t,b)=>b?`<div class="hd">${t}</div>${b}`:'',B=(o,l,i)=>`<button data-o="${o}">${i||''}${l}</button>`;
  let title='',h='';
  if(sel.id==='__bg'){const b=s.bg;if(!b)return;title='Background Image';h=sec('Object',B('lock',b.locked?'Unlock':'Lock in Place')+B('bgReplace','Replace Image…')+B('bgRemove','Remove',IC.x))+sec('Settings',B('edit','Opacity…'));}
- else{const it=itemById(sel.id);if(!it)return;const lk=B('lock',it.locked?'Unlock':'Lock in Place'),pages=`<div class="hd">Pages</div><button data-o="pages">Pages<span class="pgv">${esc(pagesSummary(it))} ›</span></button>`;
+ else{const it=itemById(sel.id);if(!it)return;const lk=B('lock',it.locked?'Unlock':'Lock in Place'),pages=`<div class="hd">Pages</div><button data-o="pages">Pages<span class="pgv">${esc(pagesSummary(it,sel.mark||0))} ›</span></button>`;
   const animOn=s.items.some(q=>(q.marks||[]).some(m=>m.st!=null)),stB=it.marks?B('astep',`Animation Step<span class="pgv">${(it.marks[sel.mark||0]||{}).st!=null?it.marks[sel.mark||0].st:'None'} ›</span>`):'';
   if(it.type==='char'&&sel.badge&&!(it.marks[sel.mark||0]||{}).t){title='Edit Turn';h=sec('Actions',B('tbefore','Insert Turn Before')+B('tafter','Insert Turn After'));}
   else if(it.type==='char'&&(it.marks[sel.mark||0]||{}).t){const m=it.marks[sel.mark],ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;title='Edit Turn';
@@ -1643,7 +1658,7 @@ function objPop(cx,cy){
 }
 function objAct(o){
  const s=scene(),it=sel&&sel.id!=='__bg'?itemById(sel.id):null,fake=d=>({dataset:d||{}});
- if(o==='pages'){pagesSub();return;}
+ if(o==='pages'){pgWhole=null;pagesSub();return;}
  if(it&&it.type==='ink'&&o==='inkmore'){if(it.rot||Math.abs(it.w-it.bw)>.5||Math.abs(it.h-it.bh)>.5){const kx=it.w/it.bw,ky=it.h/it.bh,a=rad(it.rot||0),c=Math.cos(a),sn=Math.sin(a);for(const st of it.strokes)st.p=st.p.map(([x,y])=>{x*=kx;y*=ky;return [+(x*c-y*sn).toFixed(1),+(x*sn+y*c).toFixed(1)];});it.rot=0;it.bw=it.w;it.bh=it.h;}closePop();startTool({t:'pen',ink:it.id});return;}
  if(it&&it.type==='ink'&&o==='rsize'){it.w=it.bw;it.h=it.bh;commit();objPop(popAt.x,popAt.y);return;}
  if(it&&it.type==='cam'&&o.startsWith('dm:')){sel.mark=+o.slice(3);renderUI();renderShotSel();objPop(popAt.x,popAt.y);return;}
@@ -1717,17 +1732,29 @@ function objAct(o){
   case 'bgRemove':act('bgRemove',fake());break;
  }
 }
+let pgWhole=null;
+function posName(sc,it,i){const k=posHostI(it,i);if(it.type==='cam')return 'Version '+(verNum(it,k)+1);if(it.type==='char')return 'Position '+posNum(sc,it,k);return 'Position '+(k+1);}
 function pagesSub(group){
  const s=scene(),its=group?mselItems():[itemById(sel&&sel.id)].filter(Boolean);if(!its.length)return;
- const allOn=its.every(i=>!i.pgs),st=pid=>{const k=its.filter(i=>!i.pgs||i.pgs.includes(pid)).length;return allOn?'':k===its.length?'on':k?'part':'';};
- const only=pid=>!allOn&&its.every(i=>i.pgs&&i.pgs.length===1&&i.pgs[0]===pid);
- pop.innerHTML=`<h4><button class="back">‹ Back</button>${group?`Pages · ${its.length} items`:'Pages'}</h4><div class="ls" style="width:310px"><button data-p="all">All Pages<span class="rad${allOn?' on':''}"></span></button>${s.pages.map((p,i)=>{const c=st(p.id);return `<button data-p="${p.id}"><b style="width:22px">${i+1}</b>${esc(p.name)}${only(p.id)?'<small class="pgonly">only</small>':''}<span class="chk${c==='on'?' on':''}" data-add="${p.id}" title="Also show on this page">${c==='on'?'✓':c==='part'?'–':''}</span></button>`;}).join('')}<div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">Tap a page to show ${group?'them':'it'} only there. Tap a checkbox to add or remove one page.</div></div>`;
+ const it0=its[0],multi=!group&&posStarts(it0).length>1,pi=sel&&sel.mark||0;
+ if(!multi)pgWhole=true;else if(pgWhole===null)pgWhole=!hasPP(it0);
+ const one=multi&&!pgWhole;
+ /* what each page shows: one position, or every position of every item */
+ const units=one?[posPg(it0,pi)]:its.flatMap(i=>hasPP(i)?posStarts(i).map(k=>posPg(i,k)):[i.pgs]);
+ const allOn=units.every(g=>!g),st=pid=>{const k=units.filter(g=>!g||g.includes(pid)).length;return allOn?'':k===units.length?'on':k?'part':'';};
+ const only=pid=>!allOn&&units.every(g=>g&&g.length===1&&g[0]===pid);
+ const head=group?`Pages · ${its.length} items`:one?`Pages · ${esc(posName(s,it0,pi))}`:'Pages';
+ const grp=multi?`<div class="hd">Group</div><button data-whole="1">Whole Group<span class="chk${pgWhole?' on':''}">${pgWhole?'✓':''}</span></button>`:'';
+ const tip=multi?(pgWhole?'Pages apply to every position. Uncheck Whole Group to set pages for just this '+(it0.type==='cam'?'version':'position')+'.':'Pages apply to '+esc(posName(s,it0,pi))+' only. New moves from it start on the same pages.'):`Tap a page to show ${group?'them':'it'} only there. Tap a checkbox to add or remove one page.`;
+ pop.innerHTML=`<h4><button class="back">‹ Back</button>${head}</h4><div class="ls" style="width:310px"><button data-p="all">All Pages<span class="rad${allOn?' on':''}"></span></button>${s.pages.map((p,i)=>{const c=st(p.id);return `<button data-p="${p.id}"><b style="width:22px">${i+1}</b>${esc(p.name)}${only(p.id)?'<small class="pgonly">only</small>':''}<span class="chk${c==='on'?' on':''}" data-add="${p.id}" title="Also show on this page">${c==='on'?'✓':c==='part'?'–':''}</span></button>`;}).join('')}${grp}<div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${tip}</div></div>`;
  pop.querySelector('.back').onclick=()=>group?multiPop(popAt.x,popAt.y):objPop(popAt.x,popAt.y);
- pop.querySelector('.ls').onclick=e=>{const ad=e.target.closest('[data-add]'),x=e.target.closest('[data-p]');if(!x)return;
-  for(const it of its)setPage(it,ad?ad.dataset.add:x.dataset.p,!!ad);
+ pop.querySelector('.ls').onclick=e=>{
+  if(e.target.closest('[data-whole]')){pgWhole=!pgWhole;pagesSub(group);return;}
+  const ad=e.target.closest('[data-add]'),x=e.target.closest('[data-p]');if(!x)return;const v=ad?ad.dataset.add:x.dataset.p;
+  if(one)setPosPage(it0,pi,v,!!ad);else for(const it of its)setPage(it,v,!!ad);
   commit({insp:false});
   if(group){const keep=its.filter(i=>vis(i,s)).map(i=>i.id);msel=keep.length?new Set(keep):null;renderUI();if(!msel){closePop();return;}}
-  else if(!vis(its[0],s)){sel=null;closePop();renderUI();return;}
+  else if(!vis(it0,s)||(multi&&!posOn(it0,pi,s.pageId))){sel=null;closePop();renderUI();return;}
   pagesSub(group);};
  if(!group)placePopAt(popAt.x,popAt.y);
 }
@@ -1739,6 +1766,16 @@ function labelDialog(it){
   card.querySelector('#lb').addEventListener('keydown',e=>{if(e.key==='Enter')set(e.target.value.trim());});
   const r=card.querySelector('#rm');if(r)r.onclick=()=>set('');
  });
+}
+function cpPop(h,cx,cy){
+ const [,i,j]=h.split(':').map(Number),it=itemById(sel&&sel.id),b=it&&posAt(it,i);if(!b||!b.cp||!b.cp[j])return;const n=b.cp.length;
+ pop.innerHTML=`<h4>Control Point</h4><div class="ls" style="width:260px"><button data-c="del"><span class="xdel">✕</span>Delete Control Point</button>${n>1?`<button data-c="all">Delete All ${n} Control Points</button>`:''}<div class="hd">Settings</div><button data-c="soft">Soft Curve<span class="chk${!it.hard?' on':''}">${!it.hard?'✓':''}</span></button></div>`;
+ pop.classList.add('on');popFor=null;const wr=$('#wrap').getBoundingClientRect();pop.style.bottom='auto';
+ pop.style.left=clamp(cx-wr.left+18,8,Math.max(8,wr.width-pop.offsetWidth-8))+'px';pop.style.top=clamp(cy-wr.top-30,8,Math.max(8,wr.height-pop.offsetHeight-8))+'px';
+ pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-c]');if(!x)return;const t=x.dataset.c;
+  if(t==='del'){b.cp.splice(j,1);closePop();commit({insp:false});}
+  else if(t==='all'){b.cp=[];closePop();commit({insp:false});}
+  else{it.hard=!it.hard;commit({insp:false});cpPop(h,cx,cy);}};
 }
 function trackPop(id,i,cx,cy,w){
  const it=itemById(id);if(!it)return;const b=posAt(it,i),soft=!it.hard,n=(b.cp||[]).length;
@@ -3224,7 +3261,7 @@ let anim={step:0,frac:1,playing:false,raf:0,hold:0,base:null,speed:1,loop:false}
 let IMF=null;
 function effSteps(it){const M=it.marks||[],e=new Array(M.length);let nx=Infinity;for(let i=M.length-1;i>=0;i--){if(M[i].st!=null)nx=+M[i].st;e[i]=M[i].st!=null?+M[i].st:nx;}if(it.type==='char'&&M.length&&M[0].st==null)e[0]=1;return e;}
 function lastIdx(st,N){let j=-1;st.forEach((e,i)=>{if(e<=N)j=i;});return j;}
-function animActors(sc){return pageItems(sc).filter(it=>(it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length);}
+function animActors(sc){return pageItems(sc).filter(it=>(it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length).map(it=>hasPP(it)?Object.assign({},it,{marks:it.marks.filter((m,i)=>posOn(it,i,sc.pageId))}):it).filter(it=>it.marks.length);}
 /* per page: section labels and speeds for each time */
 function tlOf(sc,make){const pid=sc.pageId||'p';if(!sc.tl)sc.tl={};if(!sc.tl[pid]&&make)sc.tl[pid]={lab:{},spd:{}};return sc.tl[pid]||{lab:{},spd:{}};}
 const spdV=v=>v==null?50:v<=5?[10,30,50,70,90][v-1]||50:v; /* 0-100, 50 is normal */
@@ -3568,6 +3605,7 @@ function endPointer(e){
  if(g.type==='mdrag'){if(g.moved)commit({insp:false});else multiPop(e.clientX,e.clientY);renderUI();flushRemote();return;}
  if(g.tool&&!g.moved&&tool){toolTap(g.w);flushRemote();return;}
  if(g.type==='track'){trackPop(g.id,g.i,e.clientX,e.clientY,g.w0);flushRemote();return;}
+ if(g.type==='handle'&&g.h.startsWith('cp:')&&!g.moved&&sel){cpPop(g.h,e.clientX,e.clientY);return;}
  if(g.type==='handle'&&g.h==='rot'&&!g.moved&&sel){const it=itemById(sel.id);if(it&&!it.locked&&(it.type==='char'||it.type==='cam')){objAct(it.type==='char'?'turn':'pan');flushRemote();return;}}
  if(!g.moved&&downAgain&&g.type!=='badge'&&!g.detach&&!tool&&(e.pointerType==='pen'||e.pointerType==='touch')){const el=downAgain;downAgain=null;menuFor(el,e.clientX,e.clientY);tapMenuAt=Date.now();flushRemote();return;}
  if(g.moved&&(g.type==='drag'||g.type==='handle'))uhTidy(scene(),itemById(g.type==='drag'?g.id:(sel&&sel.id)));
