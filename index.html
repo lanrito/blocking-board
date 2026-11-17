@@ -223,6 +223,9 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .sb img{width:100%;height:100%;object-fit:cover;display:block}.sb.has{border:0}
 .sbw{position:relative;width:150px}
 .sbm{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.sbt{width:44px;aspect-ratio:16/9;padding:0;border-radius:4px;border:1px solid #d6d5cf;background:#f6f5f1;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#6f6f74;font-size:16px}.sbt img{width:100%;height:100%;object-fit:cover}.sbt.add{border-style:dashed}
+.sbst{display:flex;flex-direction:column;gap:6px}.sbf{position:relative}.sbst .sb{width:100%}
+.sbn{position:absolute;left:5px;bottom:5px;background:rgba(0,0,0,.62);color:#fff;font-size:11px;font-weight:700;border-radius:9px;padding:1px 7px}
+.sbst .sbadd{width:100%;height:26px;aspect-ratio:auto}
 .sbbig{display:block;width:100%;max-height:60vh;object-fit:contain;border-radius:8px;background:#f2f1ec;margin:6px 0 4px}
 .sbx{position:absolute;top:5px;right:5px;width:28px;height:28px;border-radius:14px;border:0;background:rgba(0,0,0,.62);color:#fff;font-size:16px;line-height:28px;padding:0}
 #listView{flex:1;min-height:0;overflow:auto;display:none;-webkit-overflow-scrolling:touch}
@@ -261,6 +264,8 @@ table.sl{border-collapse:collapse;width:100%;min-width:1140px;font-size:14px;col
 .num{width:52px;height:52px;border-radius:12px;border:1px solid var(--line);background:var(--chip);font-size:20px;font-weight:700}
 .num.on{background:var(--ink);color:var(--panel)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip.wch{text-transform:none;cursor:pointer}.chip.wch .dot{width:12px;height:12px;border-radius:50%}.chip.wch.on{background:#2f6fde;border-color:#2f6fde;color:#fff}
+.card .lbl+.chips{margin-bottom:12px}
 .chip{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 8px;border-radius:18px;border:1px solid var(--line);background:var(--chip);font-weight:600;text-transform:uppercase;font-size:13px}
 .chip i{width:14px;height:14px;border-radius:50%}
 .menu{display:flex;flex-direction:column;gap:6px;margin-top:10px}
@@ -389,7 +394,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117192125';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117195130';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -787,6 +792,7 @@ function addImage(data){const id=uid();images[id]=data;imgDirty=true;sync.stamps
 let undoS=[],redoS=[],cur=null;
 const snapshot=()=>JSON.stringify({c:P.characters,f:P.folders,s:P.scenes.map(stripScene)});
 function commit(opt){
+ try{typeRefresh();}catch(e){}
  normShots(scene());ppFill(scene());const s=snapshot();
  if(s!==cur){if(cur!==null){undoS.push(cur);if(undoS.length>200)undoS.shift();}redoS=[];cur=s;detectChanges();saveLocal();schedulePush();}
  render(opt);
@@ -1056,7 +1062,7 @@ function frameSnap(s,it,i,m,k,p,g){
  g.guides=G.length?G:null;return out;}
 function frameSVG(sc,it,i,m,lay,k,cap){const id=fImg(m,k);if(!id||!images[id])return '';const FW=fWk(sc,m,k),FH=fszH(FW),c=fPos(it,i,m,lay,k),A=fAnchor(it,i,k),e=frameEdge(A,c,FW,FH);
  return `<line class="deco L-sb" x1="${A.x}" y1="${A.y}" x2="${e.x}" y2="${e.y}" stroke="#8f9096" stroke-width="0.8"/><g class="L-sb" data-id="${it.id}" data-mark="${i}" data-frame="1"${k?` data-fk="${k}"`:''} transform="translate(${c.x-FW/2},${c.y-FH/2})"><rect x="-1" y="-1" width="${FW+2}" height="${FH+2}" fill="#fff" stroke="#b9b9b5" stroke-width="1"/><image href="${images[id]}" width="${FW}" height="${FH}" preserveAspectRatio="xMidYMid slice"/><text class="fcap deco" x="${FW/2}" y="${FH+13}" text-anchor="middle">${cap}</text></g>`;}
-function framesSVG(sc,it,i,m,lay,base){const n=1+(m.sbs||[]).filter(x=>images[x]).length;let h='',j=0;for(let k=0;k<1+(m.sbs||[]).length;k++){const id=fImg(m,k);if(!id||!images[id])continue;j++;h+=frameSVG(sc,it,i,m,lay,k,esc(base)+(n>1?` · ${j} of ${n}`:''));}return h;}
+function framesSVG(sc,it,i,m,lay,base){const F=m.sp?[]:shotFrames(it,i),n=F.length;let h='';for(let k=0;k<1+(m.sbs||[]).length;k++){const id=fImg(m,k);if(!id||!images[id])continue;const at=F.findIndex(f=>f.j===i&&f.k===k);h+=frameSVG(sc,it,i,m,lay,k,esc(base)+(n>1&&at>=0?` · ${at+1} of ${n}`:''));}return h;}
 function frameEdge(m,c,FW,FH){const dx=m.x-c.x,dy=m.y-c.y;if(Math.abs(dx)<FW/2&&Math.abs(dy)<FH/2+8)return {x:c.x,y:c.y+FH/2};const t=Math.min(dx?(FW/2+3)/Math.abs(dx):1e9,dy?(FH/2+(dy>0?18:3))/Math.abs(dy):1e9);return {x:c.x+dx*t,y:c.y+dy*t};}
 function framePt(it,i,m,lay){if(m.sba)return m.sba;if(m.sbp)return {x:m.x+m.sbp.x,y:m.y+m.sbp.y};const p=lay&&lay[it.id+':'+i];return p||{x:m.x,y:m.y-220};}
 function bbox(s,pid){
@@ -1492,7 +1498,13 @@ function swatches(field,colors,current,custom){
  return `<div class="sw">${colors.map(c=>`<button class="swb${hex7(c)===cu?' on':''}" style="--c:${c}" data-act="color" data-f="${field}" data-v="${c}" aria-label="Color ${c}"></button>`).join('')}${custom?`<label class="swc"><input type="color" data-f="${field}" value="${cu}"><span>Custom</span></label>`:''}</div>`;
 }
 const sbAll=m=>[m.sb,...(m.sbs||[])].filter(x=>x&&images[x]);
-function sbHTML(id,vi,m){const src=m.sb&&images[m.sb],ex=(m.sbs||[]).filter(x=>images[x]);return `<div class="sbw"><button class="sb${src?' has':''}" data-act="sbAdd" data-id="${id}" data-v="${vi}">${src?`<img src="${src}" alt="Storyboard frame">`:'+ Add frame'}</button>${src?`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${vi}" aria-label="Remove frame">×</button>`:''}${src?`<div class="sbm">${ex.map((x,k)=>`<button class="sbt" data-act="sbOpt" data-id="${id}" data-v="${vi}" data-k="${k}" title="Frame ${k+2}"><img src="${images[x]}" alt="Frame ${k+2}"></button>`).join('')}<button class="sbt add" data-act="sbMore" data-id="${id}" data-v="${vi}" title="Add another frame">+</button></div>`:''}</div>`;}
+function shotFrames(it,vi){const out=[];if(!it||!it.marks)return out;vi=verStart(it,vi);const run=[vi];for(let j=vi+1;j<it.marks.length&&it.marks[j].tk;j++)run.push(j);
+ run.forEach((j,p)=>{const m=it.marks[j];if(m.sb&&images[m.sb]){out.push({j,k:0,id:m.sb,p});(m.sbs||[]).forEach((x,k)=>{if(images[x])out.push({j,k:k+1,id:x,p});});}});return out;}
+function sbHTML(id,vi,m){const it=itemById(id)||(findCam(id)||{}).it,src=m.sb&&images[m.sb];
+ if(!src&&!(it&&shotFrames(it,vi).length))return `<div class="sbw"><button class="sb" data-act="sbAdd" data-id="${id}" data-v="${vi}">+ Add frame</button></div>`;
+ const F=it?shotFrames(it,vi):[{j:vi,k:0,id:m.sb,p:0}],n=F.length;
+ const one=(f,i)=>`<div class="sbf"><button class="sb has" data-act="${f.k?'sbOpt':'sbAdd'}" data-id="${id}" data-v="${f.j}"${f.k?` data-k="${f.k-1}"`:''} title="${f.p?'Dolly position '+(f.p+1):'Frame '+(i+1)}"><img src="${images[f.id]}" alt="Storyboard frame ${i+1}"></button>${f.k?'':`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${f.j}" aria-label="Remove frame">×</button>`}${n>1?`<span class="sbn">${i+1}${f.p?` · pos ${f.p+1}`:''}</span>`:''}</div>`;
+ return `<div class="sbw sbst">${F.map(one).join('')}<button class="sbt add sbadd" data-act="${src?'sbMore':'sbAdd'}" data-id="${id}" data-v="${vi}" title="Add another frame">+</button></div>`;}
 function sbOpt(id,vi,k){const c=findCam(id);if(!c)return;const m=c.it.marks[vi],x=(m.sbs||[])[k];if(!x||!images[x])return;const n=sbAll(m).length;
  modal(`<h3>Shot ${esc(shotCode(c.s,c.it))} · frame ${k+2} of ${n}</h3><img class="sbbig" src="${images[x]}" alt="Storyboard frame"><div class="btns end"><button id="sbR" class="danger">Remove</button><button id="sbP">Replace…</button><button id="sbM">Make Main Frame</button><button class="pri" data-x>Done</button></div>`,card=>{
   card.querySelector('#sbR').onclick=()=>{m.sbs.splice(k,1);if(!m.sbs.length)delete m.sbs;sbxTidy(m);closeModal();commit();};
@@ -1572,7 +1584,7 @@ function setField(f,v){
  switch(f){
   case 'char.name':{const c=charById(it.charId);if(c)c.name=v;break;}
   case 'char.color':{const c=charById(it.charId);if(c)c.color=v;break;}
-  case 'v.size':case 'v.type':case 'v.angle':case 'v.move':case 'v.desc':(it.marks[sel.mark||0])[f.slice(2)]=v;break;
+  case 'v.size':case 'v.type':case 'v.angle':case 'v.move':case 'v.desc':(it.marks[sel.mark||0])[f.slice(2)]=v;if(f==='v.type')delete it.marks[sel.mark||0].on;break;
   case 'cam.letter':{const l=v.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,2);if(l)it.letter=l;break;}
   case 'cam.fov':{it.fov=+v;const fv=$('#fovv');if(fv)fv.textContent=v+'°';break;}
   case 'setup.color':{const st=setupIn(s,it.setupId);if(st)st.color=v;break;}
@@ -1590,7 +1602,7 @@ const insp=$('#insp');
 insp.addEventListener('click',e=>{if(e.target.matches('input,select,textarea,label,.swc span'))return;const b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b);});
 insp.addEventListener('input',e=>{const t=e.target;if(t.dataset.f)setField(t.dataset.f,t.value);});
 insp.addEventListener('change',e=>{const t=e.target;if(!t.dataset.f)return;
- if(t.type==='color'){commit();return;}commit({insp:false});});
+ if(t.type==='color'){commit();return;}commit({insp:false});if(t.dataset.f==='v.type'&&sel){const it=itemById(sel.id);if(it&&whoKind(t.value))typeAsk(scene(),it,sel.mark||0,()=>renderInsp());}});
 function moveItem(it,mk,dx,dy){
  if(it.marks){if(mk==null)it.marks.forEach(m=>{m.x+=dx;m.y+=dy;});else if(it.type==='char'){const [a,b]=runOf(it,mk);for(let j=a;j<=b;j++){it.marks[j].x+=dx;it.marks[j].y+=dy;}}else{it.marks[mk].x+=dx;it.marks[mk].y+=dy;}}
  else if(it.type==='wall'){it.x1+=dx;it.y1+=dy;it.x2+=dx;it.y2+=dy;}
@@ -2979,7 +2991,7 @@ const offCanvas=()=>mode==='list'||mode==='nb'||mode==='st';
 function setMode(m){const was=mode,wasOff=offCanvas(),doc=m==='nb'||m==='st';if(txTimer)txFlush();mode=m;closePop();closeDocPop();endTool();if(doc){sel=null;msel=null;inspOpen=false;}const a=$('#app');a.classList.toggle('mode-list',m==='list');a.classList.toggle('mode-split',m==='split');a.classList.toggle('mode-nb',m==='nb');a.classList.toggle('mode-st',m==='st');$('#mDia').classList.toggle('on',m==='diagram');$('#mList').classList.toggle('on',m==='list');$('#mNb').classList.toggle('on',m==='nb');$('#mSt').classList.toggle('on',m==='st');if(m==='split')a.style.setProperty('--lh',(P.ui.splitH||38)+'%');if(m==='list'||m==='split')renderList();if(doc)renderDocs(true);if(m!=='list'&&!doc)requestAnimationFrame(()=>{renderUI();renderInsp();if(wasOff||m==='split'||was==='split')fit();});P.ui.mode=m;saveLocal();}
 $('#mDia').onclick=()=>setMode('diagram');$('#mList').onclick=()=>setMode('list');$('#mNb').onclick=()=>setMode('nb');$('#mSt').onclick=()=>setMode('st');$('#bFull').onclick=e=>shotMenu(e.currentTarget);
 let listKey='';
-function refreshLists(){const used={type:new Set(),angle:new Set(),move:new Set()};for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks)for(const k in used)if(m[k]&&!PRESET[k].includes(m[k].trim()))used[k].add(m[k].trim());const key=JSON.stringify([...used.type,'|',...used.angle,'|',...used.move]);if(key===listKey)return;listKey=key;for(const k in used)document.getElementById('dl-'+k).innerHTML=[...PRESET[k],...[...used[k]].sort()].map(v=>`<option value="${esc(v)}">`).join('');}
+function refreshLists(){const used={type:new Set(),angle:new Set(),move:new Set()};for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks)for(const k in used)if(m[k]&&!(k==='type'&&m.on)&&!PRESET[k].includes(m[k].trim()))used[k].add(m[k].trim());const key=JSON.stringify([...used.type,'|',...used.angle,'|',...used.move]);if(key===listKey)return;listKey=key;for(const k in used)document.getElementById('dl-'+k).innerHTML=[...PRESET[k],...[...used[k]].sort()].map(v=>`<option value="${esc(v)}">`).join('');}
 function renderList(){
  const s=scene(),rows=rowsOf(s),lv=$('#listView');
  const lo=prodOpts(s),head=`<div class="lvh"><div style="flex:1"><div class="dvk">${esc(lo.listT||'')}<i>${esc(lo.listS||'')}</i></div><h2>${esc((s.number?s.number+'  ':'')+(s.title||'Untitled scene'))}</h2>${s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}${s.synopsis?`<p class="syn">${esc(s.synopsis)}</p>`:''}</div><button class="sm" id="lvMenu">Shot list ▾</button><button class="sm" id="lvInfo">Scene info</button></div>`;
@@ -2991,8 +3003,8 @@ function renderList(){
 }
 const lvEl=$('#listView');
 lvEl.addEventListener('click',e=>{if(e.target.matches('input,textarea,select'))return;const b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b);});
-lvEl.addEventListener('input',e=>{const t=e.target;if(!t.dataset.k)return;const c=findCam(t.dataset.id);if(c)c.it.marks[+t.dataset.v][t.dataset.k]=t.value;});
-lvEl.addEventListener('change',e=>{if(e.target.dataset.k)commit({list:false});});
+lvEl.addEventListener('input',e=>{const t=e.target;if(!t.dataset.k)return;const c=findCam(t.dataset.id);if(c){const m=c.it.marks[+t.dataset.v];m[t.dataset.k]=t.value;if(t.dataset.k==='type')delete m.on;}});
+lvEl.addEventListener('change',e=>{const t=e.target;if(!t.dataset.k)return;commit({list:false});if(t.dataset.k==='type'&&whoKind(t.value)){const c=findCam(t.dataset.id);if(c)typeAsk(c.s,c.it,+t.dataset.v);}});
 
 /* ---------- notebook + strategy: the writing that goes with a scene ---------- */
 const NB_COLS=[['syn','Synopsis'],['snap','Snapshot'],['img','Imagery & Tone'],['core','The Core'],['elev','Elevating the Scene'],['pit','Pitfalls'],['q','Questions']];
@@ -3558,6 +3570,11 @@ function sheetSVG(s,pid,port,full,opt){opt=opt||{};
   sl+=`<rect x="${lx+14}" y="${y+12}" width="22" height="22" rx="4" fill="${r.st.color}"/><text x="${lx+52}" y="${y+31}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${lx+118}" y="${y+31}" class="x-lt">${verCode(s,r.vn)}</text><text x="${lx+170}" y="${y+31}" class="x-lt">${esc(trunc(vlabel(r.m),port?30:24))}</text>${port?`<text x="${lx+520}" y="${y+31}" class="x-lt">${esc(trunc(r.m.desc||'',58))}</text>`:''}<line x1="${lx}" x2="${lx+LW}" y1="${y+46}" y2="${y+46}" stroke="#e3e3df"/>`;y+=46;}
  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><style>${SVG_CSS}${SHEET_CSS}${layerCss(s,true)}</style><rect width="${W}" height="${H}" fill="#fff"/>${hd}<clipPath id="cp"><rect x="${dx0}" y="${dy0}" width="${dW}" height="${dH}"/></clipPath><g clip-path="url(#cp)"><g transform="translate(${tx},${ty}) scale(${k})">${bg}${itemsMarkup(s,pid)}</g></g>${sl}</svg>`;
 }
+const SBMAX=5;
+function sbN(r){return Math.max(1,Math.min(SBMAX,shotFrames(r.it,r.vi).length));}
+function sbStackSVG(r,x,y,IW,IH){const F=shotFrames(r.it,r.vi);if(!F.length)return `<rect x="${x}" y="${y}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;
+ let h='';F.slice(0,SBMAX).forEach((f,i)=>{const src=images[f.id],yy=y+i*(IH+8);h+=`<image href="${src}" xlink:href="${src}" x="${x}" y="${yy}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`;if(F.length>1)h+=`<rect x="${x+6}" y="${yy+IH-26}" width="${f.p?74:26}" height="20" rx="10" fill="rgba(0,0,0,.62)"/><text x="${x+(f.p?43:19)}" y="${yy+IH-11.5}" text-anchor="middle" fill="#fff" font-size="12" font-weight="700" font-family="Inter,Helvetica,Arial,sans-serif">${i+1}${f.p?` · pos ${f.p+1}`:''}</text>`;});
+ if(F.length>SBMAX)h+=`<text x="${x}" y="${y+SBMAX*(IH+8)+6}" class="x-lt">+${F.length-SBMAX} more frames</text>`;return h;}
 function listPagesSVG(s,o){
  o=o||{};const port=!!o.port,sb=o.sb!==false,rows=rowsOf(s),W=port?1275:1650,H=port?1650:1275,M=48,TW=W-2*M,out=[];if(!rows.length)return out;
  const spec=port?(sb?[['STORYBOARD',204],['SHOT #',80],['VER',54],['SHOT SIZE',128],['SHOT TYPE',128],['SHOT ANGLE',118],['MOVEMENT',118]]:[['SHOT #',84],['VER',56],['SHOT SIZE',150],['SHOT TYPE',150],['SHOT ANGLE',132],['MOVEMENT',132]])
@@ -3566,14 +3583,14 @@ function listPagesSVG(s,o){
  const C=n=>cols.findIndex(c=>c[0]===n),fit=w=>Math.max(4,Math.floor((w-20)/10.4)),IW=port?184:256,IH=Math.round(IW*9/16);
  const cell=(n,str,lines)=>wrapText(str,fit(cols[C(n)][2])).slice(0,lines);
  const prep=rows.map(r=>{const t={size:cell('SHOT SIZE',r.m.size||'',3),type:cell('SHOT TYPE',r.m.type||'',3),angle:cell('SHOT ANGLE',r.m.angle||'',3),move:cell('MOVEMENT',r.m.move||'',3),desc:cell('DESCRIPTION',r.m.desc||'',8)};
-  const n=Math.max(1,...Object.values(t).map(a=>a.length));return {r,t,h:Math.max(sb?IH+24:58,22+n*24+14)};});
+  const n=Math.max(1,...Object.values(t).map(a=>a.length)),nf=sbN(r),more=shotFrames(r.it,r.vi).length>SBMAX?26:0;return {r,t,h:Math.max(sb?nf*IH+(nf-1)*8+24+more:58,22+n*24+14)};});
  const LH=letterhead(s,'list',W),top0=LH.y+22+42,BOT=H-58,pages=[];let cur=[],y=top0;for(const q of prep){if(cur.length&&y+q.h>BOT){pages.push(cur);cur=[];y=top0;}cur.push(q);y+=q.h;}if(cur.length)pages.push(cur);
  const txt=(n,y,arr)=>arr.map((l,j)=>`<text x="${M+cols[C(n)][1]+10}" y="${y+30+j*24}" class="x-lt">${esc(l)}</text>`).join('');
  pages.forEach((pg,p)=>{
   const lt=prodOpts(s).listT||'Shot list';let y=LH.y+22,h=LH.h+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'',lt+(pages.length>1?` ${p+1} of ${pages.length}`:'')].filter(Boolean).join('  ·  '));
   h+=`<rect x="${M}" y="${y}" width="${TW}" height="42" fill="#2b3445"/>`+cols.map(c=>`<text x="${M+c[1]+10}" y="${y+27}" class="x-th">${c[0]}</text>`).join('');const top=y;y+=42;
   for(const {r,t,h:RH} of pg){
-   if(sb){const src=r.m.sb&&images[r.m.sb];h+=src?`<image href="${src}" xlink:href="${src}" x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`:`<rect x="${M+10}" y="${y+12}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;}
+   if(sb)h+=sbStackSVG(r,M+10,y+12,IW,IH);
    const sx=M+cols[C('SHOT #')][1],vx=M+cols[C('VER')][1];
    h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${vx+10}" y="${y+30}" class="x-ls">${verCode(s,r.vn)}</text>`;
    h+=txt('SHOT SIZE',y,t.size)+txt('SHOT TYPE',y,t.type)+txt('SHOT ANGLE',y,t.angle)+txt('MOVEMENT',y,t.move)+txt('DESCRIPTION',y,t.desc);
@@ -3586,7 +3603,7 @@ function listPagesSVG(s,o){
 }
 /* ---------- storyboard sheet: every frame in a grid, with its shot and description ---------- */
 function boardPagesSVG(s,o){o=o||{};const port=!!o.port,W=port?1275:1650,H=port?1650:1275,M=48,TW=W-2*M,out=[];
- const panels=[];for(const r of rowsOf(s)){const fr=sbAll(r.m);fr.forEach((id,k)=>panels.push({r,id,k,n:fr.length}));}
+ const panels=[];for(const r of rowsOf(s)){const fr=shotFrames(r.it,r.vi).map(f=>f.id);fr.forEach((id,k)=>panels.push({r,id,k,n:fr.length}));}
  if(!panels.length)return out;
  const cols=port?2:3,rows=port?3:2,G=26,PW=(TW-G*(cols-1))/cols,IH=Math.round(PW*9/16),CAP=118,PH=IH+CAP,per=cols*rows,np=Math.ceil(panels.length/per),fitc=Math.max(10,Math.floor((PW-8)/10.2));
  for(let p=0;p<np;p++){const LH=letterhead(s,'board',W);let h=LH.h+pageFooter(s,W,H,[s.number?'Sc. '+s.number:'','Storyboards'+(np>1?` ${p+1} of ${np}`:'')].filter(Boolean).join('  ·  '));
@@ -3609,10 +3626,10 @@ function listKit(s,o,W){
  const C=n=>cols.findIndex(c=>c[0]===n),fit=w=>Math.max(4,Math.floor((w-20)/10.4)),IW=o.dense?(port?150:176):(port?184:256),IH=Math.round(IW*9/16);
  const cell=(n,str,lines)=>wrapText(str,fit(cols[C(n)][2])).slice(0,lines);
  const rows=rowsOf(s).map(r=>{const t={size:cell('SHOT SIZE',r.m.size||'',3),type:cell('SHOT TYPE',r.m.type||'',3),angle:cell('SHOT ANGLE',r.m.angle||'',3),move:cell('MOVEMENT',r.m.move||'',3),desc:cell('DESCRIPTION',r.m.desc||'',8)};
-  const n=Math.max(1,...Object.values(t).map(a=>a.length));return {r,t,h:Math.max(sb?IH+(o.dense?18:24):(o.dense?50:58),22+n*24+(o.dense?8:14))};});
+  const n=Math.max(1,...Object.values(t).map(a=>a.length)),nf=sbN(r),more=shotFrames(r.it,r.vi).length>SBMAX?26:0;return {r,t,h:Math.max(sb?nf*IH+(nf-1)*8+(o.dense?18:24)+more:(o.dense?50:58),22+n*24+(o.dense?8:14))};});
  const txt=(n,y,arr)=>arr.map((l,j)=>`<text x="${M+cols[C(n)][1]+10}" y="${y+30+j*24}" class="x-lt">${esc(l)}</text>`).join('');
  const head=y=>`<rect x="${M}" y="${y}" width="${TW}" height="42" fill="#2b3445"/>`+cols.map(c=>`<text x="${M+c[1]+10}" y="${y+27}" class="x-th">${c[0]}</text>`).join('');
- const row=({r,t,h:RH},y)=>{let h='';if(sb){const src=r.m.sb&&images[r.m.sb];const iy=y+(o.dense?9:12);h+=src?`<image href="${src}" xlink:href="${src}" x="${M+10}" y="${iy}" width="${IW}" height="${IH}" preserveAspectRatio="xMidYMid slice"/>`:`<rect x="${M+10}" y="${iy}" width="${IW}" height="${IH}" fill="#f4f4f1" stroke="#dcdcd7"/>`;}
+ const row=({r,t,h:RH},y)=>{let h='';if(sb)h+=sbStackSVG(r,M+10,y+(o.dense?9:12),IW,IH);
   const sx=M+cols[C('SHOT #')][1],vx=M+cols[C('VER')][1];
   h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text><text x="${vx+10}" y="${y+30}" class="x-ls">${verCode(s,r.vn)}</text>`;
   h+=txt('SHOT SIZE',y,t.size)+txt('SHOT TYPE',y,t.type)+txt('SHOT ANGLE',y,t.angle)+txt('MOVEMENT',y,t.move)+txt('DESCRIPTION',y,t.desc);
@@ -3982,7 +3999,33 @@ function setLayerVal(s,k,v){if(k==='bg'){if(s.bg)s.bg.op=v/100;return;}s.layers=
 
 /* ---------- Edit Shot Description: right-click / two-finger tap a shot label ---------- */
 const SHOT_F={size:'Shot Size',type:'Shot Type',angle:'Shot Angle',move:'Movement'};
-function shotOptions(k){const used=new Set();for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){const v=String(m[k]||'').trim();if(v&&!PRESET[k].includes(v))used.add(v);}return [...PRESET[k],...[...used].sort()];}
+const nmT=n=>String(n||'?').toLowerCase().replace(/(^|[\s\-'])\p{L}/gu,c=>c.toUpperCase());
+function shotCast(s){const seen=new Set(),out=[];for(const it of s.items)if(it.type==='char'&&!seen.has(it.charId)){const c=charById(it.charId);if(c&&!c.extra){seen.add(it.charId);out.push(c);}}return out;}
+function whoKind(v){v=String(v||'').trim().toLowerCase();if(/^(single|clean single|dirty single|cu single|mcu single)$/.test(v))return 'one';if(/^(2-shot|2 shot|two shot|two-shot)$/.test(v))return 2;if(/^(3-shot|3 shot|three shot|three-shot)$/.test(v))return 3;if(/^(ots|over the shoulder|over-the-shoulder)$/.test(v))return 'ots';if(/^pov$/.test(v))return 'pov';return null;}
+function typeText(on){const N=id=>nmT((charById(id)||{}).name),L=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' & '+a[a.length-1];
+ if(on.k==='one')return `${on.b} on ${N(on.who[0])}`;if(on.k==='pov')return `POV of ${N(on.who[0])}`;
+ if(on.k==='ots'){const sh=on.side==='R'?'right':'left';return `OTS over ${on.over?N(on.over)+'’s ':''}${sh} shoulder on ${N(on.who[0])}`;}
+ return `${on.b} on ${L(on.who.map(N))}`;}
+function typeRefresh(){for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks)if(m.on&&m.on.who&&m.on.who.every(id=>charById(id))){const t=typeText(m.on);if(m.type!==t)m.type=t;}}
+function typeAsk(s,it,i,after){const m=it&&it.marks&&it.marks[i];if(!m){if(after)after();return;}const base=String(m.type||'').trim(),k=whoKind(base);delete m.on;
+ const cast=shotCast(s);if(!k||!cast.length){if(after)after();return;}
+ const need=k==='one'||k==='pov'||k==='ots'?1:k,code=shotCode(s,it),title=k==='one'?`${esc(base)} on…`:k==='pov'?'Whose POV?':k==='ots'?'Over the shoulder':`${esc(base)}: who’s in it?`;
+ const chip=(c,grp)=>`<button class="chip wch" data-g="${grp}" data-c="${c.id}"><span class="dot" style="background:${c.color}"></span>${esc(nmT(c.name))}</button>`;
+ const st={who:k===2||k===3?(cast.length===k?cast.map(c=>c.id):[]):[],over:null,side:null};
+ const body=k==='ots'?`<div class="lbl">On</div><div class="chips">${cast.map(c=>chip(c,'who')).join('')}</div><div class="lbl">Over whose shoulder <span style="font-weight:400">· optional</span></div><div class="chips">${cast.map(c=>chip(c,'over')).join('')}</div><div class="lbl">Shoulder</div><div class="chips"><button class="chip wch" data-g="side" data-c="L">Left</button><button class="chip wch" data-g="side" data-c="R">Right</button></div>`
+  :`<div class="chips">${cast.map(c=>chip(c,'who')).join('')}</div>`;
+ const multi=k===2||k===3||k==='ots';
+ modal(`<h3>${title}</h3><p class="mut">Shot ${esc(code)}${k===2||k===3?` · pick ${k}`:''}</p>${body}<div class="btns end"><button id="wSkip">Skip</button>${multi?'<button class="pri" id="wOk">Done</button>':''}</div>`,card=>{
+  const paint=()=>{card.querySelectorAll('.wch').forEach(b=>{const g=b.dataset.g,v=b.dataset.c;b.classList.toggle('on',g==='who'?st.who.includes(v):g==='over'?st.over===v:st.side===v);});
+   const ok=card.querySelector('#wOk');if(ok)ok.disabled=k==='ots'?!(st.who.length&&st.side):st.who.length!==k;};
+  const finish=()=>{m.on={k,b:base,who:st.who.slice(0,need===1?1:k)};if(k==='ots'){m.on.side=st.side;if(st.over&&st.over!==st.who[0])m.on.over=st.over;}m.type=typeText(m.on);closeModal();commit();if(after)after();};
+  card.addEventListener('click',e=>{const b=e.target.closest('.wch');if(!b)return;const g=b.dataset.g,v=b.dataset.c;
+   if(g==='who'){if(need===1){st.who=[v];if(k==='ots'&&cast.length===2&&!st.over)st.over=cast.find(c=>c.id!==v).id;if(st.over===v)st.over=null;}else st.who=st.who.includes(v)?st.who.filter(x=>x!==v):[...st.who,v].slice(-k);}
+   else if(g==='over')st.over=st.over===v?null:v;else st.side=v;
+   paint();if(!multi&&st.who.length)finish();});
+  card.querySelector('#wSkip').onclick=()=>{closeModal();if(after)after();};
+  const ok=card.querySelector('#wOk');if(ok)ok.onclick=()=>{if(!ok.disabled)finish();};paint();});}
+function shotOptions(k){const used=new Set();for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){if(k==='type'&&m.on)continue;const v=String(m[k]||'').trim();if(v&&!PRESET[k].includes(v))used.add(v);}return [...PRESET[k],...[...used].sort()];}
 function shotPop(cx,cy){
  if(!sel||tool||offCanvas())return;const s=scene(),it=itemById(sel.id);if(!it||it.type!=='cam'){objPop(cx,cy);return;}
  popAt={x:cx,y:cy};const n=nVer(it),vi=verStart(it,sel.mark||0),m=it.marks[vi],many=rowsOf(s).filter(r=>r.vi===0).length>1;
@@ -4016,8 +4059,8 @@ function shotPick(k){const it=itemById(sel.id);if(!it)return;const m=it.marks[se
  pop.innerHTML=`<h4><button class="back">‹ Back</button>${T}</h4><div class="ls" style="width:320px">${body}<div class="hd">Or</div><button data-v="__own">Type Your Own…</button><button data-v="">Not Set<span class="rad${cur?'':' on'}"></span></button></div>`;
  const at=popAt,back=()=>shotPop(at.x,at.y);pop.querySelector('.back').onclick=back;placePopAt(at.x,at.y);
  pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;const v=b.dataset.v;
-  if(v==='__own'){askText(T,'Your own '+T.toLowerCase(),cur||'',nv=>{m[k]=nv;commit();back();});return;}
-  m[k]=v;commit();back();};
+  if(v==='__own'){askText(T,'Your own '+T.toLowerCase(),cur||'',nv=>{m[k]=nv;if(k==='type')delete m.on;commit();back();});return;}
+  m[k]=v;if(k==='type'){delete m.on;commit();if(whoKind(v)){typeAsk(scene(),it,sel.mark||0,back);return;}}else commit();back();};
 }
 function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;const at=popAt,back=()=>shotPop(at.x,at.y),R=rowsOf(s).filter(r=>versions?r.it===it:r.vi===0);
  pop.innerHTML=`<h4><button class="back">‹ Back</button>${versions?'Version':'Shot'}</h4><div class="ls" style="width:320px">${R.map(r=>{const on=r.it===it&&(versions?r.vi===verStart(it,sel.mark||0):true);return `<button data-id="${r.it.id}" data-v="${r.vi}"><b style="min-width:34px">${versions?'V'+verCode(s,r.vn):esc(shotCode(s,r.it))}</b><span style="color:#cfd0d4">${esc(trunc(capOf(r.m)||'No details yet',26))}</span><span class="rad${on?' on':''}"></span></button>`;}).join('')}</div>`;
