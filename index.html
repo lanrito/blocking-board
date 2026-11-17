@@ -394,7 +394,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117204605';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117222407';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3562,21 +3562,22 @@ function prodFor(s){return prodById(expProd!==undefined?expProd:folderProd(s));}
 function fitFs(str,max,min,avail,k){return Math.max(min,Math.min(max,avail/(Math.max(1,str.length)*(k||.64))));}
 function letterhead(s,kind,W,pageLbl){
  const pr=prodFor(s),o=prodNorm(pr),M=48,acc=o.accent||PROD_DEF.accent,top=M-8;let h='',ly=top,ry=top;
- if(pr&&pr.logo&&images[pr.logo]&&pr.lw){const r=Math.min(380/pr.lw,96/pr.lh),w=pr.lw*r,hh=pr.lh*r;h+=`<image href="${images[pr.logo]}" xlink:href="${images[pr.logo]}" x="${M}" y="${top}" width="${w}" height="${hh}" preserveAspectRatio="xMinYMin meet"/>`;ly=top+hh;}
- else if(pr&&pr.name){h+=`<text x="${M}" y="${top+34}" style="font-size:34px;font-weight:800;letter-spacing:.04em;fill:#141414">${esc(pr.name.toUpperCase())}</text>`;ly=top+44;}
- const meta=[s.code,s.day,s.date].map(x=>String(x||'').trim()).filter(Boolean).join('   ·   ');
- if(meta){h+=`<text x="${M}" y="${ly+30}" style="font-size:19px;font-weight:700;fill:${acc};letter-spacing:.03em">${esc(meta)}</text>`;ly+=38;}
- if(o.note){h+=`<text x="${W-M}" y="${ry+20}" text-anchor="end" style="font-size:17px;font-style:italic;font-weight:600;fill:#C0392B">${esc(o.note)}</text>`;ry+=32;}
- for(const c of o.contacts||[]){if(!c.label&&!c.value)continue;h+=`<text x="${W-M}" y="${ry+20}" text-anchor="end" style="font-size:17px;fill:#2a2a2d">${c.label?`<tspan style="font-size:13px;font-weight:700;fill:#8a8b90;letter-spacing:.1em">${esc(String(c.label).toUpperCase())}</tspan><tspan dx="10">`:'<tspan>'}${esc(c.value||'')}</tspan></text>`;ry+=25;}
+ // page title owns the top center; the show and the contacts sit smaller on either side
  const T=String(kind==='both'?[o.floorT,o.listT].filter(Boolean).join(' & '):kind==='floor'?o.floorT:kind==='nb'?o.nbT:kind==='st'?o.stT:kind==='board'?'Storyboards':o.listT||'').toUpperCase();
  const cont=pageLbl==='continued',Q=cont?'continued':(kind==='floor'||kind==='both'?o.floorS:kind==='list'?o.listS:kind==='nb'?o.nbS:kind==='st'?o.stS:'')||'',PL=pageLbl&&!cont?String(pageLbl).toUpperCase():'';
- const lw=pr&&pr.logo&&images[pr.logo]&&pr.lw?Math.min(380/pr.lw,96/pr.lh)*pr.lw:(pr&&pr.name?pr.name.length*34*.68:0),mw=meta.length*19*.6,rw=Math.max(o.note?o.note.length*17*.5:0,...(o.contacts||[]).map(c=>String(c.label||'').length*13*.75+10+String(c.value||'').length*17*.55));
- const half=Math.min(W/2-(M+Math.max(lw,mw)),(W-M-rw)-W/2)-26,tav=2*half,TB=T?fitFs(T,40,24,tav,.66):0,fitsTop=T&&half>0&&T.length*TB*.66<=tav;
- let fb=null,ty0=top;
- if(T){const qf=Q?fitFs(Q,19,14,fitsTop?tav:W-2*M,.5):0,pf=PL?fitFs(PL,14,11,fitsTop?tav:W-2*M,.62):0;
-  const blk=(cx,yy,fs)=>{let g=`<text x="${cx}" y="${yy}" text-anchor="middle" style="font-size:${fs}px;font-weight:900;letter-spacing:.06em;fill:#141414">${esc(T)}</text>`;let ex=0;if(Q){ex+=qf+10;g+=`<text x="${cx}" y="${yy+ex}" text-anchor="middle" style="font-size:${qf}px;font-style:italic;fill:#55565b">${esc(Q)}</text>`;}if(PL){ex+=pf+12;g+=`<text x="${cx}" y="${yy+ex}" text-anchor="middle" style="font-size:${pf}px;font-weight:800;letter-spacing:.18em;fill:${acc}">${esc(PL)}</text>`;}return {g,ex};};
-  if(fitsTop){const b=blk(W/2,top+TB,TB);h+=b.g;ty0=top+TB+b.ex+4;}
-  else{const fs=fitFs(T,40,22,W-2*M,.66);fb={fs,svg:yy=>blk(W/2,yy,fs).g,extra:blk(0,0,fs).ex};}}
+ const side=(W-2*M)*.27;let lw=0,rw=0;
+ if(pr&&pr.logo&&images[pr.logo]&&pr.lw){const r=Math.min(side/pr.lw,64/pr.lh),w=pr.lw*r,hh=pr.lh*r;h+=`<image href="${images[pr.logo]}" xlink:href="${images[pr.logo]}" x="${M}" y="${top}" width="${w}" height="${hh}" preserveAspectRatio="xMinYMin meet"/>`;ly=top+hh;lw=w;}
+ else if(pr&&pr.name){const nm=pr.name.toUpperCase(),fs=fitFs(nm,24,15,side,.7);h+=`<text x="${M}" y="${top+fs}" style="font-size:${fs}px;font-weight:800;letter-spacing:.04em;fill:#3a3b40">${esc(nm)}</text>`;ly=top+fs+6;lw=nm.length*fs*.7;}
+ const parts=[s.code,s.day,s.date].map(x=>String(x||'').trim()).filter(Boolean),ML=[];for(const x of parts){const cur=ML[ML.length-1];if(cur&&(cur+'  ·  '+x).length*15*.58<=side)ML[ML.length-1]=cur+'  ·  '+x;else ML.push(x);}
+ for(const t of ML){h+=`<text x="${M}" y="${ly+21}" style="font-size:15px;font-weight:700;fill:${acc};letter-spacing:.03em">${esc(t)}</text>`;ly+=21;lw=Math.max(lw,t.length*15*.58);}if(ML.length)ly+=6;
+ if(o.note){h+=`<text x="${W-M}" y="${ry+17}" text-anchor="end" style="font-size:14px;font-style:italic;font-weight:600;fill:#C0392B">${esc(o.note)}</text>`;ry+=24;rw=Math.max(rw,o.note.length*14*.5);}
+ for(const c of o.contacts||[]){if(!c.label&&!c.value)continue;h+=`<text x="${W-M}" y="${ry+17}" text-anchor="end" style="font-size:15px;fill:#2a2a2d">${c.label?`<tspan style="font-size:11px;font-weight:700;fill:#8a8b90;letter-spacing:.1em">${esc(String(c.label).toUpperCase())}</tspan><tspan dx="8">`:'<tspan>'}${esc(c.value||'')}</tspan></text>`;ry+=21;rw=Math.max(rw,String(c.label||'').length*11*.78+8+String(c.value||'').length*15*.56);}
+ const tav=Math.max(260,2*(Math.min(W/2-M-lw,W/2-M-rw)-28));let fb=null,ty0=top;
+ if(T){const TB=fitFs(T,50,26,tav,.68),qf=Q?fitFs(Q,19,13,tav,.5):0,pf=PL?fitFs(PL,13,10,tav,.62):0;
+  let g=`<text x="${W/2}" y="${top+TB}" text-anchor="middle" style="font-size:${TB}px;font-weight:900;letter-spacing:.05em;fill:#141414">${esc(T)}</text>`,ex=0;
+  if(Q){ex+=qf+10;g+=`<text x="${W/2}" y="${top+TB+ex}" text-anchor="middle" style="font-size:${qf}px;font-style:italic;fill:#55565b">${esc(Q)}</text>`;}
+  if(PL){ex+=pf+11;g+=`<text x="${W/2}" y="${top+TB+ex}" text-anchor="middle" style="font-size:${pf}px;font-weight:800;letter-spacing:.18em;fill:${acc}">${esc(PL)}</text>`;}
+  h+=g;ty0=top+TB+ex+6;}
  let y=Math.max(ly,ry,ty0)+(Math.max(ly,ry,ty0)>top?16:0);
  h+=`<line x1="${M}" x2="${W-M}" y1="${y}" y2="${y}" stroke="#1c1c1e" stroke-width="2.5"/><line x1="${M}" x2="${W-M}" y1="${y+6}" y2="${y+6}" stroke="${acc}" stroke-width="1.2"/>`;y+=6;
  const num=s.number?'SC. '+s.number:'',hd=String(s.heading||'').trim().toUpperCase(),tt=String(s.title||'').trim().toUpperCase(),main=hd||tt||'UNTITLED',quote=hd&&tt?`“${tt}”`:'';
