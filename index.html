@@ -395,7 +395,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117224458';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117232336';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1243,6 +1243,15 @@ function labDetach(it,mk){const h=labHost(it,mk);if(!h)return;
  else if(it.type==='ink'){const ra=rad(it.rot||0);h.lab={x:0,y:Math.abs(it.w/2*Math.sin(ra))+Math.abs(it.h/2*Math.cos(ra))+11};}
  else h.lab={x:0,y:-(Math.min(it.w||40,it.h||40)/2+18)};}
 function labCan(it){return !!it&&(it.type==='cam'||it.type==='char'||((it.type==='prop'||it.type==='set'||it.type==='light'||it.type==='ink')&&!!it.label&&it.kind!=='dollytrack'));}
+function attachedLabelAt(x,y){for(const t of document.querySelectorAll('#items text.nm, #items text.nt, #items text.sl')){if(t.closest('.L-free,.L-desc'))continue;const r=t.getBoundingClientRect();if(!r.width)continue;
+ if(x>=r.left-3&&x<=r.right+3&&y>=r.top-3&&y<=r.bottom+3){const g=t.closest('[data-id]');if(!g)continue;const it=itemById(g.dataset.id);if(!it||it.type==='cam'||!labCan(it)||it.kind==='dollytrack')continue;return {t,dataset:{id:g.dataset.id,mark:g.dataset.mark,lab:'1',alab:'1'}};}}return null;}
+function labTextEl(it,mk){if(!it)return null;
+ if(labIsFree(it,mk)){const h=it.type==='char'?`[data-mark="${runOf(it,mk||0)[0]}"]`:'';return document.querySelector(`#items .L-free[data-id="${it.id}"]${h} text`);}
+ if(it.type==='char'){const [a,b]=runOf(it,mk||0);for(let j=a;j<=b;j++){const t=document.querySelector(`#items g[data-id="${it.id}"][data-mark="${j}"] text.nm`);if(t)return t;}return null;}
+ return [...document.querySelectorAll(`#items [data-id="${it.id}"] text.sl`)].find(t=>!t.closest('.L-free'))||null;}
+function labStartFree(it,mk){if(!it||labIsFree(it,mk))return;const ctr=t=>{const r=t.getBoundingClientRect();return toWorld(r.left+r.width/2,r.top+r.height/2);};
+ const t0=labTextEl(it,mk),c0=t0&&ctr(t0);labDetach(it,mk);renderCanvas();const t1=labTextEl(it,mk),c1=t1&&ctr(t1);
+ if(c0&&c1){const h=labHost(it,mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;h.lab={x:h.lab.x+(c0.x-c1.x)/k,y:h.lab.y+(c0.y-c1.y)/k};renderCanvas();}}
 /* right-click on a name that is still attached (it is drawn, not a piece): find whose it is */
 function labelAt(x,y){for(const t of document.querySelectorAll('#items text.nm, #items text.nt')){const r=t.getBoundingClientRect();if(x>=r.left-3&&x<=r.right+3&&y>=r.top-2&&y<=r.bottom+2){const g=t.closest('[data-id]');if(g)return g;}}return null;}
 function capOf(m){return [m.size?(ABBR[m.size]||m.size):'',m.angle||'',m.type||''].filter(Boolean).join(' ');}
@@ -1451,6 +1460,7 @@ function uiMarkup(){
   if(sel.frame)return h;}
  if(sel.id==='__bg'){const b=s.bg;if(!b)return h;const w=b.w*b.s,hh=b.h*b.s;return h+`<rect class="ring" x="${b.x}" y="${b.y}" width="${w}" height="${hh}"/>`+(b.locked?lockBadge(b.x+w,b.y):hnd('bgscale',b.x+w,b.y+hh));}
  const it=itemById(sel.id);if(!it)return h;
+ if(sel.lab&&it.type!=='cam'){const t=labTextEl(it,sel.mark||0);if(t){const r=t.getBoundingClientRect(),a=toWorld(r.left,r.top),b=toWorld(r.right,r.bottom),p=5/k;h+=`<rect class="ring lring" x="${a.x-p}" y="${a.y-p}" width="${b.x-a.x+2*p}" height="${b.y-a.y+2*p}" rx="${4/k}"/>`;}return h;}
  if(it.marks&&sel.lab&&it.type==='cam'){const L=document.querySelector(`#items .L-desc[data-lab][data-id="${it.id}"] rect`);if(L){const r=L.getBoundingClientRect(),a=toWorld(r.left,r.top),b=toWorld(r.right,r.bottom),p=3/k;h+=`<rect class="ring lring" x="${a.x-p}" y="${a.y-p}" width="${b.x-a.x+2*p}" height="${b.y-a.y+2*p}" rx="${4/k}"/>`;}return h;}
  h+=bendHandles(it);
  if(it.marks){const m=it.marks[sel.mark]||it.marks[0];h+=`<circle class="ring" cx="${m.x}" cy="${m.y}" r="27"/>`;
@@ -4119,10 +4129,10 @@ function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;co
 
 /* ---------- opening the menu: right-click / two-finger tap, or Shift ---------- */
 let firstDown=null,shiftSolo=false;
-function menuFor(el,x,y){if(tool||offCanvas())return;if(!el||!el.dataset||!el.dataset.id)el=labelAt(x,y);if(!el||!el.dataset||!el.dataset.id){closePop();return;}
+function menuFor(el,x,y){if(tool||offCanvas())return;{const al=!(el&&el.dataset&&el.dataset.lab)?attachedLabelAt(x,y):null;if(al)el=al;}if(!el||!el.dataset||!el.dataset.id)el=labelAt(x,y);if(!el||!el.dataset||!el.dataset.id){closePop();return;}
  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0;
  if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;if(el.dataset.frame){sel.frame=true;const fk=+(el.dataset.fk||0);if(fk)sel.fk=fk;renderUI();renderShotSel();sbPop(x,y);return;}renderUI();
- if(el.dataset.lab&&itemById(id).type==='cam'){sel.lab=true;renderUI();renderShotSel();shotPop(x,y);return;}objPop(x,y);}
+ if(el.dataset.lab&&itemById(id).type==='cam'){sel.lab=true;renderUI();renderShotSel();shotPop(x,y);return;}if(el.dataset.lab){sel.lab=true;renderUI();}objPop(x,y);}
 function selScreenPos(){const it=sel&&sel.id!=='__bg'?itemById(sel.id):null,r=svg.getBoundingClientRect();let w={x:0,y:0};
  if(it){if(it.marks){const m=it.marks[sel.mark||0]||it.marks[0];w={x:m.x,y:m.y};}else if(it.type==='wall')w={x:(it.x1+it.x2)/2,y:(it.y1+it.y2)/2};else w={x:it.x,y:it.y};}else return {x:r.left+r.width/2,y:r.top+r.height/2};
  return {x:r.left+view.x+w.x*view.k,y:r.top+view.y+w.y*view.k};}
@@ -4251,8 +4261,10 @@ svg.addEventListener('pointerdown',e=>{
  if(tool&&tool.t==='pen'){if(e.pointerType==='pen')penSeen=true;if(!(e.pointerType==='touch'&&penSeen)){gesture={type:'pen',pts:[w],hx:e.clientX,hy:e.clientY};penArm(gesture);return;}}
  if(tool&&!(hEl&&hEl.dataset.handle.startsWith('cp:'))){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,tool:true,w};return;}
  if(hEl){const hn=hEl.dataset.handle,now=Date.now();if(hn.startsWith('cp:')&&lastTap.id===hn&&now-lastTap.t<380){const [,i,j]=hn.split(':').map(Number),it=itemById(sel.id),b=it&&posAt(it,i);if(b&&b.cp){b.cp.splice(j,1);commit({insp:false});}lastTap={id:null,t:0};return;}lastTap={id:hn,t:now};gesture={type:'handle',h:hn,sx:e.clientX,sy:e.clientY,moved:false};if(hn==='p1'||hn==='p2'){const hw=sel&&itemById(sel.id);if(hw&&hw.type==='wall'&&unhook===hw.id)gesture.detach=true;else if(hw&&hw.type==='wall'&&wallJoint(scene(),hw,hn==='p1'?1:2).length)armHold(gesture);}return;}
- const el=e.target.closest('[data-id]');
- if(e.shiftKey&&!msel&&!lassoArmed){const le=el&&el.dataset.lab?el:(!el?labelAt(e.clientX,e.clientY):null);if(le){const lid=le.dataset.id,lit=itemById(lid);if(lit&&lit.type==='cam'&&!lit.locked){msel=null;sel={id:lid,mark:0,lab:true};gesture={type:'label',id:lid,mk:0,last:toWorld(e.clientX,e.clientY),moved:false,sx:e.clientX,sy:e.clientY,shiftLab:le};renderUI();renderShotSel();return;}pointers.delete(e.pointerId);gesture=null;menuFor(le,e.clientX,e.clientY);return;}}
+ let el=e.target.closest('[data-id]');{const al=!tool&&!lassoArmed&&!(el&&el.dataset.lab)?attachedLabelAt(e.clientX,e.clientY):null;if(al&&(!msel||!e.shiftKey))el=al;}
+ if(e.shiftKey&&!msel&&!lassoArmed){const le=el&&el.dataset.lab?el:(!el?labelAt(e.clientX,e.clientY):null);if(le){const lid=le.dataset.id,lit=itemById(lid);if(lit&&lit.type==='cam'&&!lit.locked){msel=null;sel={id:lid,mark:0,lab:true};gesture={type:'label',id:lid,mk:0,last:toWorld(e.clientX,e.clientY),moved:false,sx:e.clientX,sy:e.clientY,shiftLab:le};renderUI();renderShotSel();return;}
+  if(lit&&le.dataset.lab&&labCan(lit)&&!lit.locked){const lmk=le.dataset.mark!=null?+le.dataset.mark:null;msel=null;sel={id:lid,mark:lmk,lab:true};gesture={type:'label',id:lid,mk:lmk,last:toWorld(e.clientX,e.clientY),moved:false,sx:e.clientX,sy:e.clientY,shiftLab:le,alab:!!le.dataset.alab};renderUI();renderShotSel();return;}
+  pointers.delete(e.pointerId);gesture=null;menuFor(le,e.clientX,e.clientY);return;}}
  if(lassoArmed||(e.shiftKey&&!el)){gesture={type:'lasso',pts:[w],moved:false};return;}
  if(msel&&el&&msel.has(el.dataset.id)){gesture={type:'mdrag',last:w,sx:e.clientX,sy:e.clientY,moved:false};return;}
  if(msel&&el&&e.shiftKey&&el.dataset.id!=='__bg'){msel.has(el.dataset.id)?msel.delete(el.dataset.id):msel.add(el.dataset.id);if(!msel.size)msel=null;renderUI();gesture=null;return;}
@@ -4261,14 +4273,16 @@ svg.addEventListener('pointerdown',e=>{
  if(el){
   if(el.dataset.track){const id=el.dataset.id,i=+el.dataset.track,it=itemById(id);sel={id,mark:it&&it.marks?i:i,track:i};renderUI();renderInsp();renderShotSel();
    if(it&&!it.locked){gesture={type:'track',id,i,w0:w,sx:e.clientX,sy:e.clientY,moved:false};return;}}
-  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0,isLab=!!el.dataset.lab&&(itemById(id)||{}).type==='cam',fk=el.dataset.frame?+(el.dataset.fk||0):0,same=sel&&sel.id===id&&sel.mark===mk&&!sel.track&&(sel.pan||0)===pj&&!!sel.lab===isLab&&(sel.fk||0)===fk&&!!sel.frame===!!el.dataset.frame,now=Date.now();
+  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0,isLab=!!el.dataset.lab,fk=el.dataset.frame?+(el.dataset.fk||0):0,same=sel&&sel.id===id&&sel.mark===mk&&!sel.track&&(sel.pan||0)===pj&&!!sel.lab===isLab&&(sel.fk||0)===fk&&!!sel.frame===!!el.dataset.frame,now=Date.now();
   const tk=id+':'+mk+':'+pj+(el.dataset.badge!=null?':b':''),dbl=same&&lastTap.id===tk&&now-lastTap.t<420;lastTap={id:tk,t:dbl?0:now};downAgain=same?el:null;
   if(!same){sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(isLab)sel.lab=true;if(fk)sel.fk=fk;if(el.dataset.frame)sel.frame=true;renderUI();renderInsp();renderShotSel();}
   const locked=id==='__bg'?(scene().bg||{}).locked:((itemById(id)||{}).locked||(itemById(id)||{}).type==='axis');
   if(sel&&sel.id===id)sel.badge=el.dataset.badge!=null;
   if(locked){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl};return;}
   if(!locked&&el.dataset.badge!=null){gesture={type:'badge',id,mk,bj:+el.dataset.badge,moved:false,sx:e.clientX,sy:e.clientY,dbl};return;}
-  if(!locked&&isLab&&!e.shiftKey&&!(itemById(id)||{}).lab){const g={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl,labHint:true,touch:e.pointerType!=='mouse'};gesture=g;
+  if(!locked&&el.dataset.alab){const g={type:'drag',id,mk,last:w,moved:false,sx:e.clientX,sy:e.clientY,dbl,touch:e.pointerType!=='mouse'};gesture=g;
+   if(g.touch){clearTimeout(holdT);holdT=setTimeout(()=>{if(gesture!==g||g.moved)return;Object.assign(g,{type:'label',alab:true,last:toWorld(g.sx,g.sy),moved:false,hold:true});downAgain=null;toast('Now drag the label where you want it.');},450);}return;}
+  if(!locked&&isLab&&(itemById(id)||{}).type==='cam'&&!e.shiftKey&&!(itemById(id)||{}).lab){const g={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl,labHint:true,touch:e.pointerType!=='mouse'};gesture=g;
    if(g.touch){clearTimeout(holdT);holdT=setTimeout(()=>{if(gesture!==g||g.moved)return;Object.assign(g,{type:'label',id,mk:0,last:toWorld(g.sx,g.sy),moved:false,hold:true});downAgain=null;toast('Now drag the label where you want it.');},450);}return;}
   if(!locked){gesture={type:el.dataset.lab?'label':el.dataset.frame?'frame':'drag',id,mk,fk,last:w,moved:false,sx:e.clientX,sy:e.clientY,dbl};const sc0=scene(),it0=itemById(id);if(el.dataset.frame||(it0&&it0.type==='cam'))freezeFrames(sc0);if(it0&&it0.type==='wall'&&unhook===it0.id)gesture.detach=true;else if(it0&&it0.type==='wall'&&wallJoined(sc0,it0))armHold(gesture);return;}
  }
@@ -4295,7 +4309,7 @@ svg.addEventListener('pointermove',e=>{
  if(g.type==='drag'||g.type==='label'||g.type==='frame'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<(g.hold?9:4))return;if(!g.moved){g.moved=true;g.hold=false;dragging=true;$('#ctx').classList.remove('on');}
   const dx=w.x-g.last.x,dy=w.y-g.last.y;
   if(g.id==='__bg'){const b=scene().bg;b.x+=dx;b.y+=dy;}
-  else{const it=itemById(g.id);if(it){if(g.type==='label'){if(it.type==='cam'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else{const h=labHost(it,g.mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;if(h&&h.lab)h.lab={x:h.lab.x+dx/k,y:h.lab.y+dy/k};}}else if(g.type==='frame'){const m=it.marks[g.mk],fk=g.fk||0;if(!g.free){const c=fPos(it,g.mk,m,frameLayout(scene(),scene().pageId),fk);g.free={x:c.x,y:c.y};}g.free.x+=dx;g.free.y+=dy;fSetPos(m,fk,e.altKey?(g.guides=null,g.free):frameSnap(scene(),it,g.mk,m,fk,g.free,g));}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
+  else{const it=itemById(g.id);if(it){if(g.type==='label'){if(g.alab&&!g.freed){g.freed=true;labStartFree(it,g.mk);}if(it.type==='cam'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else{const h=labHost(it,g.mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;if(h&&h.lab)h.lab={x:h.lab.x+dx/k,y:h.lab.y+dy/k};}}else if(g.type==='frame'){const m=it.marks[g.mk],fk=g.fk||0;if(!g.free){const c=fPos(it,g.mk,m,frameLayout(scene(),scene().pageId),fk);g.free={x:c.x,y:c.y};}g.free.x+=dx;g.free.y+=dy;fSetPos(m,fk,e.altKey?(g.guides=null,g.free):frameSnap(scene(),it,g.mk,m,fk,g.free,g));}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
   g.last=w;renderCanvas();return;}
  if(g.type==='track'){if(Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<5)return;const it=itemById(g.id),a=positions(it)[g.i-1],b=posAt(it,g.i);b.cp=b.cp||[];b.cp.push(toTD(a,b,g.w0));gesture={type:'handle',h:`cp:${g.i}:${b.cp.length-1}`,moved:true};dragging=true;$('#ctx').classList.remove('on');dragHandle(gesture.h,w);renderCanvas();return;}
  if(g.type==='badge'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<4)return;g.moved=true;dragging=true;const it=itemById(g.id),w=toWorld(e.clientX,e.clientY);if(it){const c0=it.type==='char'?it.marks[runOf(it,g.mk)[0]]:it.marks[g.mk],ang=Math.round(Math.atan2(w.y-c0.y,w.x-c0.x)*180/Math.PI/5)*5;if(it.type==='char')it.marks[g.mk].rot=ang;else if(g.bj&&it.marks[g.mk].pans)it.marks[g.mk].pans[g.bj-1].rot=ang;else it.marks[g.mk].rot=ang;}renderCanvas();return;}
