@@ -379,7 +379,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117043315';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117044112';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -644,7 +644,7 @@ function ppFill(sc){for(const it of sc.items){if(!(it.marks||it.mv)||!hasPP(it))
 function setPosPage(it,i,v,add){const s=scene();ppFill(s);const st=posStarts(it);for(const j of st){const h=posHostAt(it,j);if(h&&h.vp===undefined)h.vp=it.pgs?it.pgs.slice():null;}
  const h=posHostAt(it,posHostI(it,i));h.vp=pgEdit(h.vp,v,add,s);ppFill(s);}
 const vis=(it,s,pid)=>{pid=pid||s.pageId;if(pid==='all')return true;if(hasPP(it))return posStarts(it).some(i=>posOn(it,i,pid));return !it.pgs||it.pgs.includes(pid);};
-const curPgs=()=>null;
+const curPgs=()=>{const s=scene();return s.pageId==='all'?null:[s.pageId];};
 function pagesSummary(it,i){const s=scene(),g=i!=null&&hasPP(it)?posPg(it,i):it.pgs;if(!g)return 'All';return g.map(id=>s.pages.findIndex(p=>p.id===id)+1).filter(n=>n>0).sort((a,b)=>a-b).join(', ');}
 const pageItems=(s,pid)=>s.items.filter(it=>vis(it,s,pid));
 const charById=id=>P.characters.find(c=>c.id===id);
