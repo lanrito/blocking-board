@@ -83,6 +83,7 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 .stc.sted{border-style:dashed;color:var(--mut)}.stid{width:18px;text-align:center;color:var(--mut);font-size:14px}
 .apl{border:1px solid var(--line);border-radius:10px;padding:2px 10px;margin:10px 0;max-height:220px;overflow:auto}.apr{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px}.apr:last-child{border:0}.apr button{width:30px;height:30px;padding:0;border-radius:15px;font-size:17px}.apa{display:flex;gap:8px}.apa input{flex:1}.aps{padding-left:20px;line-height:1.5;font-size:14.5px}.aps li{margin:6px 0}.aprt{width:100%;height:220px;font:12px ui-monospace,Menlo,monospace;white-space:pre;margin-top:8px}
 #banner.rotb{flex-wrap:nowrap;justify-content:center;max-width:calc(100vw - 24px);width:max-content}#banner.rotb #bannerTxt{flex-wrap:nowrap}#banner .rtb{min-width:0;height:32px;padding:0 10px;background:#3a3b40;color:#fff;border-radius:8px;font-size:13.5px}#banner #rotR{width:clamp(110px,18vw,220px);accent-color:#2f6fde}#banner .rtv{min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+#bar #bRot.on{background:#2f6fde}#pop .lays .lsw{grid-column:2/-1;justify-self:end;width:auto;min-width:56px;height:28px;min-height:0;border-radius:14px;border:1px solid #55565c;background:#3a3b40;color:#cfd0d4;font-size:12.5px;font-weight:600;padding:0 14px;display:inline-flex;align-items:center;justify-content:center}#pop .lays .lsw.on{background:#2f6fde;border-color:#2f6fde;color:#fff}
 .immode{margin:4px 0 12px}.imrs{margin-top:10px}.imrsum{margin:4px 0 8px;font-size:14px}.imrl{max-height:190px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:4px 8px}.imrl:empty{display:none}.imrv{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px}.imrv:last-child{border:0}.imrv .rvc{margin:0;flex:none;min-width:74px}.imrv b{min-width:34px}
 .imopt{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px}
 .card.keycard{width:min(560px,100%)}.kt div{display:flex;gap:12px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
@@ -366,6 +367,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
    <span class="sep"></span>
    <button id="bFr" title="Show storyboard frames"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg><span class="lbt">Frames</span></button>
    <button id="bFit" title="Fit to screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+   <button id="bRot" title="Rotate the floor plan"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button>
    <span class="sp"></span>
    <span id="pq" style="display:none"></span><span id="animBar"></span>
    <span class="sep"></span>
@@ -387,7 +389,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117172538';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117174158';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1746,7 +1748,7 @@ function rotBanner(){const a=rotS?rotS.a:0;$('#bannerTxt').innerHTML=`<span clas
  const r=$('#rotR');r.oninput=()=>{let v=+r.value;for(const k of [-180,-90,0,90,180])if(Math.abs(v-k)<=3)v=k;rotTo(v,true);};}
 function rotTo(a,fromSlider){if(!rotS)return;const s=scene();rotS.a=angN(a);if(rotS.a===-180)rotS.a=180;s.items=clone(rotS.base);if(rotS.a)rotItems(s,rotS.a,rotS.cx,rotS.cy);renderCanvas();renderUI();
  const v=$('#banner .rtv');if(v)v.textContent=Math.round(rotS.a)+'°';if(!fromSlider){const r=$('#rotR');if(r)r.value=Math.round(rotS.a);}}
-async function rotFinish(keep){const st=rotS;rotS=null;const s=scene();
+async function rotFinish(keep){const st=rotS;rotS=null;$('#bRot').classList.remove('on');const s=scene();
  if(!st)return;if(!keep||!st.a){s.items=clone(st.base);renderCanvas();renderUI();if(keep)toast('No change.');return;}
  if(s.bgId&&s.bg&&images[s.bgId]){try{await rotBg(s,st.a,st.cx,st.cy);}catch(e){toast('The background image couldn’t be turned. Everything else was.');}}
  commit();fit();toast(`Floor plan turned ${Math.round(st.a)}°. Undo turns it back.`);}
@@ -1760,7 +1762,7 @@ async function rotBg(s,a,cx,cy){const b=s.bg,o=s.bgOrig&&images[s.bgOrig.id]?s.b
   const id=addImage(cv.toDataURL(png?'image/png':'image/jpeg',.9));s.bgOrig={id:o.id,w:o.w,h:o.h,a:T};s.bgId=id;b.w=W;b.h=H;}
  b.x=c1.x-b.w*b.s/2;b.y=c1.y-b.h*b.s/2;}
 function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
- if(t.t==='rot'){rotBanner();$('#bannerDone').textContent='Done';$('#banner').classList.add('on','rotb');renderUI();return;}
+ if(t.t==='rot'){$('#bRot').classList.add('on');rotBanner();$('#bannerDone').textContent='Done';$('#banner').classList.add('on','rotb');renderUI();return;}
  if(t.t==='pen'){if(!penTip&&!t.ink){penTip=true;setTimeout(()=>toast('Draw, then hold still at the end to snap it to a clean line, box, circle or triangle.'),50);}penBanner();$('#bannerDone').textContent='Done';$('#banner').classList.add('on');$('#bPen').classList.add('on');renderUI();return;}
  if(t.t==='move'){const it=itemById(t.id);const nm=it.type==='char'?String((charById(it.charId)||{}).name||'').toUpperCase():'';$('#bannerTxt').textContent=it.type==='char'?`Tap where ${nm} goes next.`:it.type==='cam'&&t.tk==='to'?'Tap where the camera tracks to.':it.type==='cam'&&t.tk==='from'?'Tap where the camera tracks in from.':it.type==='cam'?'Tap where the camera moves to. The new position becomes a new version.':'Tap where it moves to.';}
  else if(t.t==='from'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap where ${String((charById(it.charId)||{}).name||'').toUpperCase()} walks in from.`;}
@@ -1772,6 +1774,7 @@ function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
  $('#bannerDone').textContent=t.t==='wall'?'Done':'Cancel';$('#banner').classList.add('on');renderUI();}
 function endTool(){if(!tool)return;const was=tool;tool=null;$('#banner').classList.remove('on','rotb');if(was.t==='rot'){rotFinish(true);return;}$('#bPen').classList.remove('on');if(was.t==='pen'&&was.ink&&itemById(was.ink)){sel={id:was.ink,mark:null};}renderUI();}
 $('#bannerDone').onclick=endTool;
+$('#bRot').onclick=()=>{if(tool&&tool.t==='rot'){endTool();return;}if(tool)endTool();rotateStart();};
 $('#banner').addEventListener('click',e=>{if(!tool||tool.t!=='rot')return;const b=e.target.closest('[data-ra],#rotX');if(!b)return;if(b.id==='rotX'){tool=null;$('#banner').classList.remove('on','rotb');rotFinish(false);return;}rotTo((rotS?rotS.a:0)+(+b.dataset.ra));});
 function snapWall(w,skip){const r=16/view.k;let best=null,bd=r;for(const it of pageItems(scene()))if(it.type==='wall')for(const e of [1,2]){if(skip&&skip.some(q=>q.w===it&&q.e===e))continue;const p=wEnd(it,e),d=Math.hypot(p.x-w.x,p.y-w.y);if(d<bd){bd=d;best=p;}}return best?{x:best.x,y:best.y}:w;}
 function snapAngle(o,w){const ang=Math.atan2(w.y-o.y,w.x-o.x)*180/Math.PI,sa=Math.round(ang/45)*45;if(Math.abs(ang-sa)<5){const L=Math.hypot(w.x-o.x,w.y-o.y);return {x:o.x+Math.cos(rad(sa))*L,y:o.y+Math.sin(rad(sa))*L};}return w;}
@@ -3721,7 +3724,7 @@ function menu(){
  const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
  openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
   <button data-m="open">Open scene… <span class="kb">⌘O</span></button>${sFolder(s)?`<button data-m="overview">${esc(fById(sFolder(s)).name)} overview & questions…</button>`:''}<button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Diagram</div><button data-m="camdesc">Show shot descriptions by cameras<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button><div class="hd">Script</div><button data-m="import">Import a script (Final Draft, PDF, Fountain)…</button><button data-m="docx">Import a breakdown and strategy from Word (.docx)…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="rotplan">Rotate floor plan…</button><button data-m="png">Download this page as an image</button><button data-m="video">Save the blocking as a video…</button>
+  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}<div class="hd">Script</div><button data-m="import">Import a script…</button><button data-m="docx">Import a breakdown and strategy…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button><button data-m="video">Save the blocking as a video…</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}<span id="stgTxt"></span></div></div>`,b,p=>{stgFill();
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
@@ -3904,12 +3907,12 @@ function drawLayers(){const s=scene(),L=lay(s),all=LAYERS.every(([k])=>L.lock[k]
  const row=(key,name,val,lockOn,lockKey,dis)=>`<div class="lrow${dis?' dis':''}"><span class="ln">${name}</span><input type="range" min="1" max="100" step="1" value="${val}" data-op="${key}"${dis?' disabled':''}><b class="lv">${val}</b>${lockKey?`<button class="lk${lockOn?' on':''}" data-lock="${lockKey}" title="${lockOn?'Unlock':'Lock'} ${name}"${dis?' disabled':''}>${LOCK_SVG(lockOn)}</button>`:'<span class="lk"></span>'}</div>`;
  pop.innerHTML=`<h4>Layers</h4><div class="ls lays" style="width:350px"><div class="lrow lall"><span class="ln"><b>All layers</b></span><button class="lkall${all?' on':''}" data-lockall="1">${LOCK_SVG(all)}<span>${all?'Unlock all':'Lock all'}</span></button></div>
   <div class="hd">Layers <span class="hdr">opacity · lock</span></div>${LAYERS.map(([k,n])=>row(k,n,L.op[k]==null?100:L.op[k],L.lock[k],k)).join('')}
-  <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
+  <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}<div class="lrow"><span class="ln" title="The shot description written next to each camera on the floor plan">Shot Descriptions</span><button class="lsw${P.ui.camDesc?' on':''}" data-camdesc="1" role="switch" aria-checked="${P.ui.camDesc?'true':'false'}">${P.ui.camDesc?'On':'Off'}</button></div>${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">A locked layer can’t be selected or moved, so you can work on top of it. Locked Items sets how faded anything locked looks.</div></div>`;
  const box=pop.querySelector('.lays');
  box.addEventListener('input',e=>{const r=e.target.closest('[data-op]');if(!r)return;const v=+r.value,k=r.dataset.op;r.nextElementSibling.textContent=v;setLayerVal(s,k,v);if(k==='bg')renderBg();else applyLayers();});
  box.addEventListener('change',e=>{if(e.target.closest('[data-op]'))commit({insp:false});});
- box.addEventListener('click',e=>{const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
+ box.addEventListener('click',e=>{if(e.target.closest('[data-camdesc]')){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();drawLayers();return;}const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
   if(a){const on=!all;for(const [k] of LAYERS)s.layers.lock[k]=on;if(s.bg)s.bg.locked=on;}
   else if(l.dataset.lock==='bg'){if(s.bg)s.bg.locked=!s.bg.locked;}
   else s.layers.lock[l.dataset.lock]=!s.layers.lock[l.dataset.lock];
