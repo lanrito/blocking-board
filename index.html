@@ -396,7 +396,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118012250';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118020058';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1376,7 +1376,7 @@ function itemsMarkup(sc,pid){
  const FW=fsz(sc),FH=fszH(FW);
  let sh='',fov='',paths='',cams='',chars='',frames='';const lay=frameOn()?frameLayout(sc,pid||sc.pageId):null,PG=pid||sc.pageId;
  for(const it of pageItems(sc,pid)){
-  if(IMF){const a=ACTOR(it.type)||it.type==='axis';if(IMF==='noActors'?a:!a)continue;}
+  if(IMF){const a=ACTOR(it.type)||it.type==='axis'||movesProp(it);if(IMF==='noActors'?a:!a)continue;}
   if(BOX(it.type)){
    const L=LIB[it.kind]||{};
    if(it.type==='light'&&L.beam&&it.beam!==false){const a=rad(it.rot||0),fx=it.x+Math.cos(a)*it.w/2,fy=it.y+Math.sin(a)*it.w/2,h=rad(22),R=it.reach||220;fov+=`<path class="deco L-light" d="M${fx},${fy}L${fx+Math.cos(a-h)*R},${fy+Math.sin(a-h)*R}A${R},${R} 0 0 1 ${fx+Math.cos(a+h)*R},${fy+Math.sin(a+h)*R}Z" fill="#ffd75e" fill-opacity=".16"/>`;}
@@ -3941,9 +3941,25 @@ function renumberDialog(){const s=scene(),c=numCfg(s);
 /* ---------- animation: step through the blocking ---------- */
 let anim={step:0,frac:1,playing:false,raf:0,hold:0,base:null,speed:1,loop:false};
 let IMF=null;
-function effSteps(it){const M=it.marks||[],e=new Array(M.length);let nx=Infinity;for(let i=M.length-1;i>=0;i--){if(M[i].st!=null)nx=+M[i].st;e[i]=M[i].st!=null?+M[i].st:nx;}if(it.type==='char'&&M.length&&M[0].st==null)e[0]=1;return e;}
+function effSteps(it){const M=it.marks||[],e=new Array(M.length);let nx=Infinity;for(let i=M.length-1;i>=0;i--){if(M[i].st!=null)nx=+M[i].st;e[i]=M[i].st!=null?+M[i].st:nx;}if((it.type==='char'||it.isProp)&&M.length&&M[0].st==null)e[0]=1;return e;}
 function lastIdx(st,N){let j=-1;st.forEach((e,i)=>{if(e<=N)j=i;});return j;}
-function animActors(sc){return pageItems(sc).filter(it=>(it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length).map(it=>hasPP(it)?Object.assign({},it,{marks:it.marks.filter((m,i)=>posOn(it,i,sc.pageId))}):it).filter(it=>it.marks.length);}
+const VEH=new Set(['car','suv','taxi','police','ambulance','minibus','bus','semi','trailer','moto','bicycle','boat','tank','helicopter','plane','fighter','jet']);
+const movesProp=it=>BOX(it.type)&&it.mv&&it.mv.length>0;
+/* a moving prop seen as an actor: its positions become marks (position 1's time lives on the item) */
+function propActor(it){const mk=(t,hostSt)=>new Proxy(t,{get(o,k){if(k==='st')return hostSt?hostSt.st:o.st;if(k==='rot')return o.r!=null?o.r:(o.rot!=null?o.rot:(it.rot||0));return o[k];},
+  set(o,k,v){if(k==='st'){(hostSt||o).st=v;return true;}o[k]=v;return true;},deleteProperty(o,k){if(k==='st'){delete (hostSt||o).st;return true;}delete o[k];return true;}});
+ return {id:it.id,type:'prop',isProp:true,veh:VEH.has(it.kind),orig:it,hard:it.hard,pgs:it.pgs,marks:[mk({x:it.x,y:it.y,rot:it.rot||0},it),...it.mv.map(q=>mk(q,null))]};}
+/* which positions animate on a page: its own, plus the ones it moves from and to (so a move across pages plays on both) */
+function animKeep(it,pid){const keep=new Set();
+ if(it.type==='char'){const st=posStarts(it);st.forEach((r,k)=>{if(!posOn(it,r,pid))return;for(const q of [st[k-1],r,st[k+1]]){if(q==null)continue;const [a,b]=runOf(it,q);for(let j=a;j<=b;j++)keep.add(j);}});}
+ else if(it.type==='cam'){it.marks.forEach((m,i)=>{if(!posOn(it,i,pid))return;keep.add(i);if(m.tk&&i>0)keep.add(i-1);if(it.marks[i+1]&&it.marks[i+1].tk)keep.add(i+1);});}
+ else{const n=1+(it.mv||[]).length;for(let i=0;i<n;i++)if(posOn(it,i,pid))[i-1,i,i+1].forEach(q=>{if(q>=0&&q<n)keep.add(q);});}
+ return keep;}
+function animActors(sc){const pid=sc.pageId,out=[];
+ for(const it of pageItems(sc)){let A=null;if((it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length)A=it;else if(movesProp(it))A=propActor(it);if(!A)continue;
+  if(pid&&pid!=='all'&&hasPP(it)){const keep=animKeep(it,pid);A=Object.assign({},A,{marks:A.marks.filter((m,i)=>keep.has(i))});}
+  if(A.marks.length)out.push(A);}
+ return out;}
 /* per page: section labels and speeds for each time */
 function tlOf(sc,make){const pid=sc.pageId||'p';if(!sc.tl)sc.tl={};if(!sc.tl[pid]&&make)sc.tl[pid]={lab:{},spd:{}};return sc.tl[pid]||{lab:{},spd:{}};}
 const spdV=v=>v==null?50:v<=5?[10,30,50,70,90][v-1]||50:v; /* 0-100, 50 is normal */
@@ -3978,15 +3994,17 @@ function poseAt(it,tl,t){let x=tl.start.x,y=tl.start.y,r=tl.start.rot,op=1;
  for(const s of tl.segs){const f=s.d?clamp(t/s.d,0,1):1;
   if(s.k==='in'){op=f;}
   else if(s.k==='turn'){r=angLerp(s.r0,s.r1,f);}
-  else{const tgt=f*s.len;let acc=0,k=1;for(;k<s.pts.length;k++){const L=Math.hypot(s.pts[k].x-s.pts[k-1].x,s.pts[k].y-s.pts[k-1].y);if(acc+L>=tgt){const u=L?(tgt-acc)/L:0;x=s.pts[k-1].x+(s.pts[k].x-s.pts[k-1].x)*u;y=s.pts[k-1].y+(s.pts[k].y-s.pts[k-1].y)*u;if(it.type==='char'&&f<1)r=Math.atan2(s.pts[k].y-s.pts[k-1].y,s.pts[k].x-s.pts[k-1].x)*180/Math.PI;break;}acc+=L;}
+  else{const tgt=f*s.len;let acc=0,k=1;for(;k<s.pts.length;k++){const L=Math.hypot(s.pts[k].x-s.pts[k-1].x,s.pts[k].y-s.pts[k-1].y);if(acc+L>=tgt){const u=L?(tgt-acc)/L:0;x=s.pts[k-1].x+(s.pts[k].x-s.pts[k-1].x)*u;y=s.pts[k-1].y+(s.pts[k].y-s.pts[k-1].y)*u;if((it.type==='char'||it.veh)&&f<1)r=Math.atan2(s.pts[k].y-s.pts[k-1].y,s.pts[k].x-s.pts[k-1].x)*180/Math.PI;break;}acc+=L;}
    if(k>=s.pts.length){const e=s.pts[s.pts.length-1];x=e.x;y=e.y;}
-   if(it.type==='cam')r=angLerp(s.r0,s.r1,f);else if(f>=1)r=s.r1;}
+   if(it.type==='cam'||(it.isProp&&!it.veh))r=angLerp(s.r0,s.r1,f);else if(f>=1)r=s.r1;}
   t-=s.d;if(t<0)break;}
  return {x,y,r,op};}
 function stepDur(sc,N){let d=.4;for(const it of animActors(sc)){const tl=timeline(it,N);if(tl&&!tl.idle)d=Math.max(d,tl.dur);}return d;}
 function animLayer(sc,N,frac){
  const T=frac*stepDur(sc,N);let paths='',bodies='',cams='';
- for(const it of animActors(sc)){const tl=timeline(it,N);if(!tl||tl.idle)continue;const p=poseAt(it,tl,T);
+ let props='';for(const it of animActors(sc)){const tl=timeline(it,N);if(!tl||tl.idle)continue;const p=poseAt(it,tl,T);
+  if(it.isProp){const o=it.orig;for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],'#5b6170',true,Math.min(o.w,o.h)/2+4,!o.hard,'class="deco"');
+   props+=`<g class="L-${layerOf(o)}" data-aid="${o.id}" transform="translate(${p.x},${p.y}) rotate(${p.r})" opacity="${p.op}">${boxShape(o)}${o.label?`<text class="sl" y="4" text-anchor="middle" transform="rotate(${-p.r})">${esc(String(o.label).toUpperCase())}</text>`:''}</g>`;continue;}
   if(it.type==='char'){const c=charById(it.charId);if(!c)continue;const col=c.color,dk=shade(col,-.5),L=behind(p.r,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
    for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],lum(col)>.8?shade(col,-.42):col,true,19,!it.hard,'class="deco"');
    const offA=charOff(sc,it),showN=it.marks.filter(q=>!q.t).length>1||offA>0;
@@ -3994,15 +4012,17 @@ function animLayer(sc,N,frac){
   else{const st=setupIn(sc,it.setupId),col=st?st.color:'#999',dk=shade(col,-.42),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
    for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],col,false,20,!it.hard,'class="deco"');
    cams+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g><g class="deco" transform="translate(0,${-34})"><rect x="${-pw/2}" y="-9" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2" y="2.8" text-anchor="middle">${tag}</text></g></g>`;}}
- return `<g>${paths}${cams}${bodies}</g>`;}
+ return `<g>${paths}${props}${cams}${bodies}</g>`;}
 function animBase(sc){IMF='noActors';const a=itemsMarkup(sc);if(P.ui.timeOnly){IMF=null;return a;}IMF='onlyActors';const g=itemsMarkup(sc);IMF=null;return a+`<g class="deco" opacity=".16">${g}</g>`;}
 /* animation view: each position is a spot you tap to put it in (or take it out of) the current time */
 function assignLayer(sc,N){let h='';const k=view.k||1;
  for(const it of pageItems(sc))if((it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length){if(it.type==='char'&&!charById(it.charId))continue;
   it.marks.forEach((m,i)=>{if(it.type==='char'&&m.t)return;if(!posOn(it,i,sc.pageId))return;const on=m.st!=null&&+m.st===N;
    h+=`<g class="aspot${on?' on':''}" data-astep="1" data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="27" fill="transparent"/><circle class="ar" r="24" fill="none"/>${on?`<g transform="translate(19,-19) scale(${Math.max(.8,1/k)})"><circle r="9" fill="#f5a623"/><text y="3.6" text-anchor="middle" style="font-size:11px;font-weight:800;fill:#1d1d1f">${N}</text></g>`:''}</g>`;});}
+ for(const it of pageItems(sc))if(movesProp(it)){const R=Math.max(24,Math.min(it.w||40,it.h||40)/2+6);positions(it).forEach((q,i)=>{if(!posOn(it,i,sc.pageId))return;const st=posAt(it,i).st,on=st!=null&&+st===N;
+   h+=`<g class="aspot${on?' on':''}" data-astep="1" data-id="${it.id}" data-mark="${i}" transform="translate(${q.x},${q.y})"><circle r="${R+3}" fill="transparent"/><circle class="ar" r="${R}" fill="none"/>${on?`<g transform="translate(${R*.72},${-R*.72}) scale(${Math.max(.8,1/k)})"><circle r="9" fill="#f5a623"/><text y="3.6" text-anchor="middle" style="font-size:11px;font-weight:800;fill:#1d1d1f">${N}</text></g>`:''}</g>`;});}
  return `<g class="assignL">${h}</g>`;}
-function assignTap(id,mk){const it=itemById(id),m=it&&it.marks&&it.marks[mk];if(!m)return;const N=anim.step;
+function assignTap(id,mk){const it=itemById(id),m=it&&(it.marks?it.marks[mk]:posAt(it,mk));if(!m)return;const N=anim.step;
  if(m.st!=null&&+m.st===N){delete m.st;toast(`Taken out of time ${N}.`);}else{m.st=N;toast(`In time ${N}.`);}
  anim.base=null;commit();renderAnimBar();}
 function drawAnim(){const s=scene();if(!anim.base)anim.base=animBase(s);$('#items').innerHTML=anim.base+animLayer(s,anim.step,anim.frac)+(anim.playing?'':assignLayer(s,anim.step));}
