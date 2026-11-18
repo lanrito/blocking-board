@@ -395,7 +395,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261117235643';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118003608';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -4043,14 +4043,17 @@ function drawLayers(){const s=scene(),L=lay(s),all=LAYERS.every(([k])=>L.lock[k]
  pop.innerHTML=`<h4>Layers</h4><div class="ls lays" style="width:350px"><div class="lrow lall"><span class="ln"><b>All layers</b></span><button class="lkall${all?' on':''}" data-lockall="1">${LOCK_SVG(all)}<span>${all?'Unlock all':'Lock all'}</span></button></div>
   <div class="hd">Layers <span class="hdr">opacity · lock</span></div>${LAYERS.map(([k,n])=>row(k,n,L.op[k]==null?100:L.op[k],L.lock[k],k)).join('')}
   <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}<div class="lrow"><span class="ln" title="The shot description written next to each camera on the floor plan">Shot Descriptions</span><button class="lsw${P.ui.camDesc?' on':''}" data-camdesc="1" role="switch" aria-checked="${P.ui.camDesc?'true':'false'}">${P.ui.camDesc?'On':'Off'}</button></div>${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
-  <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">A locked layer can’t be selected or moved, so you can work on top of it. Locked Items sets how faded anything locked looks.</div></div>`;
+  <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">A locked layer can’t be selected or moved, so you can work on top of it. Locking a layer fades it to 50%; unlocking brings back its opacity. Locked Items sets how faded anything locked looks.</div></div>`;
  const box=pop.querySelector('.lays');
  box.addEventListener('input',e=>{const r=e.target.closest('[data-op]');if(!r)return;const v=+r.value,k=r.dataset.op;r.nextElementSibling.textContent=v;setLayerVal(s,k,v);if(k==='bg')renderBg();else applyLayers();});
  box.addEventListener('change',e=>{if(e.target.closest('[data-op]'))commit({insp:false});});
  box.addEventListener('click',e=>{if(e.target.closest('[data-camdesc]')){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();drawLayers();return;}const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
-  if(a){const on=!all;for(const [k] of LAYERS)s.layers.lock[k]=on;if(s.bg)s.bg.locked=on;}
-  else if(l.dataset.lock==='bg'){if(s.bg)s.bg.locked=!s.bg.locked;}
-  else s.layers.lock[l.dataset.lock]=!s.layers.lock[l.dataset.lock];
+  const fade=(k,on)=>{s.layers.op0=Object.assign({},s.layers.op0);if(k==='bg'){if(!s.bg)return;if(on){s.layers.op0.bg=Math.round((s.bg.op||1)*100);s.bg.op=Math.min(s.bg.op||1,.5);}else if(s.layers.op0.bg!=null){s.bg.op=s.layers.op0.bg/100;delete s.layers.op0.bg;}return;}
+   s.layers.op=Object.assign({},lay(s).op);const cur=s.layers.op[k]==null?100:s.layers.op[k];if(on){s.layers.op0[k]=cur;s.layers.op[k]=Math.min(cur,50);}else if(s.layers.op0[k]!=null){s.layers.op[k]=s.layers.op0[k];delete s.layers.op0[k];}};
+  if(a){const on=!all;for(const [k] of LAYERS){if(!!s.layers.lock[k]!==on)fade(k,on);s.layers.lock[k]=on;}if(s.bg){if(!!s.bg.locked!==on)fade('bg',on);s.bg.locked=on;}}
+  else if(l.dataset.lock==='bg'){if(s.bg){s.bg.locked=!s.bg.locked;fade('bg',s.bg.locked);}}
+  else{const k=l.dataset.lock;s.layers.lock[k]=!s.layers.lock[k];fade(k,s.layers.lock[k]);}
+  renderBg();
   if(sel&&sel.id!=='__bg'){const it=itemById(sel.id);if(it&&layerLocked(it))sel=null;}if(msel){const keep=mselItems().filter(i=>!layerLocked(i)).map(i=>i.id);msel=keep.length?new Set(keep):null;}
   commit({insp:false});drawLayers();});}
 function setLayerVal(s,k,v){if(k==='bg'){if(s.bg)s.bg.op=v/100;return;}s.layers=s.layers||{};if(k==='lk'||k==='desc'){s.layers[k]=v;return;}s.layers.op=Object.assign({},s.layers.op||{},{[k]:v});}
