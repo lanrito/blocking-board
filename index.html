@@ -400,7 +400,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118043829';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118050427';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -769,10 +769,10 @@ const kvPut=(k,v)=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transacti
 const kvDel=k=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
 function saveP(j){
  if(j.length<=LS_MAX&&lsSet(LS.p,j)){pSeq++;pFail=false;if(pBig||pIn||lsGet(BIG)){pBig=false;try{localStorage.removeItem(BIG);}catch(e){}kvDel('p');}return true;}
- const seq=++pSeq;pIn++;
- kvPut('p',j).then(r=>{pIn--;if(seq!==pSeq)return; /* a newer save has taken over */
+ const seq=++pSeq;pIn++;updateStatus();
+ kvPut('p',j).then(r=>{pIn--;if(seq!==pSeq){updateStatus();return;} /* a newer save has taken over */
   if(r){try{localStorage.removeItem(LS.p);}catch(e){}r=lsSet(BIG,'1');pBig=r;}
-  pFail=!r;if(pFail){localOk=false;updateStatus();}});
+  pFail=!r;if(pFail)localOk=false;else localOk=true;updateStatus();}).catch(()=>{pIn--;pFail=true;localOk=false;updateStatus();});
  return !pFail;
 }
 function load(big){
@@ -787,7 +787,7 @@ migrate();let castNow=[];try{castNow=castReconcile();}catch(e){}
  for(const sc of P.scenes){const k='scene-'+sc.id;if(!ancOf(k).length)ancAdd(k,[sceneFp(stripScene(sc))]);}
 }
 const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
-function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},locations:P.locations||[],tomb:P.tomb||{},sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
+function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},locations:P.locations||[],tomb:P.tomb||{},imgs:Object.keys(images).sort(),sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
 const markDirty=k=>{if(!sync.dirty.includes(k))sync.dirty.push(k);};
 /* ---------- shared lists (characters, folders, productions): each entry keeps its own change time; deletions leave a dated marker; devices merge entry by entry ---------- */
@@ -814,10 +814,10 @@ function detectChanges(){try{metaStamp();}catch(e){console.error(e);}const d=doc
  for(const k of Object.keys(lastJson))if(!(k in d)){delete lastJson[k];sync.stamps[k]=now;markDirty(k);}}
 function saveLocal(){
  const ok=saveP(JSON.stringify(P))&&lsSet(LS.sync,JSON.stringify(sync));
- let ok2=true;if(imgDirty){if(idb){const batch={};for(const k in images)if(!imgSaved.has(k)){batch[k]=images[k];imgSaved.add(k);}imgDirty=false;idbPut(batch).then(r=>{if(!r){localOk=false;updateStatus();}});}else{ok2=lsSet(LS.img,JSON.stringify(images));if(ok2)imgDirty=false;}}
+ let ok2=true;if(imgDirty){if(idb){const batch={};for(const k in images)if(!imgSaved.has(k)){batch[k]=images[k];imgSaved.add(k);}imgDirty=false;imgIn++;idbPut(batch).then(r=>{imgIn--;if(!r)localOk=false;updateStatus();}).catch(()=>{imgIn--;localOk=false;updateStatus();});}else{ok2=lsSet(LS.img,JSON.stringify(images));if(ok2)imgDirty=false;}}
  localOk=ok&&ok2;updateStatus();
 }
-let idb=null;const imgSaved=new Set();
+let idb=null,imgIn=0;const imgSaved=new Set();
 function idbOpen(){return new Promise(res=>{try{const r=indexedDB.open('blocking-board',2);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('img'))d.createObjectStore('img');if(!d.objectStoreNames.contains('snap'))d.createObjectStore('snap');};r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);r.onblocked=()=>res(null);}catch(e){res(null);}});}
 function idbAll(){return new Promise(res=>{try{const out={},rq=idb.transaction('img').objectStore('img').openCursor();rq.onsuccess=()=>{const c=rq.result;if(c){out[c.key]=c.value;c.continue();}else res(out);};rq.onerror=()=>res(out);}catch(e){res({});}});}
 function idbPut(obj){return new Promise(res=>{try{if(!Object.keys(obj).length){res(true);return;}const tx=idb.transaction('img','readwrite'),st=tx.objectStore('img');for(const k in obj)st.put(obj[k],k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}});}
@@ -853,6 +853,21 @@ function addImage(data){const id=uid();images[id]=data;imgDirty=true;sync.stamps
 
 /* ---------- history ---------- */
 let undoS=[],redoS=[],cur=null;
+/* what the other device changed is recorded as a patch; an older undo step gets those parts brought up to date before it's restored,
+   so undo only takes back this device's own edits and never the other device's */
+let rgen=0,rpat=[];
+function snapDiff(a,b){if(a==null||a===b)return null;let A,B;try{A=JSON.parse(a);B=JSON.parse(b);}catch(e){return null;}const p={s:{},c:{},f:{},l:{},order:(B.s||[]).map(x=>x.id)};let n=0;
+ const idx=L=>{const m={};for(const e of L||[])if(e&&e.id)m[e.id]=JSON.stringify(e);return m;};
+ for(const k of ['c','f','l','s']){const ma=idx(A[k]),mb=idx(B[k]);for(const id in mb)if(ma[id]!==mb[id]){p[k][id]=JSON.parse(mb[id]);n++;}for(const id in ma)if(!(id in mb)){p[k][id]=null;n++;}}
+ return n?p:null;}
+function patchSnap(j,from){if(from>=rgen)return j;const o=JSON.parse(j);
+ for(const r of rpat){if(r.g<=from)continue;const p=r.p;
+  for(const k of ['c','f','l']){o[k]=o[k]||[];for(const id in p[k]){const i=o[k].findIndex(e=>e&&e.id===id);if(p[k][id]===null){if(i>=0)o[k].splice(i,1);}else if(i>=0)o[k][i]=p[k][id];else o[k].push(p[k][id]);}}
+  for(const id in p.s){const i=o.s.findIndex(x=>x.id===id);if(p.s[id]===null){if(i>=0)o.s.splice(i,1);continue;}if(i>=0){o.s[i]=p.s[id];continue;}
+   const at=p.order.indexOf(id);let ins=o.s.length;for(let q=at+1;q>0&&q<p.order.length;q++){const z=o.s.findIndex(x=>x.id===p.order[q]);if(z>=0){ins=z;break;}}o.s.splice(ins,0,p.s[id]);}}
+ return JSON.stringify(o);}
+function remoteRebase(pre,post){const p=snapDiff(pre,post);if(!p)return;rgen++;rpat.push({g:rgen,p});
+ const lo=Math.min(rgen,...undoS.map(e=>e.g),...redoS.map(e=>e.g));rpat=rpat.filter(r=>r.g>lo);}
 const snapshot=()=>JSON.stringify({c:P.characters,f:P.folders,l:P.locations||[],s:P.scenes.map(stripScene)});
 function commit(opt){
  try{castReconcile();}catch(e){}
@@ -861,7 +876,7 @@ function commit(opt){
  try{locSyncAll(scene());locNote();}catch(e){console.error(e);}
  try{rideSync(scene());aimSync(scene());}catch(e){}
  normShots(scene());ppFill(scene());const s=snapshot();
- if(s!==cur){if(cur!==null){undoS.push(cur);if(undoS.length>200)undoS.shift();}redoS=[];cur=s;detectChanges();saveLocal();schedulePush();}
+ if(s!==cur){if(cur!==null){undoS.push({j:cur,g:rgen});if(undoS.length>200)undoS.shift();}redoS=[];cur=s;detectChanges();saveLocal();schedulePush();}
  render(opt);
 }
 function restore(snap){
@@ -870,8 +885,8 @@ function restore(snap){
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();
  cur=snap;sel=null;msel=null;detectChanges();saveLocal();schedulePush();render();
 }
-function undo(){if(!undoS.length)return;redoS.push(cur);restore(undoS.pop());}
-function redo(){if(!redoS.length)return;undoS.push(cur);restore(redoS.pop());}
+function undo(){if(!undoS.length)return;redoS.push({j:cur,g:rgen});const e=undoS.pop();restore(patchSnap(e.j,e.g));}
+function redo(){if(!redoS.length)return;undoS.push({j:cur,g:rgen});const e=redoS.pop();restore(patchSnap(e.j,e.g));}
 
 /* ---------- sync (private to the signed-in person, through their Claude account) ---------- */
 let coll=null,online='off',pushT=null,pushing=false,syncErr='',pendingRemote=null,dlNS=null,warnedBig=false;
@@ -886,19 +901,33 @@ function initFirebase(){
    if(!u){coll=null;online='off';updateStatus();return;}
    coll=db.collection('users').doc(u.uid).collection('docs');online='connecting';syncErr='';updateStatus();
    const t=setTimeout(()=>{if(online==='connecting'){online='waiting';updateStatus();syncProbe();}},10000);
-   fbUnsub=coll.onSnapshot(snap=>{
+   const FPd=firebase.firestore.FieldPath;
+   const listen=full=>{imgViaMeta=!full;return (full?coll:coll.where(FPd.documentId(),'>=','img.')).onSnapshot(snap=>{
     if(!snap.metadata.fromCache){clearTimeout(t);clearTimeout(probeT);online='on';if(['resource-exhausted','unavailable','deadline-exceeded'].includes(syncErr))syncErr='';
      if(snap.empty){const now=Date.now(),d=docs();for(const k in d){if(!sync.stamps[k])sync.stamps[k]=now;markDirty(k);}for(const k in images){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=now;markDirty('img-'+k);}sync.uid=acct;}}
     if(gesture)pendingRemote=snap;else applyRemote(snap);
     updateStatus();schedulePush(400);
-   },err=>{clearTimeout(t);online='error';syncErr=(err&&err.code)||'error';updateStatus();
-    if(syncErr==='permission-denied')toast(`${u.email||'This account'} isn’t approved for sync yet. Your work is saved on this device.`);});
+   },err=>{if(!full&&err&&['invalid-argument','failed-precondition','unimplemented'].includes(err.code)){if(fbUnsub)try{fbUnsub();}catch(e){}fbUnsub=listen(true);return;}clearTimeout(t);online='error';syncErr=(err&&err.code)||'error';updateStatus();
+    if(syncErr==='permission-denied')toast(`${u.email||'This account'} isn’t approved for sync yet. Your work is saved on this device.`);});};
+   try{fbUnsub=listen(false);}catch(e){fbUnsub=listen(true);}
   });
   return true;
  }catch(e){return false;}
 }
 let probeT=null;
 let fbDb=null,kicked=0;
+/* the live listener skips image documents; images listed in the shared list that this device lacks are fetched one by one */
+let imgViaMeta=false,imgFullDone=false;const imgTry={};let imgT=null,imgBusy=false;
+function imgWant(meta){if(!imgViaMeta||!coll||!meta)return;
+ if(!Array.isArray(meta.imgs)){if(imgFullDone)return;imgFullDone=true;const FP=firebase.firestore.FieldPath;
+  coll.where(FP.documentId(),'>=','img-').where(FP.documentId(),'<','img.').get().then(q=>{let n=0;q.forEach(d=>{const b=d.data(),iid=d.id.slice(4);if(b&&b.data&&!images[iid]){images[iid]=b.data;n++;}});if(n){imgDirty=true;saveLocal();bgKey='';render();}}).catch(()=>{imgFullDone=false;});return;}
+ for(const id of meta.imgs)if(!images[id]&&(imgTry[id]||0)<6)imgTry[id]=imgTry[id]||0;imgPull();}
+async function imgPull(){if(imgBusy||!coll)return;imgBusy=true;let got=0,left=false;
+ try{for(const id of Object.keys(imgTry)){if(images[id]){delete imgTry[id];continue;}if(imgTry[id]>=6)continue;
+   try{const d=await coll.doc('img-'+id).get();const b=d.exists?d.data():null;if(b&&b.data){images[id]=b.data;got++;delete imgTry[id];}else{imgTry[id]++;left=true;}}catch(e){imgTry[id]++;left=true;}}}
+ finally{imgBusy=false;}
+ if(got){imgDirty=true;saveLocal();bgKey='';render();}
+ if(left){clearTimeout(imgT);imgT=setTimeout(imgPull,20000);}}
 function syncProbe(){clearTimeout(probeT);if(!coll||!fbUser||online==='on')return;
  const again=()=>{clearTimeout(probeT);probeT=setTimeout(syncProbe,60000);};
  if(!navigator.onLine){updateStatus();again();return;}
@@ -1008,6 +1037,7 @@ async function initSync(){
  }catch(e){updateStatus();}
 }
 function applyRemote(snap){
+ const preSnap=cur;
  let changed=false,meta=null;const sd={},td={},seen=new Set();
  const join=!!acct&&sync.uid!==acct&&!(snap.metadata&&snap.metadata.fromCache);
  for(const d of snap.docs){const b=d.data();if(!b)continue;const k=d.id;seen.add(k);
@@ -1028,7 +1058,8 @@ function applyRemote(snap){
   changed=true;
  }
  if(meta&&metaBack){sync.stamps.meta=Math.max(Date.now(),(meta.updatedAt||0)+1);markDirty('meta');changed=true;setTimeout(()=>{saveLocal();schedulePush(500);},30);}
- if(join){for(const k in images)if(!seen.has('img-'+k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
+ if(meta)try{imgWant(meta);}catch(e){}
+ if(join){const rim=new Set((meta&&meta.imgs)||[]);for(const k in images)if(!seen.has('img-'+k)&&!rim.has(k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
  for(const k in sd){const b=sd[k];if(!b.scene)continue;const i=P.scenes.findIndex(s=>'scene-'+s.id===k);if(i<0)continue;const was=P.scenes[i],nx=arrive(k,b,was);if(nx!==was){P.scenes[i]=nx;changed=true;}}
  if(nConf)setTimeout(()=>{toast(nConf===1?'A scene was changed on two devices. Both versions are kept. Look for the yellow note on the floor plan.':nConf+' scenes were changed on two devices. Both versions of each are kept. Look for the yellow note on the floor plan.');saveLocal();schedulePush(500);},30);
  let tch=0,tconf=0;for(const k in td){const r=mergeTxt(k,td[k]);if(r){tch+=r.ch;tconf+=r.conf;}}
@@ -1036,7 +1067,7 @@ function applyRemote(snap){
  if(!changed){if(tch){saveLocal();docSync();updateStatus();}return;}
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();
  let locCh=false;try{locCh=locSyncAll(null);}catch(e){}
- {const keepTx={};for(const k in lastJson)if(k.startsWith('txt-'))keepTx[k]=lastJson[k];baseline();Object.assign(lastJson,keepTx);}cur=snapshot();undoS=[];redoS=[];
+ {const keepTx={};for(const k in lastJson)if(k.startsWith('txt-'))keepTx[k]=lastJson[k];baseline();Object.assign(lastJson,keepTx);}cur=snapshot();try{remoteRebase(preSnap,cur);}catch(e){console.error(e);undoS=[];redoS=[];}
  if(locCh){detectChanges();schedulePush(500);}
  if(sel&&sel.id!=='__bg'&&!itemById(sel.id))sel=null;
  saveLocal();render();if(tch)docSync();
@@ -1072,6 +1103,7 @@ async function push(){
 function updateStatus(){
  const el=$('#status');let t,c='';
  if(!localOk){t='Not saving here. Back up from the menu';c='bad';}
+ else if(pIn>0||imgIn>0){t='Saving…';}
  else if(fbAuth&&!fbUser){t='Sign in to sync';c='warn';}
  else if(!coll)t=location.protocol==='file:'?'Saved on this computer':'Saved on this device';
  else if(online==='connecting')t='Connecting…';
