@@ -403,7 +403,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118210302';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118212622';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -804,6 +804,11 @@ migrate();let castNow=[];try{castNow=castReconcile();}catch(e){}
  for(const sc of P.scenes){const k='scene-'+sc.id;if(!ancOf(k).length)ancAdd(k,[sceneFp(stripScene(sc))]);}
  {const here=new Set(P.scenes.map(x=>x.id)),TS=(P.tomb&&P.tomb.s)||{};sync.sIds=[...here];
   sync.dirty=(sync.dirty||[]).filter(k=>{const sid=k.startsWith('scene-')?k.slice(6):k.startsWith('txt-')?k.slice(4):null;return !sid||here.has(sid)||!!TS[sid];});}
+ /* once per device: scenes with sketches were refused by the cloud before sketches could sync, so send them again now */
+ if(!sync.naFix&&sync.stamps&&Object.keys(sync.stamps).length){const nest=o=>Array.isArray(o)?o.some(x=>Array.isArray(x)||nest(x)):(o&&typeof o==='object')?Object.values(o).some(nest):false,now=Date.now();
+  for(const sc of P.scenes)if(nest(sc)){const k='scene-'+sc.id;sync.stamps[k]=Math.max(sync.stamps[k]||0,now);if(!sync.dirty.includes(k))sync.dirty.push(k);}
+  if(nest(P.locations||[])){sync.stamps.meta=Math.max(sync.stamps.meta||0,now);if(!sync.dirty.includes('meta'))sync.dirty.push('meta');}}
+ if(!sync.naFix){sync.naFix=1;setTimeout(()=>{try{saveLocal();}catch(e){}},0);}
 }
 function sceneLast(id){let t=Math.max(sync.stamps['scene-'+id]||0,sync.stamps['txt-'+id]||0);try{const c=txCells((P.text||{})[id]||{});for(const key in c)t=Math.max(t,c[key].t||0);}catch(e){}return t;}
 /* the other device deleted this scene: true if that deletion is newer than anything done to it here. If not, the scene stays and is sent again, newer than the deletion */
