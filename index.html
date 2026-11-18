@@ -400,7 +400,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118035914';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118043829';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -787,10 +787,29 @@ migrate();let castNow=[];try{castNow=castReconcile();}catch(e){}
  for(const sc of P.scenes){const k='scene-'+sc.id;if(!ancOf(k).length)ancAdd(k,[sceneFp(stripScene(sc))]);}
 }
 const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
-function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},locations:P.locations||[],sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
+function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},locations:P.locations||[],tomb:P.tomb||{},sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
 const markDirty=k=>{if(!sync.dirty.includes(k))sync.dirty.push(k);};
-function detectChanges(){const d=docs(),now=Date.now();
+/* ---------- shared lists (characters, folders, productions): each entry keeps its own change time; deletions leave a dated marker; devices merge entry by entry ---------- */
+const MLISTS=[['c','characters'],['f','folders'],['p','productions']];
+const entryFp=e=>{const o=Object.assign({},e);delete o._t;return fpStr(canonJ(o));};
+function metaStamp(){const now=Date.now(),first=!sync.metaH;sync.metaH=sync.metaH||{};sync.metaT=sync.metaT||{};const H=sync.metaH,LT=sync.metaT,T=P.tomb=P.tomb||{};
+ for(const [k,key] of MLISTS){const L=P[key]||[],seen=new Set(),tk=T[k]=T[k]||{};
+  for(const e of L){if(!e||!e.id)continue;const id=k+':'+e.id,h=entryFp(e);seen.add(id);
+   if(H[id]!==h){if(!first)e._t=Math.max(now,(e._t||0)+1,(LT[id]||0)+1);H[id]=h;if(tk[e.id]&&!first)delete tk[e.id];}if(e._t)LT[id]=Math.max(LT[id]||0,e._t);}
+  for(const id of Object.keys(H))if(id.startsWith(k+':')&&!seen.has(id)){const eid=id.slice(k.length+1);if(!first)tk[eid]=now;delete H[id];}}}
+function mergeEntries(A,B,tomb){const by=new Map();for(const e of [...(A||[]),...(B||[])]){if(!e||!e.id)continue;const o=by.get(e.id);if(!o||(e._t||0)>(o._t||0)||((e._t||0)===(o._t||0)&&entryFp(e)>entryFp(o)))by.set(e.id,e);}
+ const order=[];const add=e=>{if(e&&e.id&&!order.includes(e.id))order.push(e.id);};(B||[]).forEach(add);(A||[]).forEach(add);
+ return order.map(id=>by.get(id)).filter(e=>!(tomb[e.id]&&tomb[e.id]>=(e._t||0))).map(clone);}
+/* returns true if the merged lists hold something the incoming copy lacks, so this device should send it back up */
+function metaMerge(meta){const T=P.tomb=P.tomb||{},R=meta.tomb||{};let back=false;
+ for(const [k] of MLISTS){const a=T[k]||{},b=R[k]||{},m=Object.assign({},b);for(const id in a)m[id]=Math.max(a[id],m[id]||0);T[k]=m;if(Object.keys(m).length!==Object.keys(b).length||Object.keys(a).some(id=>a[id]>(b[id]||0)))back=true;}
+ for(const [k,key] of MLISTS){if(!meta[key]&&k!=='c')continue;const before=canonJ(meta[key]||[]),out=mergeEntries(P[key],meta[key],T[k]);P[key]=out;if(canonJ(out)!==before)back=true;
+  for(const e of out){(sync.metaH=sync.metaH||{})[k+':'+e.id]=entryFp(e);if(e._t){sync.metaT=sync.metaT||{};sync.metaT[k+':'+e.id]=Math.max(sync.metaT[k+':'+e.id]||0,e._t);}}
+  for(const id of Object.keys(sync.metaH||{}))if(id.startsWith(k+':')&&!out.some(e=>k+':'+e.id===id))delete sync.metaH[id];}
+ if(meta.labels){const lb=clone(meta.labels);for(const x in P.labels||{}){const u=[...new Set([...(lb[x]||[]),...P.labels[x]])];if(u.length!==(lb[x]||[]).length)back=true;lb[x]=u;}P.labels=lb;}
+ return back;}
+function detectChanges(){try{metaStamp();}catch(e){console.error(e);}const d=docs(),now=Date.now();
  for(const k in d){const j=JSON.stringify(d[k]);if(j!==lastJson[k]){lastJson[k]=j;sync.stamps[k]=now;markDirty(k);}}
  for(const k of Object.keys(lastJson))if(!(k in d)){delete lastJson[k];sync.stamps[k]=now;markDirty(k);}}
 function saveLocal(){
@@ -838,6 +857,7 @@ const snapshot=()=>JSON.stringify({c:P.characters,f:P.folders,l:P.locations||[],
 function commit(opt){
  try{castReconcile();}catch(e){}
  try{typeRefresh();}catch(e){}
+ try{metaStamp();}catch(e){}
  try{locSyncAll(scene());locNote();}catch(e){console.error(e);}
  try{rideSync(scene());aimSync(scene());}catch(e){}
  normShots(scene());ppFill(scene());const s=snapshot();
@@ -998,15 +1018,8 @@ function applyRemote(snap){
  const pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
  let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);return sc;};
  const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
+ let metaBack=false;if(meta){const was=canonJ([P.characters,P.folders,P.productions,P.labels]);try{metaBack=metaMerge(meta);const lw=canonJ(P.locations||[]);P.locations=locMerge(P.locations,meta.locations);if(canonJ(P.locations)!==canonJ(meta.locations||[]))metaBack=true;if(canonJ(P.locations)!==lw)changed=true;}catch(e){console.error(e);}if(canonJ([P.characters,P.folders,P.productions,P.labels])!==was)changed=true;}
  if(meta&&(join||newer('meta',meta))){
-  if(join){ /* first time this device meets this account: keep what is here and add what is there */
-   const uni=(R,L)=>{const ids=new Set(R.map(x=>x.id));return [...R,...(L||[]).filter(x=>!ids.has(x.id))];};
-   P.characters=uni(clone(meta.characters||[]),P.characters);P.folders=uni(clone(meta.folders||[]),P.folders);P.productions=uni(clone(meta.productions||[]),P.productions);
-   const lb=clone(meta.labels||{});for(const k in P.labels||{})lb[k]=[...new Set([...(lb[k]||[]),...P.labels[k]])];P.labels=lb;
-  }else{
-  P.characters=clone(meta.characters||[]);if(meta.folders)P.folders=clone(meta.folders);if(meta.productions)P.productions=clone(meta.productions);if(meta.labels)P.labels=clone(meta.labels);
-  }
-  P.locations=locMerge(P.locations,meta.locations);
   const order=meta.sceneOrder||[],byId={},next=[];for(const s of P.scenes)byId[s.id]=s;
   for(const id of order){const k='scene-'+id,b=sd[k];if(b&&b.scene&&!byId[id])next.push(take(k,b));else if(b&&b.scene&&byId[id])next.push(arrive(k,b,byId[id]));else if(byId[id])next.push(byId[id]);}
   for(const s of P.scenes)if(!order.includes(s.id)){const k='scene-'+s.id,fresh=join||!sync.stamps[k];if(fresh||sync.dirty.includes(k)){next.push(s);if(fresh){sync.stamps[k]=Date.now();markDirty(k);}}}
@@ -1014,6 +1027,7 @@ function applyRemote(snap){
   if(join){sync.stamps.meta=Date.now();markDirty('meta');}else{sync.stamps.meta=meta.updatedAt;sync.dirty=sync.dirty.filter(x=>x!=='meta');}
   changed=true;
  }
+ if(meta&&metaBack){sync.stamps.meta=Math.max(Date.now(),(meta.updatedAt||0)+1);markDirty('meta');changed=true;setTimeout(()=>{saveLocal();schedulePush(500);},30);}
  if(join){for(const k in images)if(!seen.has('img-'+k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
  for(const k in sd){const b=sd[k];if(!b.scene)continue;const i=P.scenes.findIndex(s=>'scene-'+s.id===k);if(i<0)continue;const was=P.scenes[i],nx=arrive(k,b,was);if(nx!==was){P.scenes[i]=nx;changed=true;}}
  if(nConf)setTimeout(()=>{toast(nConf===1?'A scene was changed on two devices. Both versions are kept. Look for the yellow note on the floor plan.':nConf+' scenes were changed on two devices. Both versions of each are kept. Look for the yellow note on the floor plan.');saveLocal();schedulePush(500);},30);
@@ -1517,7 +1531,7 @@ function uiMarkup(){
  if(tool&&tool.t==='wall'&&tool.last){h+=`<circle cx="${tool.last.x}" cy="${tool.last.y}" r="${6/view.k}" fill="#2f6fde"/>`;if(tool.hover)h+=`<line x1="${tool.last.x}" y1="${tool.last.y}" x2="${tool.hover.x}" y2="${tool.hover.y}" stroke="#2f6fde" stroke-width="${WALL_T}" stroke-opacity=".45" stroke-linecap="square"/>`;}
  if(gesture&&(gesture.type==='frame'||gesture.type==='drag')&&gesture.guides&&gesture.moved)for(const q of gesture.guides)h+=`<line class="sguide" x1="${q.x1}" y1="${q.y1}" x2="${q.x2}" y2="${q.y2}"/>`;
  if(!sel)return h;const s=scene(),k=view.k;
- {const it=sel.id!=='__bg'?itemById(sel.id):null,m=it&&it.type==='cam'&&it.marks[clamp(sel.mark||0,0,it.marks.length-1)],t=m&&m.aim&&aimTarget(s,m.aim);if(t)h+=`<line class="deco" x1="${m.x}" y1="${m.y}" x2="${t.x}" y2="${t.y}" stroke="#2f6fde" stroke-width="1.4" stroke-dasharray="6 5" vector-effect="non-scaling-stroke" pointer-events="none"/><circle class="deco" cx="${t.x}" cy="${t.y}" r="${22}" fill="none" stroke="#2f6fde" stroke-width="1.4" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" pointer-events="none"/>`;}
+ {const it=sel.id!=='__bg'?itemById(sel.id):null,ra=it&&it.type==='cam'?verStart(it,clamp(sel.mark||0,0,it.marks.length-1)):0,pl=it&&it.type==='cam'&&aimPlan(s,it,ra);if(pl){const [,rb]=camRun(it,ra),seg=(m,t,o)=>`<line class="deco" x1="${m.x}" y1="${m.y}" x2="${t.x}" y2="${t.y}" stroke="#2f6fde" stroke-width="1.4" stroke-dasharray="6 5" stroke-opacity="${o}" vector-effect="non-scaling-stroke" pointer-events="none"/><circle class="deco" cx="${t.x}" cy="${t.y}" r="22" fill="none" stroke="#2f6fde" stroke-width="1.4" stroke-dasharray="4 4" stroke-opacity="${o}" vector-effect="non-scaling-stroke" pointer-events="none"/>`;for(let j=ra;j<=rb;j++)h+=seg(it.marks[j],pl.marks[j-ra],1);for(const t of pl.pans)h+=seg(it.marks[rb],t,.5);}}
  {const it=sel.id!=='__bg'?itemById(sel.id):null,i=sel.mark||0,m=it&&it.type==='cam'&&it.marks[i];
   const fk=sel.fk||0;if(m&&sel.frame&&frameOn()&&m.sb&&images[m.sb]&&images[fImg(m,fk)]){const FW=fWk(s,m,fk),FH=fszH(FW),lay=frameLayout(s,s.pageId),c=fPos(it,i,m,lay,fk);
    const g=gesture,lw=g&&g.type==='handle'&&g.h==='fsz'&&g.lockW;if(lw){for(const f of frameList(s))if(!(f.m===m&&f.k===fk)&&fWk(s,f.m,f.k)===lw&&document.querySelector(`#items g[data-frame][data-id="${f.it.id}"][data-mark="${f.i}"]${f.k?`[data-fk="${f.k}"]`:':not([data-fk])'}`)){const q=fPos(f.it,f.i,f.m,lay,f.k),W=lw,H=fszH(W);h+=`<rect class="fmatch" x="${q.x-W/2-4/k}" y="${q.y-H/2-4/k}" width="${W+8/k}" height="${H+8/k}" rx="${3/k}"/>`;}
@@ -1958,9 +1972,10 @@ function toolTap(w){
   if(md==='change'){it.marks[j].rot=ang;sel={id:it.id,mark:j};endTool();commit();return;}
   const prev=effFacing(it,at-1),d=((ang-prev)%360+540)%360-180;if(Math.abs(d)<8){toast('That’s the way they’re already facing. Tap further around them.');return;}
   shiftAxis(s,it.id,at,1);it.marks.splice(at,0,{x:base.x,y:base.y,rot:ang,t:1});sel={id:it.id,mark:at};endTool();commit();return;}
- if(tool.t==='aim'){const it=itemById(tool.id);if(!it){endTool();return;}const m=it.marks[tool.mark];let best=null,bd=40/Math.min(view.k,1);for(const o of pageItems(s))if(o.type==='char')o.marks.forEach((q,mi)=>{if(q.t)return;const d=Math.hypot(q.x-w.x,q.y-w.y);if(d<bd){bd=d;best={o,mi};}});
-  m.aim=best?{id:best.o.id,mk:best.mi}:{x:Math.round(w.x),y:Math.round(w.y)};delete m.aim.r;aimSync(s);sel={id:it.id,mark:tool.mark};endTool();commit();
-  toast(best?`This camera now stays aimed at ${aimName(s,m.aim)}, even when you move either of them. Turn it by hand to unlock.`:'This camera now stays aimed at that spot. Turn it by hand to unlock.');return;}
+ if(tool.t==='aim'){const it=itemById(tool.id),tm=tool.mark;if(!it){endTool();return;}const m=it.marks[tm];let best=null,bd=40/Math.min(view.k,1);for(const o of pageItems(s))if(o.type==='char')o.marks.forEach((q,mi)=>{if(q.t)return;const d=Math.hypot(q.x-w.x,q.y-w.y);if(d<bd){bd=d;best={o,mi};}});
+  m.aim=best?{id:best.o.id,mk:runOf(best.o,best.mi)[0]}:{x:Math.round(w.x),y:Math.round(w.y)};{const [ra,rb]=camRun(it,tm);for(let j=ra;j<=rb;j++)delete it.marks[j]._ar;if(it.marks[rb].pans&&best)delete it.marks[rb].pans;}aimSync(s);sel={id:it.id,mark:tm};endTool();commit();
+  const pl=best&&aimPlan(s,it,tm),np=pl?pl.pans.length:0;
+  toast(best?`This camera now follows ${aimName(s,m.aim)}${np?`: it pans to her next ${plural(np,'position')}`:''}${camRun(it,tm)[1]>tm?', and each dolly mark points at her matching position':''}. Turn it by hand to unlock.`:'This camera now stays aimed at that spot. Turn it by hand to unlock.');return;}
  if(tool.t==='axis'){const it=itemById(tool.id);let best=null,bd=40/Math.min(view.k,1);for(const o of pageItems(s))if(o.type==='char'&&o.id!==it.id)o.marks.forEach((m,mi)=>{const d=Math.hypot(m.x-w.x,m.y-w.y);if(d<bd){bd=d;best={o,mi};}});
   if(!best){toast('Tap another character to draw the axis line to.');return;}
   const ax={id:uid(),type:'axis',a:it.id,am:tool.mark,b:best.o.id,bm:best.mi,pgs:curPgs(),locked:false};s.items.push(ax);sel={id:ax.id,mark:null};endTool();commit();return;}
@@ -2151,7 +2166,7 @@ function objPop(cx,cy){
    const mi=clamp(sel.mark||0,0,it.marks.length-1),[ra,rb]=camRun(it,mi),va=it.marks[ra],nv=nVer(it);if(nv>1)title+=` · V${verCode(s,verNum(it,mi))}`;
    let dm='';for(let j=ra;j<=rb;j++)dm+=`<button data-o="dm:${j}" class="${j===mi?'on':''}">${j-ra+1}</button>`;
    h=`<div class="hd">Dolly Marks</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this dolly mark" aria-label="Remove this dolly mark"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`
-    +sec('Actions',B('trackto','Track To…')+B('trackfrom','Track From…')+B('pan','Add Pan')+(it.marks[mi].aim?B('aimoff','Stop Aiming at '+esc(aimName(s,it.marks[mi].aim))):B('aim','Aim At…')))
+    +sec('Actions',B('trackto','Track To…')+B('trackfrom','Track From…')+B('pan','Add Pan')+(it.marks[ra].aim?B('aimoff','Stop Following '+esc(aimName(s,it.marks[ra].aim))):B('aim','Aim At…')))
     +sec('Shot List',B('shotdesc','Edit Shot Description…')+B('addver','Add Version…')+(nv>1?B('delmark','Remove This Version'):''))
     +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
@@ -2194,8 +2209,8 @@ function objAct(o){
   case 'axis':startTool({t:'axis',id:it.id,mark:sel.mark||0});break;
   case 'rideon':{const m=it.marks[runOf(it,sel.mark||0)[0]],h=propUnder(s,m.x,m.y,true);if(h){rideOn(s,it,sel.mark||0,h.pr,h.k);commit();toast(`Attached to the ${propName(h.pr)}. Moving or turning it carries them.`);}closePop();break;}
   case 'rideoff':rideOff(it,sel.mark||0);commit();closePop();toast('Detached.');break;
-  case 'aim':startTool({t:'aim',id:it.id,mark:clamp(sel.mark||0,0,it.marks.length-1)});break;
-  case 'aimoff':delete it.marks[clamp(sel.mark||0,0,it.marks.length-1)].aim;commit();closePop();toast('The camera no longer stays aimed.');break;
+  case 'aim':startTool({t:'aim',id:it.id,mark:verStart(it,clamp(sel.mark||0,0,it.marks.length-1))});break;
+  case 'aimoff':{const ra=verStart(it,clamp(sel.mark||0,0,it.marks.length-1));aimOffNote=Date.now();aimUnlock(it,ra);commit();closePop();toast('The camera no longer follows. Its pans stay as they are.');break;}
   case 'del':deleteSel(true);break;
   case 'delmark':act('delMark',fake());break;
   case 'dup':act('dup',fake());break;
@@ -2508,8 +2523,8 @@ function locSyncAll(cs){const Ls=locList();let changed=false;locPushed=0;
 /* two devices' lists of locations: keep every piece at its newest version */
 function locMerge(A,B){A=A||[];B=B||[];const out=[];const ids=[...new Set([...A,...B].map(L=>L.id))];
  for(const id of ids){const a=A.find(L=>L.id===id),b=B.find(L=>L.id===id);if(!a||!b){out.push(clone(a||b));continue;}
-  const n=clone((a.at||0)>=(b.at||0)?a:b);n.gone=Object.assign({},a.gone||{},b.gone||{});const its=new Map();
-  for(const m of [...(a.items||[]),...(b.items||[])]){const o=its.get(m.id);if(!o||(m._v||0)>(o._v||0))its.set(m.id,clone(m));}
+  const n=clone((a.at||0)>(b.at||0)||((a.at||0)===(b.at||0)&&canonJ([a.name,a.home])>=canonJ([b.name,b.home]))?a:b);n.gone=Object.assign({},a.gone||{},b.gone||{});const its=new Map();
+  for(const m of [...(a.items||[]),...(b.items||[])]){const o=its.get(m.id);if(!o||(m._v||0)>(o._v||0)||((m._v||0)===(o._v||0)&&canonJ(m)>canonJ(o)))its.set(m.id,clone(m));}
   n.items=[...its.values()].filter(m=>!n.gone[m.id]);const bb=(a.bgv||0)>=(b.bgv||0)?a:b;n.bgId=bb.bgId||null;n.bg=bb.bg?clone(bb.bg):null;n.bgv=bb.bgv||0;
   if(a.del||b.del)n.del=Math.max(a.del||0,b.del||0);out.push(n);}
  return out;}
@@ -2553,11 +2568,29 @@ function rideDrop(sc,it,mk){if(!it||it.type!=='char'||mk==null)return;const [a]=
  toast(`${nm} is ${VEH.has(h.pr.kind)?'in':'on'} the ${propName(h.pr)}. Moving or turning it carries ${nm}. Drag ${nm} out, or use the menu, to detach.`);}
 /* ---------- cameras that stay aimed at a character or a spot ---------- */
 function aimTarget(sc,a){if(a.id){const o=sc.items.find(q=>q.id===a.id);if(!o||!o.marks||!o.marks.length)return null;const m=o.marks[Math.min(a.mk||0,o.marks.length-1)];return {x:m.x,y:m.y};}return a.x!=null?{x:a.x,y:a.y}:null;}
+const pgShare=(A,B)=>!A||!B||A.some(x=>B.includes(x));
+/* what each mark of an aimed camera move points at: dolly mark j at the character's j-th position from the one picked;
+   positions she reaches after the camera's last mark become pans from that mark. Only positions on the camera's pages count. */
+function aimPlan(sc,it,ra){const base=it.marks[ra],a=base&&base.aim;if(!a)return null;const [,rb]=camRun(it,ra),J=rb-ra+1;
+ if(!a.id){const t=aimTarget(sc,a);if(!t)return null;return {marks:Array.from({length:J},()=>t),pans:[]};}
+ const o=sc.items.find(q=>q.id===a.id);if(!o||o.type!=='char'||!o.marks.length)return null;
+ const P=posStarts(o),s0=Math.max(0,P.indexOf(runOf(o,Math.min(a.mk||0,o.marks.length-1))[0])),cp=posPg(it,ra);
+ const F=P.slice(s0).filter((k,n)=>n===0||pgShare(cp,posPg(o,k))).map(k=>({x:o.marks[k].x,y:o.marks[k].y,k}));
+ return {marks:Array.from({length:J},(_,j)=>F[Math.min(j,F.length-1)]),pans:F.slice(J)};}
 let aimOffNote=0;
-function aimSync(sc){for(const it of sc.items){if(it.type!=='cam')continue;for(const m of it.marks){const a=m.aim;if(!a)continue;const t=aimTarget(sc,a);if(!t){delete m.aim;continue;}
-  const r=Math.round(Math.atan2(t.y-m.y,t.x-m.x)*1800/Math.PI)/10;if(Math.abs(angD(m.rot||0,r))<=.3){a.r=r;continue;}
-  if(a.r!=null&&Math.abs(angD(m.rot||0,a.r))>.3){delete m.aim;if(Date.now()-aimOffNote>4000){aimOffNote=Date.now();setTimeout(()=>toast('You turned the camera, so it no longer stays aimed. Use Aim At… to lock it again.'),20);}continue;}
-  m.rot=r;a.r=r;}}}
+const angTo=(m,t)=>Math.round(Math.atan2(t.y-m.y,t.x-m.x)*1800/Math.PI)/10;
+function aimUnlock(it,ra){const [,rb]=camRun(it,ra);delete it.marks[ra].aim;for(let j=ra;j<=rb;j++){const m=it.marks[j];delete m._ar;for(const q of m.pans||[]){delete q.auto;delete q._ar;}}
+ if(Date.now()-aimOffNote>4000){aimOffNote=Date.now();setTimeout(()=>toast('You turned the camera, so it no longer follows. Use Aim At… to lock it again.'),20);}}
+function aimSync(sc){for(const it of sc.items){if(it.type!=='cam')continue;
+  for(let j=0;j<it.marks.length;j++){const m=it.marks[j];if(!m.aim)continue;const ra=verStart(it,j);if(ra!==j){if(!it.marks[ra].aim)it.marks[ra].aim=m.aim;delete m.aim;}}
+  for(let ra=0;ra<it.marks.length;ra++){const base=it.marks[ra];if(!base.aim||it.marks[ra].tk)continue;const pl=aimPlan(sc,it,ra);if(!pl){delete base.aim;continue;}const [,rb]=camRun(it,ra);
+   /* turned by hand since the last time it was aimed: let go */
+   let hand=false;for(let j=ra;j<=rb;j++){const m=it.marks[j],r=angTo(m,pl.marks[j-ra]);if(Math.abs(angD(m.rot||0,r))>.3&&m._ar!=null&&Math.abs(angD(m.rot||0,m._ar))>.3)hand=true;}
+   const L=it.marks[rb];for(const q of L.pans||[])if(q.auto&&q._ar!=null&&Math.abs(angD(q.rot||0,q._ar))>.3)hand=true;
+   if(hand){aimUnlock(it,ra);continue;}
+   for(let j=ra;j<=rb;j++){const m=it.marks[j],r=angTo(m,pl.marks[j-ra]);m.rot=r;m._ar=r;}
+   let prev=L.rot||0;const pans=[];for(const t of pl.pans){const r=angTo(L,t);if(Math.abs(angD(prev,r))<3)continue;pans.push({rot:r,auto:1,_ar:r});prev=r;}
+   const nx=pans;if(nx.length){L.pans=nx;if(!L.move||L.move==='Stationary')L.move='Pan';}else if(L.pans&&L.pans.every(q=>q.auto)){delete L.pans;if(L.move==='Pan')L.move='Stationary';}}}}
 function aimName(sc,a){if(!a)return '';if(a.id){const o=sc.items.find(q=>q.id===a.id);return o&&o.type==='char'?String((charById(o.charId)||{}).name||'').toUpperCase():'';}return 'a spot';}
 /* ---------- smart guides for set pieces and props: edges, centers, the middle of a room, even spacing ---------- */
 function aabb(it,p){const a=rad(it.rot||0),c=Math.abs(Math.cos(a)),n=Math.abs(Math.sin(a)),hw=(it.w*c+it.h*n)/2,hh=(it.w*n+it.h*c)/2,x=p?p.x:it.x,y=p?p.y:it.y;return {x0:x-hw,x1:x+hw,cx:x,y0:y-hh,y1:y+hh,cy:y,hw,hh};}
@@ -4262,7 +4295,8 @@ function animLayer(sc,N,frac){
  const T=frac*stepDur(sc,N);let paths='',bodies='',cams='';
  const ACT=animActors(sc),PO=new Map();for(const it of ACT){const tl=timeline(it,N);if(!tl||tl.idle)continue;PO.set(it.isProp?it.orig.id:it.id,{tl,p:poseAt(it,tl,T)});}
  for(const it of ACT){if(it.type!=='char')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.ride||Math.hypot(e.p.x-m.x,e.p.y-m.y)>.5)continue;const pr=sc.items.find(q=>q.id===m.ride.id);if(!pr)continue;const pe=PO.get(pr.id),pp=pe?pe.p:propPose(pr,m.ride.k||0),w=rideWorld({x:pp.x,y:pp.y,r:pp.r},m.ride);e.p=Object.assign({},e.p,{x:w.x,y:w.y,r:w.r});}
- for(const it of ACT){if(it.type!=='cam')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.aim)continue;const te=m.aim.id&&PO.get(m.aim.id),tg=te?te.p:aimTarget(sc,m.aim);if(tg)e.p=Object.assign({},e.p,{r:Math.atan2(tg.y-e.p.y,tg.x-e.p.x)*180/Math.PI});}
+ for(const it of ACT){if(it.type!=='cam'||PO.has(it.id))continue;const cur=lastIdx(effSteps(it),N);if(cur<0)continue;const b=it.marks[verStart(it,cur)];if(!b.aim||!b.aim.id)continue;const te=PO.get(b.aim.id);if(!te||!te.tl.legs||!te.tl.legs.length)continue;const m=it.marks[cur];PO.set(it.id,{tl:{cur,legs:[],segs:[]},p:{x:m.x,y:m.y,r:m.rot||0,op:1}});}
+ for(const it of ACT){if(it.type!=='cam')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[verStart(it,e.tl.cur)];if(!m||!m.aim)continue;const te=m.aim.id&&PO.get(m.aim.id),tg=te?te.p:aimTarget(sc,m.aim);if(tg)e.p=Object.assign({},e.p,{r:Math.atan2(tg.y-e.p.y,tg.x-e.p.x)*180/Math.PI});}
  let props='';for(const it of ACT){const e=PO.get(it.isProp?it.orig.id:it.id);if(!e)continue;const tl=e.tl,p=e.p;
   if(it.isProp){const o=it.orig;for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],'#5b6170',true,Math.min(o.w,o.h)/2+4,!o.hard,'class="deco"');
    props+=`<g class="L-${layerOf(o)}" data-aid="${o.id}" transform="translate(${p.x},${p.y}) rotate(${p.r})" opacity="${p.op}">${boxShape(o)}${o.label?`<text class="sl" y="4" text-anchor="middle" transform="rotate(${-p.r})">${esc(String(o.label).toUpperCase())}</text>`:''}</g>`;continue;}
