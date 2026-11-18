@@ -400,7 +400,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118031907';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118035914';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -839,6 +839,7 @@ function commit(opt){
  try{castReconcile();}catch(e){}
  try{typeRefresh();}catch(e){}
  try{locSyncAll(scene());locNote();}catch(e){console.error(e);}
+ try{rideSync(scene());aimSync(scene());}catch(e){}
  normShots(scene());ppFill(scene());const s=snapshot();
  if(s!==cur){if(cur!==null){undoS.push(cur);if(undoS.length>200)undoS.shift();}redoS=[];cur=s;detectChanges();saveLocal();schedulePush();}
  render(opt);
@@ -1209,7 +1210,7 @@ function charOff(sc,it,d){if(it.type!=='char'||!it.pgs||it.pgs.length!==1||(d||0
 function stripes(g,dk){const xs=g==='m'?[0]:g==='f'?[-4.5,4.5]:[];return xs.map(x=>{const h=Math.sqrt(15*15-x*x)-1.2;return `<line class="deco" x1="${x}" y1="${-h}" x2="${x}" y2="${h}" stroke="${dk}" stroke-width="2"/>`;}).join('');}
 function runOf(it,i){let a=i,b=i;while(a>0&&it.marks[a].t)a--;while(b+1<it.marks.length&&it.marks[b+1].t)b++;return [a,b];}
 function effFacing(it,j){let g=0;while(j>0&&it.marks[j].t&&it.marks[j].back&&g++<50)j--;return (it.marks[j]||{}).rot||0;}
-function shiftAxis(sc,id,at,delta){for(const x of sc.items)if(x.type==='axis'){if(x.a===id&&(x.am||0)>=at)x.am=Math.max(0,(x.am||0)+delta);if(x.b===id&&(x.bm||0)>=at)x.bm=Math.max(0,(x.bm||0)+delta);}}
+function shiftAxis(sc,id,at,delta){for(const x of sc.items)if(x.type==='cam')for(const m of x.marks||[])if(m.aim&&m.aim.id===id&&(m.aim.mk||0)>=at)m.aim.mk=Math.max(0,(m.aim.mk||0)+delta);for(const x of sc.items)if(x.type==='axis'){if(x.a===id&&(x.am||0)>=at)x.am=Math.max(0,(x.am||0)+delta);if(x.b===id&&(x.bm||0)>=at)x.bm=Math.max(0,(x.bm||0)+delta);}}
 function turnArc2(r0,r1,dk,R,back,attrs){let d=((r1-r0)%360+540)%360-180;if(Math.abs(d)<3)return '';
  const sg=d>0?1:-1,a0=rad(r0+sg*14),a1=rad(r0+d),x0=Math.cos(a0)*R,y0=Math.sin(a0)*R,x1=Math.cos(a1)*R,y1=Math.sin(a1)*R,lg=Math.abs(d)-14>180?1:0,arc=`M${x0},${y0}A${R},${R} 0 ${lg} ${d>0?1:0} ${x1},${y1}`;
  const head=(a,dir)=>{const tx=-Math.sin(a)*dir,ty=Math.cos(a)*dir,nx=Math.cos(a),ny=Math.sin(a),x=Math.cos(a)*R,y=Math.sin(a)*R;return `<path d="M${x+tx*5},${y+ty*5}L${x-tx*5+nx*4.5},${y-ty*5+ny*4.5}L${x-tx*5-nx*4.5},${y-ty*5-ny*4.5}Z" fill="${dk}"/>`;};
@@ -1497,7 +1498,7 @@ function itemsMarkup(sc,pid){
  }
  return fov+sh+frames+paths+cams+chars;
 }
-function hnd(name,x,y,cls){return `<g data-handle="${name}" transform="translate(${x},${y}) scale(${1/view.k})"><circle r="20" fill="transparent"/><circle class="h${cls?' '+cls:''}" r="8"/></g>`;}
+function hnd(name,x,y,cls,hr){return `<g data-handle="${name}" transform="translate(${x},${y}) scale(${1/view.k})"><circle r="${hr||20}" fill="transparent"/><circle class="h${cls?' '+cls:''}" r="8"/></g>`;}
 function lockBadge(x,y){return `<g class="deco" transform="translate(${x},${y}) scale(${1/view.k})"><circle r="11" fill="#2b3445"/><rect x="-4.5" y="-1" width="9" height="7" rx="1.5" fill="#fff"/><path d="M-2.6,-1v-2.4a2.6,2.6 0 0 1 5.2,0V-1" fill="none" stroke="#fff" stroke-width="1.6"/></g>`;}
 const rp=(it,lx,ly)=>{const a=rad(it.rot||0);return {x:it.x+lx*Math.cos(a)-ly*Math.sin(a),y:it.y+lx*Math.sin(a)+ly*Math.cos(a)};};
 const textW=it=>String(it.text).length*(it.size||16)*.62+12;
@@ -1514,8 +1515,9 @@ function uiMarkup(){
  if(gesture&&gesture.type==='lasso'&&gesture.pts.length>1)h+=`<path d="M${gesture.pts.map(p=>p.x+','+p.y).join('L')}Z" fill="#2f6fde" fill-opacity=".07" stroke="#2f6fde" stroke-width="1.5" stroke-dasharray="6 4" vector-effect="non-scaling-stroke" class="deco"/>`;
  if(msel)for(const it of mselItems()){const b=msBox(it);if(b)h+=`<rect class="ring" x="${b.x0}" y="${b.y0}" width="${b.x1-b.x0}" height="${b.y1-b.y0}" rx="6"/>`+(it.locked?lockBadge(b.x1,b.y0):'');}
  if(tool&&tool.t==='wall'&&tool.last){h+=`<circle cx="${tool.last.x}" cy="${tool.last.y}" r="${6/view.k}" fill="#2f6fde"/>`;if(tool.hover)h+=`<line x1="${tool.last.x}" y1="${tool.last.y}" x2="${tool.hover.x}" y2="${tool.hover.y}" stroke="#2f6fde" stroke-width="${WALL_T}" stroke-opacity=".45" stroke-linecap="square"/>`;}
- if(gesture&&gesture.type==='frame'&&gesture.guides&&gesture.moved)for(const q of gesture.guides)h+=`<line class="sguide" x1="${q.x1}" y1="${q.y1}" x2="${q.x2}" y2="${q.y2}"/>`;
+ if(gesture&&(gesture.type==='frame'||gesture.type==='drag')&&gesture.guides&&gesture.moved)for(const q of gesture.guides)h+=`<line class="sguide" x1="${q.x1}" y1="${q.y1}" x2="${q.x2}" y2="${q.y2}"/>`;
  if(!sel)return h;const s=scene(),k=view.k;
+ {const it=sel.id!=='__bg'?itemById(sel.id):null,m=it&&it.type==='cam'&&it.marks[clamp(sel.mark||0,0,it.marks.length-1)],t=m&&m.aim&&aimTarget(s,m.aim);if(t)h+=`<line class="deco" x1="${m.x}" y1="${m.y}" x2="${t.x}" y2="${t.y}" stroke="#2f6fde" stroke-width="1.4" stroke-dasharray="6 5" vector-effect="non-scaling-stroke" pointer-events="none"/><circle class="deco" cx="${t.x}" cy="${t.y}" r="${22}" fill="none" stroke="#2f6fde" stroke-width="1.4" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" pointer-events="none"/>`;}
  {const it=sel.id!=='__bg'?itemById(sel.id):null,i=sel.mark||0,m=it&&it.type==='cam'&&it.marks[i];
   const fk=sel.fk||0;if(m&&sel.frame&&frameOn()&&m.sb&&images[m.sb]&&images[fImg(m,fk)]){const FW=fWk(s,m,fk),FH=fszH(FW),lay=frameLayout(s,s.pageId),c=fPos(it,i,m,lay,fk);
    const g=gesture,lw=g&&g.type==='handle'&&g.h==='fsz'&&g.lockW;if(lw){for(const f of frameList(s))if(!(f.m===m&&f.k===fk)&&fWk(s,f.m,f.k)===lw&&document.querySelector(`#items g[data-frame][data-id="${f.it.id}"][data-mark="${f.i}"]${f.k?`[data-fk="${f.k}"]`:':not([data-fk])'}`)){const q=fPos(f.it,f.i,f.m,lay,f.k),W=lw,H=fszH(W);h+=`<rect class="fmatch" x="${q.x-W/2-4/k}" y="${q.y-H/2-4/k}" width="${W+8/k}" height="${H+8/k}" rx="${3/k}"/>`;}
@@ -1542,7 +1544,7 @@ function uiMarkup(){
  h+=`<polygon class="ring" points="${cs.map(p=>p.x+','+p.y).join(' ')}"/>`;
  if(it.locked)return h+lockBadge(cs[1].x,cs[1].y);
  const top=rp(g,0,-hh/2),rt=rp(g,0,-hh/2-34/k);h+=`<line class="ring" x1="${top.x}" y1="${top.y}" x2="${rt.x}" y2="${rt.y}"/>`+hnd('rot',rt.x,rt.y);
- if(it.type!=='text'&&!gi&&!it.fixed)h+=hnd('size',cs[2].x,cs[2].y);
+ if(it.type!=='text'&&!gi&&!it.fixed)h+=hnd('size',cs[2].x,cs[2].y,'',clamp(Math.hypot(w,hh)/2*k-8,9,20)); /* small pieces: the grab area stops short of the middle so they can still be dragged */
  return h;
 }
 let bgKey='';
@@ -1555,7 +1557,7 @@ function renderBg(){
 }
 function renderUI(){$('#ui').innerHTML=uiMarkup();renderCtx();keysCtx();}
 function renderCanvas(){
- const s=scene();syncPieces(s);renderBg();applyLayers();if(anim.step){anim.base=null;drawAnim();}else $('#items').innerHTML=itemsMarkup(s);renderUI();renderAnimBar();renderConf();renderLoc();
+ const s=scene();syncPieces(s);try{rideSync(s);aimSync(s);}catch(e){console.error(e);}renderBg();applyLayers();if(anim.step){anim.base=null;drawAnim();}else $('#items').innerHTML=itemsMarkup(s);renderUI();renderAnimBar();renderConf();renderLoc();
  $('#empty').style.display=pageItems(s).length||s.bgId?'none':'';
 }
 
@@ -1931,6 +1933,7 @@ function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
  else if(t.t==='from'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap where ${String((charById(it.charId)||{}).name||'').toUpperCase()} walks in from.`;}
  else if(t.t==='turn'){const it=itemById(t.id);$('#bannerTxt').textContent=`Tap the direction ${String((charById(it.charId)||{}).name||'').toUpperCase()} turns to.`;}
  else if(t.t==='axis')$('#bannerTxt').textContent='Tap the other character to draw the axis line.';
+ else if(t.t==='aim')$('#bannerTxt').textContent='Tap the character, or the spot, this camera should stay pointed at.';
  else if(t.t==='pfrom')$('#bannerTxt').textContent='Tap where it moves in from.';
  else if(t.t==='pan')$('#bannerTxt').textContent=t.mode==='change'?'Tap the new direction for this turn.':'Tap the direction the camera pans to.';
  else $('#bannerTxt').textContent='Tap to place wall corners. It finishes by itself when it meets another corner. Or tap Done.';
@@ -1955,6 +1958,9 @@ function toolTap(w){
   if(md==='change'){it.marks[j].rot=ang;sel={id:it.id,mark:j};endTool();commit();return;}
   const prev=effFacing(it,at-1),d=((ang-prev)%360+540)%360-180;if(Math.abs(d)<8){toast('That’s the way they’re already facing. Tap further around them.');return;}
   shiftAxis(s,it.id,at,1);it.marks.splice(at,0,{x:base.x,y:base.y,rot:ang,t:1});sel={id:it.id,mark:at};endTool();commit();return;}
+ if(tool.t==='aim'){const it=itemById(tool.id);if(!it){endTool();return;}const m=it.marks[tool.mark];let best=null,bd=40/Math.min(view.k,1);for(const o of pageItems(s))if(o.type==='char')o.marks.forEach((q,mi)=>{if(q.t)return;const d=Math.hypot(q.x-w.x,q.y-w.y);if(d<bd){bd=d;best={o,mi};}});
+  m.aim=best?{id:best.o.id,mk:best.mi}:{x:Math.round(w.x),y:Math.round(w.y)};delete m.aim.r;aimSync(s);sel={id:it.id,mark:tool.mark};endTool();commit();
+  toast(best?`This camera now stays aimed at ${aimName(s,m.aim)}, even when you move either of them. Turn it by hand to unlock.`:'This camera now stays aimed at that spot. Turn it by hand to unlock.');return;}
  if(tool.t==='axis'){const it=itemById(tool.id);let best=null,bd=40/Math.min(view.k,1);for(const o of pageItems(s))if(o.type==='char'&&o.id!==it.id)o.marks.forEach((m,mi)=>{const d=Math.hypot(m.x-w.x,m.y-w.y);if(d<bd){bd=d;best={o,mi};}});
   if(!best){toast('Tap another character to draw the axis line to.');return;}
   const ax={id:uid(),type:'axis',a:it.id,am:tool.mark,b:best.o.id,bm:best.mi,pgs:curPgs(),locked:false};s.items.push(ax);sel={id:ax.id,mark:null};endTool();commit();return;}
@@ -2133,7 +2139,8 @@ function objPop(cx,cy){
   else if(it.type==='char'&&(it.marks[sel.mark||0]||{}).t){const m=it.marks[sel.mark],ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`;title='Edit Turn';
    h=sec('Actions',B('tbefore','Insert Turn Before')+B('tafter','Insert Turn After')+B('tdel','Delete Turn',IC.x))+sec('Settings',ck('thide','Hide Turn',m.hid)+(m.back?ck('tback','Turn Back Again',1):'')+(animOn?stB:''));}
   else if(it.type==='char'){const c=charById(it.charId)||{},m=it.marks[sel.mark||0]||it.marks[0],runs=it.marks.filter(q=>!q.t).length;title='Edit Character';
-   h=sec('Actions',(c.extra?B('selgroup','Select All '+esc(String(c.name).toUpperCase())):'')+B('walkto','Walk To…')+B('walkfrom','Walk From…')+B('turn','Add Turn')+B('axis','Axis Line To…'))
+   const rdA=rideAt(it,sel.mark||0),rdP=rdA&&s.items.find(q=>q.id===rdA.id),under=!rdA&&propUnder(s,m.x,m.y,true);
+   h=sec('Actions',(c.extra?B('selgroup','Select All '+esc(String(c.name).toUpperCase())):'')+B('walkto','Walk To…')+B('walkfrom','Walk From…')+B('turn','Add Turn')+B('axis','Axis Line To…')+(rdP?B('rideoff','Detach From '+esc(propName(rdP))):under?B('rideon','Attach To '+esc(propName(under.pr))):''))
     +sec('Object',B('del','Delete',IC.x)+(runs>1?B('delmark','Remove This Mark'):'')+B('dup','Duplicate',IC.dup)+B('label',m.note?'Edit Label…':'Add Label…',IC.lbl)+lk)
     +sec('Label',labIsFree(it,sel.mark||0)?B('labback','Reattach Label'):B('labfree','Detach Label'))
     +sec('Settings',B('edit','Edit Color/Type…')+stB)+colorGrid(['#E5484D','#F76B15','#FFC53D','#30A46C','#12A594','#3E63DD','#8E4EC6','#D6409F'],c.color,'char')+pages;}
@@ -2144,7 +2151,7 @@ function objPop(cx,cy){
    const mi=clamp(sel.mark||0,0,it.marks.length-1),[ra,rb]=camRun(it,mi),va=it.marks[ra],nv=nVer(it);if(nv>1)title+=` · V${verCode(s,verNum(it,mi))}`;
    let dm='';for(let j=ra;j<=rb;j++)dm+=`<button data-o="dm:${j}" class="${j===mi?'on':''}">${j-ra+1}</button>`;
    h=`<div class="hd">Dolly Marks</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this dolly mark" aria-label="Remove this dolly mark"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`
-    +sec('Actions',B('trackto','Track To…')+B('trackfrom','Track From…')+B('pan','Add Pan'))
+    +sec('Actions',B('trackto','Track To…')+B('trackfrom','Track From…')+B('pan','Add Pan')+(it.marks[mi].aim?B('aimoff','Stop Aiming at '+esc(aimName(s,it.marks[mi].aim))):B('aim','Aim At…')))
     +sec('Shot List',B('shotdesc','Edit Shot Description…')+B('addver','Add Version…')+(nv>1?B('delmark','Remove This Version'):''))
     +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):''))
     +sec('Object',B('del','Delete',IC.x)+B('dupcam','Add Camera to Setup '+st.num,IC.dup)+lk)
@@ -2185,6 +2192,10 @@ function objAct(o){
   case 'thide':{const m=it.marks[sel.mark];m.hid=!m.hid;if(!m.hid)delete m.hid;commit();objPop(popAt.x,popAt.y);break;}
   case 'tback':{const m=it.marks[sel.mark];m.back=!m.back;if(!m.back)delete m.back;commit();objPop(popAt.x,popAt.y);break;}
   case 'axis':startTool({t:'axis',id:it.id,mark:sel.mark||0});break;
+  case 'rideon':{const m=it.marks[runOf(it,sel.mark||0)[0]],h=propUnder(s,m.x,m.y,true);if(h){rideOn(s,it,sel.mark||0,h.pr,h.k);commit();toast(`Attached to the ${propName(h.pr)}. Moving or turning it carries them.`);}closePop();break;}
+  case 'rideoff':rideOff(it,sel.mark||0);commit();closePop();toast('Detached.');break;
+  case 'aim':startTool({t:'aim',id:it.id,mark:clamp(sel.mark||0,0,it.marks.length-1)});break;
+  case 'aimoff':delete it.marks[clamp(sel.mark||0,0,it.marks.length-1)].aim;commit();closePop();toast('The camera no longer stays aimed.');break;
   case 'del':deleteSel(true);break;
   case 'delmark':act('delMark',fake());break;
   case 'dup':act('dup',fake());break;
@@ -2517,6 +2528,59 @@ function locCreate(sc,name){const now=Date.now(),L={id:uid(),name:name||locKey(s
  locList().push(L);sc.loc=L.id;sc.locIds=L.items.map(m=>m.id);sc.locOut=[];sc.locBgv=now;delete sc.locBgOwn;
  for(const p of sc.plans||[])if(p.d&&p.d.items){p.d.items=p.d.items.filter(it=>!LOCT(it));p.d.items.unshift(...L.items.map(m=>locFromMaster(m,{id:uid(),pgs:null})));}
  return L;}
+/* ---------- riders: a character position attached to a prop (in a car, on a chair) moves and turns with it ---------- */
+const SEATS=new Set(['chair','armchair','sofa','bench','barstool','bedsingle','beddouble','hospbed','gurney','wheelchair','booth','stool','loveseat','recliner','couch']);
+const angD=(a,b)=>((b-a)%360+540)%360-180;
+function propPose(it,k){if(k&&it.mv&&it.mv[k-1]){const q=it.mv[k-1];return {x:q.x,y:q.y,r:q.r!=null?q.r:(q.rot!=null?q.rot:(it.rot||0))};}return {x:it.x,y:it.y,r:it.rot||0};}
+function rideWorld(pp,rd){const a=rad(pp.r),c=Math.cos(a),n=Math.sin(a);return {x:pp.x+rd.x*c-rd.y*n,y:pp.y+rd.x*n+rd.y*c,r:pp.r+rd.r};}
+function rideLocal(pp,m){const a=rad(-pp.r),c=Math.cos(a),n=Math.sin(a),dx=m.x-pp.x,dy=m.y-pp.y;return {x:dx*c-dy*n,y:dx*n+dy*c,r:angD(pp.r,m.rot||0)};}
+function rideSync(sc){for(const it of sc.items){if(it.type!=='char')continue;for(const m of it.marks){const rd=m.ride;if(!rd)continue;const pr=sc.items.find(q=>q.id===rd.id);if(!pr||!BOX(pr.type)){delete m.ride;continue;}const pp=propPose(pr,rd.k||0),w=rideWorld(pp,rd);
+  if(rd.px!==pp.x||rd.py!==pp.y||rd.pr!==pp.r){m.x=w.x;m.y=w.y;m.rot=Math.round(w.r*10)/10;}
+  else if(Math.abs(w.x-m.x)>.01||Math.abs(w.y-m.y)>.01||Math.abs(angD(w.r,m.rot||0))>.05)Object.assign(rd,rideLocal(pp,m));
+  rd.px=pp.x;rd.py=pp.y;rd.pr=pp.r;}}}
+/* the prop (and which of its positions) a point sits inside, smallest first */
+function propUnder(sc,x,y,any){const hits=[];for(const pr of pageItems(sc)){if(!(pr.type==='prop'||pr.type==='set')||pr.kind==='mask')continue;if(!any&&!(VEH.has(pr.kind)||SEATS.has(pr.kind)))continue;
+  const n=1+((pr.mv||[]).length);for(let k=0;k<n;k++){const pp=propPose(pr,k),l=rideLocal(pp,{x,y,rot:0});if(Math.abs(l.x)<=pr.w/2+2&&Math.abs(l.y)<=pr.h/2+2)hits.push({pr,k,a:pr.w*pr.h});}}
+ hits.sort((a,b)=>a.a-b.a);return hits[0]||null;}
+const propName=pr=>pr.label?String(pr.label).toUpperCase():((LIB[pr.kind]||{}).n||'prop').toLowerCase();
+function rideOn(sc,it,mk,pr,k){const [a,b]=runOf(it,mk),pp=propPose(pr,k||0);for(let j=a;j<=b;j++){const m=it.marks[j];m.ride=Object.assign(rideLocal(pp,m),{id:pr.id,k:k||0,px:pp.x,py:pp.y,pr:pp.r});}}
+function rideOff(it,mk){const [a,b]=runOf(it,mk);for(let j=a;j<=b;j++)delete it.marks[j].ride;}
+function rideAt(it,mk){const m=it.marks[runOf(it,mk)[0]];return m&&m.ride||null;}
+/* after a character is dropped: in a car or on a chair it rides along; dragged out, it gets off */
+function rideDrop(sc,it,mk){if(!it||it.type!=='char'||mk==null)return;const [a]=runOf(it,mk),m=it.marks[a],rd=m.ride,nm=String((charById(it.charId)||{}).name||'').toUpperCase();
+ if(rd){const pr=sc.items.find(q=>q.id===rd.id);const l=pr&&rideLocal(propPose(pr,rd.k||0),m);if(pr&&Math.abs(l.x)<=pr.w/2+6&&Math.abs(l.y)<=pr.h/2+6)return;rideOff(it,mk);toast(`${nm} is off the ${pr?propName(pr):'prop'}.`);return;}
+ const h=propUnder(sc,m.x,m.y,false);if(!h)return;rideOn(sc,it,mk,h.pr,h.k);
+ toast(`${nm} is ${VEH.has(h.pr.kind)?'in':'on'} the ${propName(h.pr)}. Moving or turning it carries ${nm}. Drag ${nm} out, or use the menu, to detach.`);}
+/* ---------- cameras that stay aimed at a character or a spot ---------- */
+function aimTarget(sc,a){if(a.id){const o=sc.items.find(q=>q.id===a.id);if(!o||!o.marks||!o.marks.length)return null;const m=o.marks[Math.min(a.mk||0,o.marks.length-1)];return {x:m.x,y:m.y};}return a.x!=null?{x:a.x,y:a.y}:null;}
+let aimOffNote=0;
+function aimSync(sc){for(const it of sc.items){if(it.type!=='cam')continue;for(const m of it.marks){const a=m.aim;if(!a)continue;const t=aimTarget(sc,a);if(!t){delete m.aim;continue;}
+  const r=Math.round(Math.atan2(t.y-m.y,t.x-m.x)*1800/Math.PI)/10;if(Math.abs(angD(m.rot||0,r))<=.3){a.r=r;continue;}
+  if(a.r!=null&&Math.abs(angD(m.rot||0,a.r))>.3){delete m.aim;if(Date.now()-aimOffNote>4000){aimOffNote=Date.now();setTimeout(()=>toast('You turned the camera, so it no longer stays aimed. Use Aim At… to lock it again.'),20);}continue;}
+  m.rot=r;a.r=r;}}}
+function aimName(sc,a){if(!a)return '';if(a.id){const o=sc.items.find(q=>q.id===a.id);return o&&o.type==='char'?String((charById(o.charId)||{}).name||'').toUpperCase():'';}return 'a spot';}
+/* ---------- smart guides for set pieces and props: edges, centers, the middle of a room, even spacing ---------- */
+function aabb(it,p){const a=rad(it.rot||0),c=Math.abs(Math.cos(a)),n=Math.abs(Math.sin(a)),hw=(it.w*c+it.h*n)/2,hh=(it.w*n+it.h*c)/2,x=p?p.x:it.x,y=p?p.y:it.y;return {x0:x-hw,x1:x+hw,cx:x,y0:y-hh,y1:y+hh,cy:y,hw,hh};}
+function boxSnap(sc,it,p,g){const tol=8/view.k,me=aabb(it,p),R=[],W=[];
+ for(const o of pageItems(sc)){if(o===it)continue;if(BOX(o.type)&&o.kind!=='dollytrack'&&!movesProp(o)&&o.w&&o.h)R.push(aabb(o));else if(o.type==='wall')W.push(o);}
+ const ov=(a,b,ax)=>ax==='x'?(a.y0<b.y1&&b.y0<a.y1):(a.x0<b.x1&&b.x0<a.x1);
+ const solve=ax=>{const lo=ax+'0',hi=ax+'1',c='c'+ax,half=ax==='x'?me.hw:me.hh,v=p[ax],C=[];
+  for(const r of R)for(const [mk,off] of [[lo,-half],[c,0],[hi,half]])for(const kk of [lo,c,hi])C.push({d:r[kk]-(v+off),at:r[kk],k:'al',r});
+  const row=R.filter(r=>ov(r,me,ax)),L=row.filter(r=>r[c]<v).sort((a,b)=>b[hi]-a[hi]),Rt=row.filter(r=>r[c]>v).sort((a,b)=>a[lo]-b[lo]);
+  if(L[0]&&L[1]){const G=L[0][lo]-L[1][hi];if(G>0)C.push({d:L[0][hi]+G+half-v,k:'sp',seg:[[L[1][hi],L[0][lo]],[L[0][hi],L[0][hi]+G]]});}
+  if(Rt[0]&&Rt[1]){const G=Rt[1][lo]-Rt[0][hi];if(G>0)C.push({d:Rt[0][lo]-G-half-v,k:'sp',seg:[[Rt[0][hi],Rt[1][lo]],[Rt[0][lo]-G,Rt[0][lo]]]});}
+  if(L[0]&&Rt[0]){const m=(L[0][hi]+Rt[0][lo])/2;if(Rt[0][lo]-L[0][hi]>2*half)C.push({d:m-v,k:'sp',seg:[[L[0][hi],m-half],[m+half,Rt[0][lo]]]});}
+  /* walls running across this axis: center between the nearest one on each side */
+  let wl=null,wr=null;for(const w of W){const t=(w.t||WALL_T)/2;if(ax==='x'&&Math.abs(w.x1-w.x2)<1&&Math.min(w.y1,w.y2)<me.y1&&Math.max(w.y1,w.y2)>me.y0){const x=w.x1;if(x<v&&(!wl||x>wl.at))wl={at:x+t};else if(x>v&&(!wr||x<wr.at))wr={at:x-t};}
+   if(ax==='y'&&Math.abs(w.y1-w.y2)<1&&Math.min(w.x1,w.x2)<me.x1&&Math.max(w.x1,w.x2)>me.x0){const y=w.y1;if(y<v&&(!wl||y>wl.at))wl={at:y+t};else if(y>v&&(!wr||y<wr.at))wr={at:y-t};}}
+  if(wl&&wr&&wr.at-wl.at>2*half)C.push({d:(wl.at+wr.at)/2-v,k:'room',a:wl.at,b:wr.at});
+  let best=null;for(const q of C)if(Math.abs(q.d)<tol*(g['s'+ax]?1.6:1)&&(!best||Math.abs(q.d)<Math.abs(best.d)-.01))best=q;g['s'+ax]=!!best;return best;};
+ const bx=solve('x'),by=solve('y'),out={x:p.x+(bx?bx.d:0),y:p.y+(by?by.d:0)},o=aabb(it,out),G=[],pad=12/view.k,tick=5/view.k;
+ const line=(ax,q)=>{if(!q)return;if(q.k==='al'){const all=R.filter(r=>[r[ax+'0'],r['c'+ax],r[ax+'1']].some(v=>Math.abs(v-q.at)<.5)).concat([o]);
+   if(ax==='x')G.push({x1:q.at,y1:Math.min(...all.map(r=>r.y0))-pad,x2:q.at,y2:Math.max(...all.map(r=>r.y1))+pad});else G.push({x1:Math.min(...all.map(r=>r.x0))-pad,y1:q.at,x2:Math.max(...all.map(r=>r.x1))+pad,y2:q.at});}
+  else if(q.k==='sp'){for(const [a,b] of q.seg){if(ax==='x'){G.push({x1:a,y1:o.cy,x2:b,y2:o.cy},{x1:a,y1:o.cy-tick,x2:a,y2:o.cy+tick},{x1:b,y1:o.cy-tick,x2:b,y2:o.cy+tick});}else{G.push({x1:o.cx,y1:a,x2:o.cx,y2:b},{x1:o.cx-tick,y1:a,x2:o.cx+tick,y2:a},{x1:o.cx-tick,y1:b,x2:o.cx+tick,y2:b});}}}
+  else if(q.k==='room'){if(ax==='x')G.push({x1:q.a,y1:o.cy,x2:q.b,y2:o.cy},{x1:o.cx,y1:o.cy-2*tick,x2:o.cx,y2:o.cy+2*tick});else G.push({x1:o.cx,y1:q.a,x2:o.cx,y2:q.b},{x1:o.cx-2*tick,y1:o.cy,x2:o.cx+2*tick,y2:o.cy});}};
+ line('x',bx);line('y',by);g.guides=G.length?G:null;return out;}
 function projectCast(s){const r=rootOf(s),ids=new Set();for(const x of liveScenes().concat([s]))if(x===s||rootOf(x)===r)for(const it of x.items)if(it.type==='char')ids.add(it.charId);return ids;}
 function shotCount(s){return s.items.filter(i=>i.type==='cam').reduce((a,i)=>a+i.marks.length,0);}
 function noteRecent(id){const r=(P.ui.recentScenes||[]).filter(x=>x!==id);r.unshift(id);P.ui.recentScenes=r.slice(0,10);}
@@ -3053,17 +3117,28 @@ const revHex=c=>(REV_COLS.find(x=>x[0]===c)||REV_COLS[1])[1];
 const scNum=n=>String(n||'').toUpperCase().replace(/[\s.]/g,'');
 function scHash(sc){const t=sc.heading+'\n'+sc.paras.map(p=>p.t+':'+String(p.x).replace(/\s+/g,' ').trim()).join('\n');let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(16);}
 /* match a new draft against a folder's scenes: by scene number, then by heading for unnumbered scenes */
-function revPlan(fid,ps){const old=folderScenes(fid).filter(s=>!s.trashed&&!s.tpl),byN={};for(const o of old){const k=scNum(o.number);if(k&&!byN[k])byN[k]=o;}
- const used=new Set(),rows=[];let blind=0;
- ps.scenes.forEach((sc,i)=>{const k=scNum(sc.num),h=scHash(sc);let o=k&&byN[k]&&!used.has(byN[k].id)?byN[k]:null;
-  if(!o&&!k){const c=old.filter(x=>!used.has(x.id)&&x.heading===sc.heading);if(c.length===1)o=c[0];}
-  if(!o){rows.push({sc,i,s:null,k:'new',h});return;}used.add(o.id);
-  const back=o.rev&&o.rev.k==='omitted',hd=o.heading!==sc.heading;let k2;
+/* a scene's text as a set of paragraph fingerprints, so a later draft can find it even if it was renumbered or rewritten in part */
+function scSig(sc){const out=new Set();for(const p of sc.paras||[]){const t=String(p.x||'').toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();if(t.length<12)continue;let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}out.add(h.toString(36));if(out.size>=150)break;}return [...out];}
+function sigSim(a,b){if(!a||!b||!a.length||!b.length)return 0;const B=new Set(b);let n=0;for(const x of a)if(B.has(x))n++;return n<2&&Math.min(a.length,b.length)>1?0:n/Math.min(a.length,b.length);}
+/* match a new draft against a folder's scenes: same text first (so renumbered scenes keep their work), then most of the same lines, then number and heading */
+function revPlan(fid,ps){const old=folderScenes(fid).filter(s=>!s.trashed&&!s.tpl),NS=ps.scenes,H=NS.map(scHash),G=NS.map(scSig),M=NS.map(()=>null),used=new Set();
+ const pair=(i,o)=>{M[i]=o;used.add(o.id);};
+ const bySrc={},hc={};for(const o of old)if(o.src)(bySrc[o.src]=bySrc[o.src]||[]).push(o);for(const h of H)hc[h]=(hc[h]||0)+1;
+ NS.forEach((sc,i)=>{const L=bySrc[H[i]];if(L&&L.length===1&&hc[H[i]]===1&&!used.has(L[0].id))pair(i,L[0]);});
+ const cand=[];NS.forEach((sc,i)=>{if(M[i])return;for(const o of old){if(used.has(o.id)||!o.sig)continue;const v=sigSim(G[i],o.sig);if(v>=.5)cand.push([v+(scNum(o.number)===scNum(sc.num)?.01:0),i,o]);}});
+ cand.sort((x,y)=>y[0]-x[0]);for(const [v,i,o] of cand)if(!M[i]&&!used.has(o.id))pair(i,o);
+ const byN=()=>{const m={};for(const o of old){const k=scNum(o.number);if(k&&!used.has(o.id)&&!m[k])m[k]=o;}return m;};
+ let bn=byN();NS.forEach((sc,i)=>{if(M[i])return;const o=bn[scNum(sc.num)];if(o&&!used.has(o.id)&&o.heading===sc.heading)pair(i,o);});
+ NS.forEach((sc,i)=>{if(M[i])return;const c=old.filter(x=>!used.has(x.id)&&x.heading===sc.heading),n=NS.filter((y,j)=>!M[j]&&y.heading===sc.heading).length;if(c.length===1&&n===1)pair(i,c[0]);});
+ bn=byN();NS.forEach((sc,i)=>{if(M[i])return;const k=scNum(sc.num),o=k&&bn[k];if(o&&!used.has(o.id))pair(i,o);});
+ const rows=[];let blind=0;
+ NS.forEach((sc,i)=>{const o=M[i],h=H[i];if(!o){rows.push({sc,i,s:null,k:'new',h});return;}
+  const back=o.rev&&o.rev.k==='omitted',hd=o.heading!==sc.heading,renum=sc.num&&scNum(o.number)!==scNum(sc.num)?(o.number||'—'):null;let k2;
   if(back)k2='changed';else if(o.src)k2=o.src!==h?'changed':'same';else{k2=hd?'changed':'same';if(!hd)blind++;}
-  rows.push({sc,i,s:o,k:k2,h,hd,back});});
+  rows.push({sc,i,s:o,k:k2,h,hd,back,renum});});
  const gone=old.filter(o=>!used.has(o.id)&&!(o.rev&&o.rev.k==='omitted'));
- return {rows,gone,blind,n:{same:rows.filter(r=>r.k==='same').length,changed:rows.filter(r=>r.k==='changed').length,new:rows.filter(r=>r.k==='new').length,gone:gone.length}};}
-function revChip(s){if(!s.rev)return '';const k=s.rev.k==='omitted'?'Omitted':s.rev.k==='new'?'New':'Revised';return `<i class="rvc" style="--rc:${revHex(s.rev.c)}">${esc(s.rev.c)} · ${k}</i>`;}
+ return {rows,gone,blind,n:{same:rows.filter(r=>r.k==='same').length,changed:rows.filter(r=>r.k==='changed').length,new:rows.filter(r=>r.k==='new').length,gone:gone.length,renum:rows.filter(r=>r.renum).length}};}
+function revChip(s){if(!s.rev)return '';const k=(s.rev.k==='omitted'?'Omitted':s.rev.k==='new'?'New':s.rev.k==='renum'?'Renumbered':'Revised')+(s.rev.was?' · was '+s.rev.was:'');return `<i class="rvc" style="--rc:${revHex(s.rev.c)}">${esc(s.rev.c)} · ${k}</i>`;}
 function revFolders(){return P.folders.filter(f=>folderScenes(f.id).some(s=>!s.trashed&&!s.tpl));}
 function importScript(into){
  const inp=document.createElement('input');inp.type='file';inp.style.display='none';document.body.appendChild(inp);
@@ -3110,8 +3185,8 @@ function importReview(ps,chars,fname,into){
    card.querySelector('#imNew').hidden=rv;card.querySelector('#imRev').hidden=!rv;card.querySelector('#imScs').hidden=rv;card.querySelector('#imX').hidden=rv;
    const K=known();card.querySelectorAll('.imch .imr[data-i]').forEach(r=>{const c=chars[+r.dataset.i];r.hidden=rv&&K.has(c.name.toUpperCase());});
    if(rv){plan=revPlan(fS.value,ps);const N=plan.n,col=revHex(cS.value),line=(r,k,t)=>`<div class="imrv"><i class="rvc" style="--rc:${col}">${k}</i><b>${esc(r.sc?r.sc.num||String(r.i+1):r.number)}</b>${esc(t)}</div>`;
-    card.querySelector('#imRS').innerHTML=`<p class="imrsum"><b>${N.changed}</b> changed · <b>${N.new}</b> new · <b>${N.gone}</b> omitted · ${N.same} unchanged</p>
-     <div class="imrl">${plan.rows.filter(r=>r.k!=='same').map(r=>line(r,r.k==='new'?'New':r.back?'Back in':'Changed',r.sc.heading+(r.k==='changed'&&r.hd?'  (new heading)':''))).join('')}${plan.gone.map(o=>`<div class="imrv"><i class="rvc" style="--rc:${col}">Omitted</i><b>${esc(o.number)}</b>${esc(o.heading||o.title||'')}</div>`).join('')}</div>
+    card.querySelector('#imRS').innerHTML=`<p class="imrsum"><b>${N.changed}</b> changed · <b>${N.new}</b> new · <b>${N.gone}</b> omitted${N.renum?` · <b>${N.renum}</b> renumbered`:''} · ${N.same} unchanged</p>
+     <div class="imrl">${plan.rows.filter(r=>r.k!=='same'||r.renum).map(r=>line(r,r.k==='new'?'New':r.back?'Back in':r.k==='same'?'Renumbered':'Changed',(r.renum?`was ${r.renum} · `:'')+r.sc.heading+(r.k==='changed'&&r.hd?'  (new heading)':''))).join('')}${plan.gone.map(o=>`<div class="imrv"><i class="rvc" style="--rc:${col}">Omitted</i><b>${esc(o.number)}</b>${esc(o.heading||o.title||'')}</div>`).join('')}</div>
      ${plan.blind?`<p class="mut" style="font-size:12.5px">${plural(plan.blind,'scene')} came from an older import, so only its heading could be compared this time. From now on the whole scene text is compared.</p>`:''}
      <p class="mut" style="font-size:12.5px">Your Breakdown, Strategy, floor plans and shots stay with every scene. Omitted scenes are marked, not deleted.</p>`;
     const k=card.querySelectorAll('.imch .imr[data-i]:not([hidden])').length;
@@ -3131,7 +3206,7 @@ function importReview(ps,chars,fname,into){
    const xg={},xBy={};card.querySelectorAll('.xn').forEach(inp=>{const i=+inp.dataset.i,n=Math.max(0,Math.min(200,parseInt(inp.value,10)||0)),lab=(card.querySelector(`.xl[data-i="${i}"]`).value.trim()||'BG').toUpperCase();if(!n)return;
     if(!xg[lab]){const col=distinctColor(usedC,EXTRA_COLORS);usedC.push(col);const c={id:uid(),name:lab,color:col,extra:true,home:rootId};P.characters.push(c);xg[lab]=c;}(xBy[xrows[i].si]=xBy[xrows[i].si]||[]).push({c:xg[lab],n});});
    let first=null;
-   ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.folder=fo.id;s.src=scHash(sc);
+   ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.folder=fo.id;s.src=scHash(sc);s.sig=scSig(sc);
     if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of sc.present.filter(n=>ids[n])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}
      let yy=y+(x>0?150:60);for(const g of (xBy[i]||[])){placeExtras(s,g.c.id,g.n,300,yy,'cluster','mix',pg);yy+=Math.ceil(g.n/Math.ceil(Math.sqrt(g.n*1.4)))*48+70;}}
     if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
@@ -3146,15 +3221,15 @@ function revApply(fid,col,plan,chars,place,useTpl,K){const f=fById(fid);if(!f)re
  for(const c of P.characters)if(!c.extra&&!c.tpl&&(inProj.has(c.id)||c.home===root)&&K.has(c.name.toUpperCase())&&!ids[c.name.toUpperCase()])ids[c.name.toUpperCase()]=c.id;
  let nc=0;for(const c of chars){if(!c.on||K.has(c.name.toUpperCase()))continue;const cl=distinctColor(usedC);usedC.push(cl);const ch={id:uid(),name:c.name,color:cl,home:root};if(c.g)ch.g=c.g;P.characters.push(ch);ids[c.name.toUpperCase()]=ch.id;nc++;}
  for(const r of plan.rows){
-  if(r.s){r.s.src=r.h;if(r.k==='changed'){r.s.heading=r.sc.heading;if(r.sc.num)r.s.number=r.sc.num;r.s.rev={k:'changed',c:col,d};}continue;}
-  const s=blankScene(r.sc.num||r.i+1);s.heading=r.sc.heading;s.folder=fid;s.src=r.h;s.rev={k:'new',c:col,d};
+  if(r.s){r.s.src=r.h;r.s.sig=scSig(r.sc);if(r.k==='changed'){r.s.heading=r.sc.heading;if(r.sc.num)r.s.number=r.sc.num;r.s.rev={k:'changed',c:col,d};if(r.renum)r.s.rev.was=r.renum;}else if(r.renum){r.s.number=r.sc.num;r.s.rev={k:'renum',c:col,d,was:r.renum};}continue;}
+  const s=blankScene(r.sc.num||r.i+1);s.heading=r.sc.heading;s.folder=fid;s.src=r.h;s.sig=scSig(r.sc);s.rev={k:'new',c:col,d};
   if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of r.sc.present.filter(n=>ids[n.toUpperCase()])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n.toUpperCase()],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}}
   if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
   P.scenes.push(s);}
  for(const o of plan.gone)o.rev={k:'omitted',c:col,d};
  (f.revs=f.revs||[]).push({c:col,d});
  commit();closeModal();openBrowser(fid);const N=plan.n;
- toast(`${f.name} updated to ${col} pages: ${N.changed} changed, ${N.new} new, ${N.gone} omitted${nc?', '+plural(nc,'new character'):''}. Undo takes it back.`);}
+ toast(`${f.name} updated to ${col} pages: ${N.changed} changed, ${N.new} new, ${N.gone} omitted${N.renum?', '+N.renum+' renumbered':''}${nc?', '+plural(nc,'new character'):''}. Undo takes it back.`);}
 function sel0(){sel=null;msel=null;inspOpen=false;endTool();}
 let brDrag=null,brDragEnd=0,brDragBound=false;
 function bindBrDrag(root){
@@ -4058,12 +4133,12 @@ function menu(){
  const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
  openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
   <button data-m="open">Open scene… <span class="kb">⌘O</span></button>${sFolder(s)?`<button data-m="overview">${esc(fById(sFolder(s)).name)} overview & questions…</button>`:''}<button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}${s.tpl?'':`<div class="hd">Location</div>${s.loc&&locById(s.loc)?`<button data-m="locmenu">Linked to ${esc(locById(s.loc).name)}…</button>`:`<button data-m="saveloc">Save this set as a location…</button>${projLocs(s).length?'<button data-m="useloc">Use a location…</button>':''}`}`}<div class="hd">Script</div><button data-m="import">Import a script…</button><button data-m="docx">Import a breakdown and strategy…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button><button data-m="video">Save the blocking as a video…</button>
+  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Floor plan</div><button data-m="tidylab">Tidy labels on this page</button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}${s.tpl?'':`<div class="hd">Location</div>${s.loc&&locById(s.loc)?`<button data-m="locmenu">Linked to ${esc(locById(s.loc).name)}…</button>`:`<button data-m="saveloc">Save this set as a location…</button>${projLocs(s).length?'<button data-m="useloc">Use a location…</button>':''}`}`}<div class="hd">Script</div><button data-m="import">Import a script…</button><button data-m="docx">Import a breakdown and strategy…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button><button data-m="video">Save the blocking as a video…</button>
   <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="versions">Earlier versions…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}<span id="stgTxt"></span></div></div>`,b,p=>{stgFill();
   p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
    ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,rotplan:()=>{if(mode!=='diagram')setMode('diagram');rotateStart();},video:exportVideo,overview:()=>overviewDialog(sFolder(s)),backup,restore:()=>$('#fJson').click(),
-     open:()=>openBrowser(),docx:()=>$('#fDocx').click(),keys:keysDialog,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,saveloc:saveLocDialog,useloc:useLocDialog,locmenu:locManage,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
+     open:()=>openBrowser(),docx:()=>$('#fDocx').click(),keys:keysDialog,tidylab:tidyLabels,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,saveloc:saveLocDialog,useloc:useLocDialog,locmenu:locManage,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
  });
 }
 
@@ -4185,7 +4260,10 @@ function poseAt(it,tl,t){let x=tl.start.x,y=tl.start.y,r=tl.start.rot,op=1;
 function stepDur(sc,N){let d=.4;for(const it of animActors(sc)){const tl=timeline(it,N);if(tl&&!tl.idle)d=Math.max(d,tl.dur);}return d;}
 function animLayer(sc,N,frac){
  const T=frac*stepDur(sc,N);let paths='',bodies='',cams='';
- let props='';for(const it of animActors(sc)){const tl=timeline(it,N);if(!tl||tl.idle)continue;const p=poseAt(it,tl,T);
+ const ACT=animActors(sc),PO=new Map();for(const it of ACT){const tl=timeline(it,N);if(!tl||tl.idle)continue;PO.set(it.isProp?it.orig.id:it.id,{tl,p:poseAt(it,tl,T)});}
+ for(const it of ACT){if(it.type!=='char')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.ride||Math.hypot(e.p.x-m.x,e.p.y-m.y)>.5)continue;const pr=sc.items.find(q=>q.id===m.ride.id);if(!pr)continue;const pe=PO.get(pr.id),pp=pe?pe.p:propPose(pr,m.ride.k||0),w=rideWorld({x:pp.x,y:pp.y,r:pp.r},m.ride);e.p=Object.assign({},e.p,{x:w.x,y:w.y,r:w.r});}
+ for(const it of ACT){if(it.type!=='cam')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.aim)continue;const te=m.aim.id&&PO.get(m.aim.id),tg=te?te.p:aimTarget(sc,m.aim);if(tg)e.p=Object.assign({},e.p,{r:Math.atan2(tg.y-e.p.y,tg.x-e.p.x)*180/Math.PI});}
+ let props='';for(const it of ACT){const e=PO.get(it.isProp?it.orig.id:it.id);if(!e)continue;const tl=e.tl,p=e.p;
   if(it.isProp){const o=it.orig;for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],'#5b6170',true,Math.min(o.w,o.h)/2+4,!o.hard,'class="deco"');
    props+=`<g class="L-${layerOf(o)}" data-aid="${o.id}" transform="translate(${p.x},${p.y}) rotate(${p.r})" opacity="${p.op}">${boxShape(o)}${o.label?`<text class="sl" y="4" text-anchor="middle" transform="rotate(${-p.r})">${esc(String(o.label).toUpperCase())}</text>`:''}</g>`;continue;}
   if(it.type==='char'){const c=charById(it.charId);if(!c)continue;const col=c.color,dk=shade(col,-.5),L=behind(p.r,23),anc=L.c>.35?'start':L.c<-.35?'end':'middle',ly=L.y+(L.s>.35?8:L.s<-.35?-1:4);
@@ -4270,12 +4348,12 @@ function drawLayers(){const s=scene(),L=lay(s),all=LAYERS.every(([k])=>L.lock[k]
  const row=(key,name,val,lockOn,lockKey,dis)=>`<div class="lrow${dis?' dis':''}"><span class="ln">${name}</span><input type="range" min="1" max="100" step="1" value="${val}" data-op="${key}"${dis?' disabled':''}><b class="lv">${val}</b>${lockKey?`<button class="lk${lockOn?' on':''}" data-lock="${lockKey}" title="${lockOn?'Unlock':'Lock'} ${name}"${dis?' disabled':''}>${LOCK_SVG(lockOn)}</button>`:'<span class="lk"></span>'}</div>`;
  pop.innerHTML=`<h4>Layers</h4><div class="ls lays" style="width:350px"><div class="lrow lall"><span class="ln"><b>All layers</b></span><button class="lkall${all?' on':''}" data-lockall="1">${LOCK_SVG(all)}<span>${all?'Unlock all':'Lock all'}</span></button></div>
   <div class="hd">Layers <span class="hdr">opacity · lock</span></div>${LAYERS.map(([k,n])=>row(k,n,L.op[k]==null?100:L.op[k],L.lock[k],k)).join('')}
-  <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}<div class="lrow"><span class="ln" title="The shot description written next to each camera on the floor plan">Shot Descriptions</span><button class="lsw${P.ui.camDesc?' on':''}" data-camdesc="1" role="switch" aria-checked="${P.ui.camDesc?'true':'false'}">${P.ui.camDesc?'On':'Off'}</button></div>${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
+  <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}<div class="lrow"><span class="ln" title="The shot description written next to each camera on the floor plan">Shot Descriptions</span><button class="lsw${P.ui.camDesc?' on':''}" data-camdesc="1" role="switch" aria-checked="${P.ui.camDesc?'true':'false'}">${P.ui.camDesc?'On':'Off'}</button></div><div class="lrow"><span class="ln" title="Pink guides line up set pieces and props, center them in a room and space them evenly. Hold Option while dragging to place freely.">Smart Guides</span><button class="lsw${P.ui.noSnap?'':' on'}" data-snap="1" role="switch" aria-checked="${P.ui.noSnap?'false':'true'}">${P.ui.noSnap?'Off':'On'}</button></div>${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
   <div class="hd" style="font-weight:400;font-size:12.5px;line-height:1.35;padding:10px 18px">A locked layer can’t be selected or moved, so you can work on top of it. Locking a layer fades it to 50%; unlocking brings back its opacity. Locked Items sets how faded anything locked looks.</div></div>`;
  const box=pop.querySelector('.lays');
  box.addEventListener('input',e=>{const r=e.target.closest('[data-op]');if(!r)return;const v=+r.value,k=r.dataset.op;r.nextElementSibling.textContent=v;setLayerVal(s,k,v);if(k==='bg')renderBg();else applyLayers();});
  box.addEventListener('change',e=>{if(e.target.closest('[data-op]'))commit({insp:false});});
- box.addEventListener('click',e=>{if(e.target.closest('[data-camdesc]')){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();drawLayers();return;}const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
+ box.addEventListener('click',e=>{if(e.target.closest('[data-camdesc]')){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();drawLayers();return;}if(e.target.closest('[data-snap]')){P.ui.noSnap=!P.ui.noSnap;if(!P.ui.noSnap)delete P.ui.noSnap;saveLocal();drawLayers();return;}const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
   const fade=(k,on)=>{s.layers.op0=Object.assign({},s.layers.op0);if(k==='bg'){if(!s.bg)return;if(on){s.layers.op0.bg=Math.round((s.bg.op||1)*100);s.bg.op=Math.min(s.bg.op||1,.5);}else if(s.layers.op0.bg!=null){s.bg.op=s.layers.op0.bg/100;delete s.layers.op0.bg;}return;}
    s.layers.op=Object.assign({},lay(s).op);const cur=s.layers.op[k]==null?100:s.layers.op[k];if(on){s.layers.op0[k]=cur;s.layers.op[k]=Math.min(cur,50);}else if(s.layers.op0[k]!=null){s.layers.op[k]=s.layers.op0[k];delete s.layers.op0[k];}};
   if(a){const on=!all;for(const [k] of LAYERS){if(!!s.layers.lock[k]!==on)fade(k,on);s.layers.lock[k]=on;}if(s.bg){if(!!s.bg.locked!==on)fade('bg',on);s.bg.locked=on;}}
@@ -4494,6 +4572,7 @@ svg.addEventListener('pointerdown',e=>{
  if(tool&&!(hEl&&hEl.dataset.handle.startsWith('cp:'))){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,tool:true,w};return;}
  if(hEl){const hn=hEl.dataset.handle,now=Date.now();if(hn.startsWith('cp:')&&lastTap.id===hn&&now-lastTap.t<380){const [,i,j]=hn.split(':').map(Number),it=itemById(sel.id),b=it&&posAt(it,i);if(b&&b.cp){b.cp.splice(j,1);commit({insp:false});}lastTap={id:null,t:0};return;}lastTap={id:hn,t:now};gesture={type:'handle',h:hn,sx:e.clientX,sy:e.clientY,moved:false};if(hn==='p1'||hn==='p2'){const hw=sel&&itemById(sel.id);if(hw&&hw.type==='wall'&&unhook===hw.id)gesture.detach=true;else if(hw&&hw.type==='wall'&&wallJoint(scene(),hw,hn==='p1'?1:2).length)armHold(gesture);}return;}
  let el=e.target.closest('[data-id]');{const al=!tool&&!lassoArmed&&!(el&&el.dataset.lab)?attachedLabelAt(e.clientX,e.clientY):null;if(al&&(!msel||!e.shiftKey))el=al;}
+ if(picked&&sel&&sel.id===picked.id&&el&&el.dataset.id!==picked.id&&!e.shiftKey&&!msel){const u=document.elementsFromPoint(e.clientX,e.clientY).map(x=>x.closest&&x.closest('#items [data-id]')).find(x=>x&&x.dataset.id===picked.id&&!x.dataset.lab&&(x.dataset.mark!=null?+x.dataset.mark:null)===picked.mark);if(u)el=u;else picked=null;}else if(picked&&(!sel||sel.id!==picked.id))picked=null;
  if(e.shiftKey&&!msel&&!lassoArmed){const le=el&&el.dataset.lab?el:(!el?labelAt(e.clientX,e.clientY):null);if(le){const lid=le.dataset.id,lit=itemById(lid);if(lit&&lit.type==='cam'&&!lit.locked){msel=null;sel={id:lid,mark:0,lab:true};gesture={type:'label',id:lid,mk:0,last:toWorld(e.clientX,e.clientY),moved:false,sx:e.clientX,sy:e.clientY,shiftLab:le};renderUI();renderShotSel();return;}
   if(lit&&le.dataset.lab&&labCan(lit)&&!lit.locked){const lmk=le.dataset.mark!=null?+le.dataset.mark:null;msel=null;sel={id:lid,mark:lmk,lab:true};gesture={type:'label',id:lid,mk:lmk,last:toWorld(e.clientX,e.clientY),moved:false,sx:e.clientX,sy:e.clientY,shiftLab:le,alab:!!le.dataset.alab};renderUI();renderShotSel();return;}
   pointers.delete(e.pointerId);gesture=null;menuFor(le,e.clientX,e.clientY);return;}}
@@ -4510,17 +4589,61 @@ svg.addEventListener('pointerdown',e=>{
   if(!same){sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(isLab)sel.lab=true;if(fk)sel.fk=fk;if(el.dataset.frame)sel.frame=true;renderUI();renderInsp();renderShotSel();}
   const locked=id==='__bg'?(scene().bg||{}).locked:((itemById(id)||{}).locked||(itemById(id)||{}).type==='axis');
   if(sel&&sel.id===id)sel.badge=el.dataset.badge!=null;
-  if(locked){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl};return;}
+  if(locked){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl};armPick(gesture,e);return;}
   if(!locked&&el.dataset.badge!=null){gesture={type:'badge',id,mk,bj:+el.dataset.badge,moved:false,sx:e.clientX,sy:e.clientY,dbl};return;}
   if(!locked&&el.dataset.alab){const g={type:'drag',id,mk,last:w,moved:false,sx:e.clientX,sy:e.clientY,dbl,touch:e.pointerType!=='mouse'};gesture=g;
    if(g.touch){clearTimeout(holdT);holdT=setTimeout(()=>{if(gesture!==g||g.moved)return;Object.assign(g,{type:'label',alab:true,last:toWorld(g.sx,g.sy),moved:false,hold:true});downAgain=null;toast('Now drag the label where you want it.');},450);}return;}
   if(!locked&&isLab&&(itemById(id)||{}).type==='cam'&&!e.shiftKey&&!(itemById(id)||{}).lab){const g={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:false,dbl,labHint:true,touch:e.pointerType!=='mouse'};gesture=g;
    if(g.touch){clearTimeout(holdT);holdT=setTimeout(()=>{if(gesture!==g||g.moved)return;Object.assign(g,{type:'label',id,mk:0,last:toWorld(g.sx,g.sy),moved:false,hold:true});downAgain=null;toast('Now drag the label where you want it.');},450);}return;}
-  if(!locked){gesture={type:el.dataset.lab?'label':el.dataset.frame?'frame':'drag',id,mk,fk,last:w,moved:false,sx:e.clientX,sy:e.clientY,dbl};const sc0=scene(),it0=itemById(id);if(el.dataset.frame||(it0&&it0.type==='cam'))freezeFrames(sc0);if(it0&&it0.type==='wall'&&unhook===it0.id)gesture.detach=true;else if(it0&&it0.type==='wall'&&wallJoined(sc0,it0))armHold(gesture);return;}
+  if(!locked){gesture={type:el.dataset.lab?'label':el.dataset.frame?'frame':'drag',id,mk,fk,last:w,moved:false,sx:e.clientX,sy:e.clientY,dbl};const sc0=scene(),it0=itemById(id);if(el.dataset.frame||(it0&&it0.type==='cam'))freezeFrames(sc0);if(it0&&it0.type==='wall'&&unhook===it0.id)gesture.detach=true;else if(it0&&it0.type==='wall'&&wallJoined(sc0,it0))armHold(gesture);else if(gesture.type==='drag'||gesture.type==='frame')armPick(gesture,e);return;}
  }
  gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:!el};
 });
 let holdT=null,labHinted=false,downAgain=null,tapMenuAt=0;
+/* ---------- tidy labels: names and shot labels that overlap move to the nearest clear spot (connecting lines appear when they sit far off) ---------- */
+function wRect(els){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,n=0;for(const e of els){if(!e)continue;const r=e.getBoundingClientRect();if(!r.width&&!r.height)continue;const a=toWorld(r.left,r.top),b=toWorld(r.right,r.bottom);x0=Math.min(x0,a.x,b.x);y0=Math.min(y0,a.y,b.y);x1=Math.max(x1,a.x,b.x);y1=Math.max(y1,a.y,b.y);n++;}return n?{x0,y0,x1,y1}:null;}
+function wOrigin(el){const M=el.getScreenCTM();if(!M)return null;return toWorld(M.e,M.f);}
+function labelSet(sc){const out=[];
+ for(const it of pageItems(sc)){
+  if(it.type==='char'){const c=charById(it.charId)||{},k=c.extra?.78:1;for(let a=0;a<it.marks.length;a++){if(it.marks[a].t)continue;const body=document.querySelector(`#items g[data-id="${it.id}"][data-mark="${a}"]:not([data-lab])`);if(!body)continue;
+    const free=document.querySelector(`#items .L-free[data-id="${it.id}"][data-mark="${a}"]`),els=free?[free.querySelector('text.nm'),free.querySelector('text.nt')]:[...body.parentNode.querySelectorAll(':scope > text.nm, :scope > text.nt, :scope > g > text.nm, :scope > g > text.nt')];
+    const r=wRect(els);if(!r)continue;out.push({it,a,kind:'char',k,r,free:!!free,el:free});}}
+  else if(it.type==='cam'){const g=document.querySelector(`#items g[data-lab][data-id="${it.id}"]`);if(!g)continue;const r=wRect([...g.querySelectorAll('rect[rx],text')]);if(!r)continue;out.push({it,kind:'cam',k:1,r,free:!!it.lab,el:g});}}
+ return out;}
+function bodySet(sc){const out=[];for(const it of pageItems(sc)){if(it.type!=='char'&&it.type!=='cam')continue;const k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;
+  for(const g of document.querySelectorAll(`#items g[data-id="${it.id}"][data-mark]:not([data-lab]):not([data-frame])`)){const o=wOrigin(g.closest('.L-char')||g);if(!o)continue;const m=it.marks[+g.dataset.mark];if(!m||m.t)continue;out.push({x:m.x,y:m.y,r:(it.type==='char'?18:19)*k,id:it.id,a:+g.dataset.mark});}}return out;}
+function rOv(a,b){const w=Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0),h=Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0);return w>0&&h>0?w*h:0;}
+function cOv(r,c){const dx=Math.max(r.x0-c.x,0,c.x-r.x1),dy=Math.max(r.y0-c.y,0,c.y-r.y1);return dx*dx+dy*dy<c.r*c.r?Math.max(1,(c.r*c.r-dx*dx-dy*dy)):0;}
+function tidyLabels(){const sc=scene();if(mode!=='diagram'){toast('Open the floor plan to tidy its labels.');return;}renderCanvas();
+ const pad=r=>({x0:r.x0-2,y0:r.y0-2,x1:r.x1+2,y1:r.y1+2}),own=(L,b)=>L.kind==='char'&&b.id===L.it.id&&b.a===L.a;
+ let Ls=labelSet(sc),B=bodySet(sc);const bad=new Set();
+ for(let i=0;i<Ls.length;i++){const A=pad(Ls[i].r);if(B.some(b=>!own(Ls[i],b)&&cOv(A,b)))bad.add(i);for(let j=i+1;j<Ls.length;j++)if(rOv(A,pad(Ls[j].r))){bad.add(j);if(!bad.has(i)&&Ls[j].free&&!Ls[i].free){bad.delete(j);bad.add(i);}}}
+ if(!bad.size){toast('No labels overlap on this page.');return;}
+ const moving=[...bad].map(i=>Ls[i]);for(const L of moving){if(L.free)continue;if(L.kind==='char')labStartFree(L.it,L.a);else labDetach(L.it,0);}
+ renderCanvas();Ls=labelSet(sc);B=bodySet(sc);
+ const key=L=>L.it.id+':'+(L.a==null?'':L.a),mv=new Set(moving.map(key)),placed=Ls.filter(L=>!mv.has(key(L))).map(L=>pad(L.r));let n=0;
+ for(const L of Ls.filter(L=>mv.has(key(L)))){const host=L.kind==='char'?L.it.marks[L.a]:L.it.marks[0],org=L.el?wOrigin(L.el):null,par=L.el&&L.el.parentNode?wOrigin(L.el.parentNode):null;if(!org||!par)continue;
+  const cx=(L.r.x0+L.r.x1)/2,cy=(L.r.y0+L.r.y1)/2,hw=(L.r.x1-L.r.x0)/2,hh=(L.r.y1-L.r.y0)/2,dx=cx-org.x,dy=cy-org.y,a0=Math.atan2(cy-par.y,cx-par.x);
+  let best=null;
+  for(const R of [8,16,26,38,52,70,92,120,150])for(let s=0;s<16;s++){const ang=a0+(s%2?1:-1)*Math.ceil(s/2)*Math.PI/8,c=Math.cos(ang),q=Math.sin(ang),ext=Math.abs(c)*hw+Math.abs(q)*hh,X=par.x+c*(R+ext),Y=par.y+q*(R+ext),r={x0:X-hw,y0:Y-hh,x1:X+hw,y1:Y+hh},pr=pad(r);
+   let ov=0;for(const p of placed)ov+=rOv(pr,p);for(const b of B)ov+=cOv(pr,b)*3;const score=ov*1000+R+Math.ceil(s/2)*2;if(!best||score<best.score)best={score,X,Y,r:pr,ov};if(!ov)break;}
+  if(!best)continue;placed.push(best.r);const ox=best.X-dx,oy=best.Y-dy,lab={x:(ox-par.x)/L.k,y:(oy-par.y)/L.k};
+  if(L.kind==='char')labHost(L.it,L.a).lab=lab;else L.it.lab=lab;n++;}
+ commit();toast(n?`Moved ${plural(n,'label')} so nothing overlaps. Undo puts them back.`:'No labels overlap on this page.');}
+/* ---------- press and hold where things overlap: a list of everything under that spot ---------- */
+let pickT=null,picked=null;
+function stackAt(x,y){const out=[],seen=new Set();for(const e of document.elementsFromPoint(x,y)){const g=e.closest&&e.closest('#items [data-id]');if(!g||g.dataset.lab||g.dataset.badge!=null||g.dataset.track||g.dataset.alab)continue;const id=g.dataset.id;if(id==='__bg')continue;const it=itemById(id);if(!it)continue;
+  const mk=g.dataset.mark!=null?+g.dataset.mark:null,fr=!!g.dataset.frame,fk=+(g.dataset.fk||0),k=id+':'+mk+':'+fk+(fr?'f':'');if(seen.has(k))continue;seen.add(k);out.push({id,mk,fr,fk,it});}return out;}
+function stackName(sc,o){const it=o.it;if(o.fr)return 'Storyboard frame · Shot '+shotCode(sc,it);
+ if(it.type==='char'){const c=charById(it.charId)||{},n=it.marks.filter(q=>!q.t).length;return String(c.name||'Character').toUpperCase()+(n>1&&o.mk!=null?' · position '+posNum(sc,it,o.mk):'');}
+ if(it.type==='cam')return 'Camera · Shot '+shotCode(sc,it);if(it.type==='wall')return 'Wall';if(it.type==='axis')return 'Axis line';if(it.type==='ink')return 'Drawing';
+ if(it.type==='text')return 'Text “'+trunc(String(it.text||it.t||''),24)+'”';const L=LIB[it.kind]||{};return (it.label?String(it.label).toUpperCase()+' · ':'')+(L.n||it.type);}
+function pickList(x,y,L){const sc=scene();
+ pop.innerHTML=`<h4>Choose what to select</h4><div class="ls" style="width:250px">${L.map((o,i)=>`<button data-pk="${i}">${esc(stackName(sc,o))}</button>`).join('')}</div>`;pop.classList.add('on');popFor=null;placePopAt(x,y);
+ pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-pk]');if(!b)return;const o=L[+b.dataset.pk];msel=null;sel={id:o.id,mark:o.mk};if(o.fr){sel.frame=true;if(o.fk)sel.fk=o.fk;}picked={id:o.id,mark:o.mk};closePop();renderUI();renderInsp();renderShotSel();
+  toast('Selected. Drag from the same spot to move it, even with something on top.');};}
+function armPick(g,e){clearTimeout(pickT);const touch=e.pointerType!=='mouse';pickT=setTimeout(()=>{if(gesture!==g||g.moved)return;const L=stackAt(g.sx,g.sy);if(new Set(L.map(o=>o.id+':'+o.mk)).size<2)return;
+  gesture=null;pointers.clear();dragging=false;clearTimeout(holdT);pickList(g.sx,g.sy,L);},touch?500:650);}
 /* the tap that opened a menu must not also press the row that appears under the finger */
 document.addEventListener('click',e=>{if(Date.now()-tapMenuAt<600&&e.target.closest&&e.target.closest('#pop')){e.stopPropagation();e.preventDefault();}},true);
  /* pen or finger: tapping what is already selected opens its menu */
@@ -4541,14 +4664,14 @@ svg.addEventListener('pointermove',e=>{
  if(g.type==='drag'||g.type==='label'||g.type==='frame'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<(g.hold?9:4))return;if(!g.moved){g.moved=true;g.hold=false;dragging=true;$('#ctx').classList.remove('on');}
   const dx=w.x-g.last.x,dy=w.y-g.last.y;
   if(g.id==='__bg'){const b=scene().bg;b.x+=dx;b.y+=dy;}
-  else{const it=itemById(g.id);if(it){if(g.type==='label'){if(g.alab&&!g.freed){g.freed=true;labStartFree(it,g.mk);}if(it.type==='cam'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else{const h=labHost(it,g.mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;if(h&&h.lab)h.lab={x:h.lab.x+dx/k,y:h.lab.y+dy/k};}}else if(g.type==='frame'){const m=it.marks[g.mk],fk=g.fk||0;if(!g.free){const c=fPos(it,g.mk,m,frameLayout(scene(),scene().pageId),fk);g.free={x:c.x,y:c.y};}g.free.x+=dx;g.free.y+=dy;fSetPos(m,fk,e.altKey?(g.guides=null,g.free):frameSnap(scene(),it,g.mk,m,fk,g.free,g));}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
+  else{const it=itemById(g.id);if(it){if(g.type==='label'){if(g.alab&&!g.freed){g.freed=true;labStartFree(it,g.mk);}if(it.type==='cam'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else{const h=labHost(it,g.mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;if(h&&h.lab)h.lab={x:h.lab.x+dx/k,y:h.lab.y+dy/k};}}else if(g.type==='frame'){const m=it.marks[g.mk],fk=g.fk||0;if(!g.free){const c=fPos(it,g.mk,m,frameLayout(scene(),scene().pageId),fk);g.free={x:c.x,y:c.y};}g.free.x+=dx;g.free.y+=dy;fSetPos(m,fk,e.altKey?(g.guides=null,g.free):frameSnap(scene(),it,g.mk,m,fk,g.free,g));}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else if(BOX(it.type)&&!g.mk&&it.kind!=='dollytrack'&&it.w&&it.h){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;const q=(e.altKey||P.ui.noSnap)?(g.guides=null,g.free):boxSnap(scene(),it,g.free,g);it.x=q.x;it.y=q.y;}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
   g.last=w;renderCanvas();return;}
  if(g.type==='track'){if(Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<5)return;const it=itemById(g.id),a=positions(it)[g.i-1],b=posAt(it,g.i);b.cp=b.cp||[];b.cp.push(toTD(a,b,g.w0));gesture={type:'handle',h:`cp:${g.i}:${b.cp.length-1}`,moved:true};dragging=true;$('#ctx').classList.remove('on');dragHandle(gesture.h,w);renderCanvas();return;}
  if(g.type==='badge'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<4)return;g.moved=true;dragging=true;const it=itemById(g.id),w=toWorld(e.clientX,e.clientY);if(it){const c0=it.type==='char'?it.marks[runOf(it,g.mk)[0]]:it.marks[g.mk],ang=Math.round(Math.atan2(w.y-c0.y,w.x-c0.x)*180/Math.PI/5)*5;if(it.type==='char')it.marks[g.mk].rot=ang;else if(g.bj&&it.marks[g.mk].pans)it.marks[g.mk].pans[g.bj-1].rot=ang;else it.marks[g.mk].rot=ang;}renderCanvas();return;}
  if(g.type==='handle'){if(!g.moved&&g.sx!=null&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<(g.hold?9:4))return;if(!g.moved){g.moved=true;g.hold=false;dragging=true;$('#ctx').classList.remove('on');}dragHandle(g.h,w,e.shiftKey);renderCanvas();}
 });
 function endPointer(e){
- if(!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);const g=gesture;if(!g)return;clearTimeout(holdT);if(g.detach&&g.moved)unhook=null;
+ clearTimeout(pickT);if(!pointers.has(e.pointerId))return;pointers.delete(e.pointerId);const g=gesture;if(!g)return;clearTimeout(holdT);if(g.detach&&g.moved)unhook=null;
  if(g.type==='pinch'){if(!pointers.size){gesture=null;if(g.far<14&&Date.now()-g.t0<450){view=Object.assign({},g.v0);applyView();menuFor(g.tapEl,g.m0.x,g.m0.y);}flushRemote();}return;}
  if(pointers.size)return;gesture=null;const wasDrag=dragging;dragging=false;
  if(g.type==='pen'){clearTimeout(g.tm);if(tool&&tool.t==='pen'){if(g.snap)penStroke(g.snap.pts.map(q=>({x:q[0],y:q[1]})),{own:true,closed:g.snap.closed});else penStroke(g.pts);}renderUI();return;}
@@ -4561,6 +4684,7 @@ function endPointer(e){
  if(g.type==='handle'&&g.h==='rot'&&!g.moved&&sel){const it=itemById(sel.id);if(it&&!it.locked&&(it.type==='char'||it.type==='cam')){objAct(it.type==='char'?'turn':'pan');flushRemote();return;}}
  if(!g.moved&&downAgain&&g.type!=='badge'&&!g.detach&&!tool&&(e.pointerType==='pen'||e.pointerType==='touch')){const el=downAgain;downAgain=null;menuFor(el,e.clientX,e.clientY);tapMenuAt=Date.now();flushRemote();return;}
  if(g.moved&&(g.type==='drag'||g.type==='handle'))uhTidy(scene(),itemById(g.type==='drag'?g.id:(sel&&sel.id)));
+ if(g.moved&&g.type==='drag'){try{rideDrop(scene(),itemById(g.id),g.mk);}catch(err){console.error(err);}}
  if(g.type!=='pan'&&g.type!=='pinch'&&g.moved)commit({insp:false});
  else if(g.type==='pan'&&!g.moved&&g.empty&&sel){select(null);}
  else if(!g.moved&&sel&&(g.type==='drag'||g.type==='badge'||g.type==='label'||g.type==='frame'||(g.type==='pan'&&!g.empty))&&!inspOpen&&g.type==='badge'){objPop(e.clientX,e.clientY);}
