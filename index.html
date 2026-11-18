@@ -403,7 +403,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118171059';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118184210';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -747,6 +747,7 @@ const LS={p:'blk.p',img:'blk.img',sync:'blk.sync'};
 const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v);return true;}catch(e){return false;}};
 const DEVICE=(()=>{let d=lsGet('blk.dev');if(!d){d=uid();lsSet('blk.dev',d);}return d;})();
+const DEVNAME=(/iPad/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent)))?'iPad':/iPhone/.test(navigator.userAgent)?'iPhone':/Macintosh/.test(navigator.userAgent)?'Mac':'computer';
 let sync={stamps:{},dirty:[]},lastJson={},localOk=true,imgDirty=false;
 /* scene versions: a fingerprint of the content, and the line of versions each one grew from */
 function fpStr(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(36)+'.'+str.length.toString(36);}
@@ -761,9 +762,11 @@ function sceneDecide(k,b,local){if(!local)return 'take';const L=sceneFp(local),R
  if(Array.isArray(b.anc)&&b.anc.includes(L))return 'take';
  if(!known.length||known[known.length-1]===L)return 'take';
  return 'conflict';}
-function sceneConflict(k,b,local){const keep=clone(local),other=clone(b.scene);delete other.conflicts;
- keep.conflicts=(keep.conflicts||[]).filter(c=>c.fp!==sceneFp(other)).concat([{id:uid(),at:b.updatedAt||Date.now(),dev:b.dev||'',fp:sceneFp(other),scene:other}]).slice(-4);
- ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);sync.stamps[k]=Date.now();markDirty(k);return keep;}
+function sceneConflict(k,b,local){const other=clone(b.scene);delete other.conflicts;const lt=sync.stamps[k]||0,rt=b.updatedAt||0,remote=rt>lt;
+ const win=clone(remote?other:local),lose=remote?local:other,who=remote?DEVNAME:(b.devName||'other device'),when=remote?lt:rt;delete win.conflicts;win.id=local.id;
+ (win.plans=win.plans||[]).push({id:uid(),name:`Older version · ${who} · ${confWhen(when||Date.now())}`,d:planTake(lose)});
+ for(const c of local.conflicts||[])win.plans.push({id:uid(),name:'Older version · '+confWhen(c.at),d:planTake(c.scene)});
+ ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);sync.stamps[k]=Date.now();markDirty(k);return win;}
 /* Scenes and text are saved in the small store while they fit, and in the large one (the same kind that holds images)
    once they outgrow it. Exactly one of the two holds them; 'blk.big' says the large store is the one to read. */
 const LS_MAX=2e6,BIG='blk.big';let kvP=null,pSeq=0,pBig=false,pIn=0,pFail=false;
@@ -797,7 +800,9 @@ const markDirty=k=>{if(!sync.dirty.includes(k))sync.dirty.push(k);};
 /* ---------- shared lists (characters, folders, productions): each entry keeps its own change time; deletions leave a dated marker; devices merge entry by entry ---------- */
 const MLISTS=[['c','characters'],['f','folders'],['p','productions']];
 const entryFp=e=>{const o=Object.assign({},e);delete o._t;return fpStr(canonJ(o));};
-function metaStamp(){const now=Date.now(),first=!sync.metaH;sync.metaH=sync.metaH||{};sync.metaT=sync.metaT||{};const H=sync.metaH,LT=sync.metaT,T=P.tomb=P.tomb||{};
+function sceneStamp(){const now=Date.now(),T=P.tomb=P.tomb||{},ts=T.s=T.s||{},ids=P.scenes.map(x=>x.id);
+ if(!sync.sIds){sync.sIds=ids;return;}const cur=new Set(ids);for(const id of sync.sIds)if(!cur.has(id))ts[id]=now;for(const id of ids)if(ts[id])delete ts[id];sync.sIds=ids;}
+function metaStamp(){try{sceneStamp();}catch(e){}const now=Date.now(),first=!sync.metaH;sync.metaH=sync.metaH||{};sync.metaT=sync.metaT||{};const H=sync.metaH,LT=sync.metaT,T=P.tomb=P.tomb||{};
  for(const [k,key] of MLISTS){const L=P[key]||[],seen=new Set(),tk=T[k]=T[k]||{};
   for(const e of L){if(!e||!e.id)continue;const id=k+':'+e.id,h=entryFp(e);seen.add(id);
    if(H[id]!==h){if(!first)e._t=Math.max(now,(e._t||0)+1,(LT[id]||0)+1);H[id]=h;if(tk[e.id]&&!first)delete tk[e.id];}if(e._t)LT[id]=Math.max(LT[id]||0,e._t);}
@@ -807,7 +812,7 @@ function mergeEntries(A,B,tomb){const by=new Map();for(const e of [...(A||[]),..
  return order.map(id=>by.get(id)).filter(e=>!(tomb[e.id]&&tomb[e.id]>=(e._t||0))).map(clone);}
 /* returns true if the merged lists hold something the incoming copy lacks, so this device should send it back up */
 function metaMerge(meta){const T=P.tomb=P.tomb||{},R=meta.tomb||{};let back=false;
- for(const [k] of MLISTS){const a=T[k]||{},b=R[k]||{},m=Object.assign({},b);for(const id in a)m[id]=Math.max(a[id],m[id]||0);T[k]=m;if(Object.keys(m).length!==Object.keys(b).length||Object.keys(a).some(id=>a[id]>(b[id]||0)))back=true;}
+ for(const k of ['c','f','p','s']){const a=T[k]||{},b=R[k]||{},m=Object.assign({},b);for(const id in a)m[id]=Math.max(a[id],m[id]||0);T[k]=m;if(Object.keys(m).length!==Object.keys(b).length||Object.keys(a).some(id=>a[id]>(b[id]||0)))back=true;}
  for(const [k,key] of MLISTS){if(!meta[key]&&k!=='c')continue;const before=canonJ(meta[key]||[]),out=mergeEntries(P[key],meta[key],T[k]);P[key]=out;if(canonJ(out)!==before)back=true;
   for(const e of out){(sync.metaH=sync.metaH||{})[k+':'+e.id]=entryFp(e);if(e._t){sync.metaT=sync.metaT||{};sync.metaT[k+':'+e.id]=Math.max(sync.metaT[k+':'+e.id]||0,e._t);}}
   for(const id of Object.keys(sync.metaH||{}))if(id.startsWith(k+':')&&!out.some(e=>k+':'+e.id===id))delete sync.metaH[id];}
@@ -1082,18 +1087,24 @@ function applyRemote(snap){
  const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
  let metaBack=false;if(meta){const was=canonJ([P.characters,P.folders,P.productions,P.labels]);try{metaBack=metaMerge(meta);const lw=canonJ(P.locations||[]);P.locations=locMerge(P.locations,meta.locations);if(canonJ(P.locations)!==canonJ(meta.locations||[]))metaBack=true;if(canonJ(P.locations)!==lw)changed=true;}catch(e){console.error(e);}if(canonJ([P.characters,P.folders,P.productions,P.labels])!==was)changed=true;}
  if(meta&&(join||newer('meta',meta))){
-  const order=meta.sceneOrder||[],byId={},next=[];for(const s of P.scenes)byId[s.id]=s;
-  for(const id of order){const k='scene-'+id,b=sd[k];if(b&&b.scene&&!byId[id])next.push(take(k,b));else if(b&&b.scene&&byId[id])next.push(arrive(k,b,byId[id]));else if(byId[id])next.push(byId[id]);}
-  for(const s of P.scenes)if(!order.includes(s.id)){const k='scene-'+s.id,fresh=join||!sync.stamps[k];if(fresh||sync.dirty.includes(k)){next.push(s);if(fresh){sync.stamps[k]=Date.now();markDirty(k);}}}
-  if(next.length)P.scenes=next;
+  const order=meta.sceneOrder||[],byId={},next=[],placed=new Set(),TS=(P.tomb&&P.tomb.s)||{},RS=(meta.tomb&&meta.tomb.s)||{};for(const s of P.scenes)byId[s.id]=s;
+  for(const id of order){const k='scene-'+id,b=sd[k];
+   if(byId[id]){next.push(b&&b.scene?arrive(k,b,byId[id]):byId[id]);placed.add(id);}
+   else if(b&&b.scene&&!(TS[id]&&TS[id]>=(b.updatedAt||0))){next.push(take(k,b));placed.add(id);if(TS[id])delete TS[id];}}
+  /* scenes here that the other device's list doesn't have yet stay, in their place, unless it deleted them after their last change here */
+  P.scenes.forEach((s,i)=>{if(placed.has(s.id))return;const k='scene-'+s.id,del=RS[s.id];if(del&&del>=(sync.stamps[k]||0)&&!sync.dirty.includes(k))return;
+   let at=0;for(let j=i-1;j>=0;j--){const q=next.findIndex(x=>x.id===P.scenes[j].id);if(q>=0){at=q+1;break;}}next.splice(at,0,s);placed.add(s.id);
+   if(join||!sync.stamps[k]){sync.stamps[k]=Date.now();markDirty(k);}metaBack=true;});
+  if(next.length||!P.scenes.length)P.scenes=next.length?next:P.scenes;
   if(join){sync.stamps.meta=Date.now();markDirty('meta');}else{sync.stamps.meta=meta.updatedAt;sync.dirty=sync.dirty.filter(x=>x!=='meta');}
   changed=true;
  }
  if(meta&&metaBack){sync.stamps.meta=Math.max(Date.now(),(meta.updatedAt||0)+1);markDirty('meta');changed=true;setTimeout(()=>{saveLocal();schedulePush(500);},30);}
  if(meta)try{imgWant(meta);}catch(e){}
  if(join){const rim=new Set((meta&&meta.imgs)||[]);for(const k in images)if(!seen.has('img-'+k)&&!rim.has(k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
+ {const TS=(P.tomb&&P.tomb.s)||{};for(const k in sd){const b=sd[k];if(!b||!b.scene||!k.startsWith('scene-'))continue;const id=k.slice(6);if(P.scenes.some(x=>x.id===id))continue;if(TS[id]&&TS[id]>=(b.updatedAt||0))continue;if(TS[id])delete TS[id];P.scenes.push(take(k,b));changed=true;}}
  for(const k in sd){const b=sd[k];if(!b.scene)continue;const i=P.scenes.findIndex(s=>'scene-'+s.id===k);if(i<0)continue;const was=P.scenes[i],nx=arrive(k,b,was);if(nx!==was){P.scenes[i]=nx;changed=true;}}
- if(nConf)setTimeout(()=>{toast(nConf===1?'A scene was changed on two devices. Both versions are kept. Look for the yellow note on the floor plan.':nConf+' scenes were changed on two devices. Both versions of each are kept. Look for the yellow note on the floor plan.');saveLocal();schedulePush(500);},30);
+ if(nConf)setTimeout(()=>{toast(nConf===1?'A scene was changed on both devices. The newer version is in place; the older one is saved as a Blocking Plan (Pages menu).':nConf+' scenes were changed on both devices. The newer version of each is in place; the older ones are saved as Blocking Plans (Pages menu).');saveLocal();schedulePush(500);},30);
  let tch=0,tconf=0;for(const k in td){const r=mergeTxt(k,td[k]);if(r){tch+=r.ch;tconf+=r.conf;}}
  if(tconf)toast(tconf===1?'One piece of writing was changed on two devices. Both versions are kept, look for OTHER VERSION.':tconf+' pieces of writing were changed on two devices. Both versions are kept, look for OTHER VERSION.');
  if(!changed){if(tch){saveLocal();docSync();updateStatus();}return;}
@@ -1118,7 +1129,7 @@ async function push(){
    if(!sync.dirty.includes(k))continue;at=k;
    const ref=coll.doc(k),d=docs();let sent=null;
    if(k.startsWith('img-')){const iid=k.slice(4);if(images[iid])await writeDoc(ref,{data:images[iid],updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE});}
-   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=ancOf(k).slice(-40);extra.fp=sceneFp(d[k].scene);}await writeDoc(ref,Object.assign(JSON.parse(sent),extra));if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
+   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=ancOf(k).slice(-40);extra.fp=sceneFp(d[k].scene);extra.devName=DEVNAME;}await writeDoc(ref,Object.assign(JSON.parse(sent),extra));if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
    else await writeDoc(ref,null);
    if(sent!==null&&lastJson[k]!==sent){again=true;continue;} /* changed while it was being sent: stays in line for the next pass */
    sync.dirty=sync.dirty.filter(x=>x!==k);
@@ -2540,7 +2551,8 @@ function locManage(){const s=scene(),L=locById(s.loc);if(!L)return;const sc=locS
   {const sc=L.scout&&P.scenes.find(x=>x.id===L.scout&&!x.trashed),a=card.querySelector('#lPh'),b=card.querySelector('#lCam');if(a)a.onclick=()=>{closeModal();photoView(sc,(scoutPins(sc)[0]||{}).id);};if(b)b.onclick=()=>{nm();closeModal();const n=copyIdeas(sc,s);commit();toast(`Copied ${plural(n,'camera idea')} from the scout as new setups. Undo takes them back.`);};}
   card.querySelector('#lUn').onclick=()=>{nm();locUnlink(s);closeModal();commit();toast('Unlinked. This scene keeps its own copy of the set.');};
   card.querySelector('#lDel').onclick=()=>{nm();closeModal();confirmBox(`Delete ${L.name}?`,`The ${plural(sc.length,'scene')} keep their own copy of the set. They just stop being linked.`,'Delete',()=>{L.del=Date.now();L.at=L.del;for(const x of sc)locUnlink(x);commit();toast('Location deleted. Each scene kept its set.');});};});}
-function renderConf(){const el=$('#confBar');if(!el)return;const s=scene(),c=(s&&s.conflicts)||[];if(!c.length||mode!=='diagram'){el.hidden=true;return;}
+function confAuto(){let n=0;for(const x of P.scenes){if(!x.conflicts||!x.conflicts.length)continue;for(const c of x.conflicts){(x.plans=x.plans||[]).push({id:uid(),name:'Other device · '+confWhen(c.at),d:planTake(c.scene)});n++;}delete x.conflicts;}return n;}
+function renderConf(){const el=$('#confBar');if(!el)return;if(P.scenes.some(x=>x.conflicts&&x.conflicts.length)){setTimeout(()=>{const n=confAuto();if(n){commit();toast(n===1?'The other device’s version of this scene is saved as a Blocking Plan (Pages menu).':n+' other versions are saved as Blocking Plans (Pages menu).');}},0);el.hidden=true;return;}const s=scene(),c=(s&&s.conflicts)||[];if(!c.length||mode!=='diagram'){el.hidden=true;return;}
  $('#confTxt').textContent=`This scene was also changed on another device (${confWhen(c[c.length-1].at)}). Both versions are kept.`;el.hidden=false;$('#confGo').onclick=()=>conflictDialog();}
 function confSummary(sc){const it=sc.items||[],ch=it.filter(i=>i.type==='char'),cams=it.filter(i=>i.type==='cam'),pos=ch.reduce((a,i)=>a+(i.marks||[]).filter(m=>!m.t).length,0),shots=cams.reduce((a,i)=>a+(i.marks||[]).filter(m=>!m.tk).length,0),other=it.length-ch.length-cams.length;
  return `${ch.length} character${ch.length===1?'':'s'} · ${pos} position${pos===1?'':'s'} · ${cams.length} camera${cams.length===1?'':'s'} · ${shots} shot${shots===1?'':'s'} · ${other} other piece${other===1?'':'s'}`;}
