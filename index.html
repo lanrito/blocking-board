@@ -133,6 +133,7 @@ details.oth{margin-top:12px}details.oth summary{font-size:12.5px;font-weight:650
 #main{grid-column:1;grid-row:2;display:flex;flex-direction:column;min-height:0;background:var(--paper);color:#1c1c1e;color-scheme:light}
 #wrap{position:relative;flex:1;min-height:0;background:#fbfbf9;overflow:hidden}
 #cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#items .aspot{cursor:pointer}#items .aspot .ar{stroke:#f5a623;stroke-width:1.5px;stroke-dasharray:4 3;stroke-opacity:.45;vector-effect:non-scaling-stroke}#items .aspot:hover .ar{stroke-opacity:.9}#items .aspot.on .ar{stroke-width:3px;stroke-dasharray:none;stroke-opacity:1}
 #items .L-free>rect:first-child{stroke:#2f5f8f;stroke-opacity:.4;stroke-width:.8px;stroke-dasharray:3 2.5}
 #chip{position:absolute;left:12px;top:10px;max-width:calc(100% - 24px);text-align:left;border:1px solid #e1e0db;background:rgba(255,255,255,.92);border-radius:10px;padding:6px 12px;color:#1c1c1e;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 #chip b{font-size:15px;text-transform:uppercase}#chip span{display:block;font-size:12px;color:#6b6b70;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -395,7 +396,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118011310';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118012250';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3995,8 +3996,17 @@ function animLayer(sc,N,frac){
    cams+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g><g class="deco" transform="translate(0,${-34})"><rect x="${-pw/2}" y="-9" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2" y="2.8" text-anchor="middle">${tag}</text></g></g>`;}}
  return `<g>${paths}${cams}${bodies}</g>`;}
 function animBase(sc){IMF='noActors';const a=itemsMarkup(sc);if(P.ui.timeOnly){IMF=null;return a;}IMF='onlyActors';const g=itemsMarkup(sc);IMF=null;return a+`<g class="deco" opacity=".16">${g}</g>`;}
-function drawAnim(){const s=scene();if(!anim.base)anim.base=animBase(s);$('#items').innerHTML=anim.base+animLayer(s,anim.step,anim.frac);}
-function setStep(n){stopPlay();anim.base=null;if(!n){anim.step=0;anim.frac=1;renderAnimBar();renderCanvas();return;}const was=anim.step;anim.step=n;anim.frac=1;renderAnimBar();renderCanvas();if(!was)toast('Animation view. Tap the sun to go back to editing. Tap this time again for its menu.');}
+/* animation view: each position is a spot you tap to put it in (or take it out of) the current time */
+function assignLayer(sc,N){let h='';const k=view.k||1;
+ for(const it of pageItems(sc))if((it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length){if(it.type==='char'&&!charById(it.charId))continue;
+  it.marks.forEach((m,i)=>{if(it.type==='char'&&m.t)return;if(!posOn(it,i,sc.pageId))return;const on=m.st!=null&&+m.st===N;
+   h+=`<g class="aspot${on?' on':''}" data-astep="1" data-id="${it.id}" data-mark="${i}" transform="translate(${m.x},${m.y})"><circle r="27" fill="transparent"/><circle class="ar" r="24" fill="none"/>${on?`<g transform="translate(19,-19) scale(${Math.max(.8,1/k)})"><circle r="9" fill="#f5a623"/><text y="3.6" text-anchor="middle" style="font-size:11px;font-weight:800;fill:#1d1d1f">${N}</text></g>`:''}</g>`;});}
+ return `<g class="assignL">${h}</g>`;}
+function assignTap(id,mk){const it=itemById(id),m=it&&it.marks&&it.marks[mk];if(!m)return;const N=anim.step;
+ if(m.st!=null&&+m.st===N){delete m.st;toast(`Taken out of time ${N}.`);}else{m.st=N;toast(`In time ${N}.`);}
+ anim.base=null;commit();renderAnimBar();}
+function drawAnim(){const s=scene();if(!anim.base)anim.base=animBase(s);$('#items').innerHTML=anim.base+animLayer(s,anim.step,anim.frac)+(anim.playing?'':assignLayer(s,anim.step));}
+function setStep(n){stopPlay();anim.base=null;if(!n){anim.step=0;anim.frac=1;renderAnimBar();renderCanvas();return;}const was=anim.step;anim.step=n;anim.frac=1;renderAnimBar();renderCanvas();if(!was)toast('Animation view. Tap a position to put it in this time; tap it again to take it out. Tap the sun to go back to editing.');}
 function stopPlay(){anim.playing=false;cancelAnimationFrame(anim.raf);renderAnimBar();}
 function play(){
  const s=scene(),mx=maxStep(s);
@@ -4275,6 +4285,7 @@ svg.addEventListener('pointerdown',e=>{
  if(pointers.size===2){if(gesture&&gesture.moved&&gesture.type!=='pan'&&gesture.type!=='pinch')commit({insp:false});dragging=false;const [a,b]=[...pointers.values()];gesture={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},v0:Object.assign({},view),start:[a,b].map(p=>({x:p.x,y:p.y})),t0:firstDown?firstDown.t:Date.now(),far:0,tapEl:firstDown?firstDown.el:null};return;}
  if(pointers.size>2)return;
  const w=toWorld(e.clientX,e.clientY);
+ if(anim.step&&!anim.playing&&!tool){const t=e.target.closest('[data-astep]');if(t){pointers.delete(e.pointerId);gesture=null;assignTap(t.dataset.id,+t.dataset.mark);return;}gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:true};return;}
  const hEl=e.target.closest('[data-handle]');
  if(tool&&tool.t==='pen'){if(e.pointerType==='pen')penSeen=true;if(!(e.pointerType==='touch'&&penSeen)){gesture={type:'pen',pts:[w],hx:e.clientX,hy:e.clientY};penArm(gesture);return;}}
  if(tool&&!(hEl&&hEl.dataset.handle.startsWith('cp:'))){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,tool:true,w};return;}
