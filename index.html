@@ -395,7 +395,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118010823';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118011310';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -813,7 +813,7 @@ let fbAuth=null,fbUser=null,fbPersist=false,fbUnsub=null,acct=null;
 function initFirebase(){
  if(!window.BB_FIREBASE||!window.firebase)return false;
  try{
-  firebase.initializeApp(window.BB_FIREBASE);fbAuth=firebase.auth();const db=firebase.firestore();
+  firebase.initializeApp(window.BB_FIREBASE);fbAuth=firebase.auth();const db=firebase.firestore();fbDb=db;
   db.enablePersistence({synchronizeTabs:true}).then(()=>{fbPersist=true;}).catch(()=>{});
   fbAuth.onAuthStateChanged(u=>{
    fbUser=u;acct=u?u.uid:null;if(fbUnsub){fbUnsub();fbUnsub=null;}
@@ -832,14 +832,24 @@ function initFirebase(){
  }catch(e){return false;}
 }
 let probeT=null;
+let fbDb=null,kicked=0;
 function syncProbe(){clearTimeout(probeT);if(!coll||!fbUser||online==='on')return;
  const again=()=>{clearTimeout(probeT);probeT=setTimeout(syncProbe,60000);};
  if(!navigator.onLine){updateStatus();again();return;}
- let q=coll;try{if(coll.limit)q=coll.limit(1);}catch(e){}
- Promise.resolve().then(()=>q.get({source:'server'})).then(()=>{if(online!=='on'){online='waiting';syncErr='';updateStatus();}again();})
-  .catch(e=>{if(online==='on')return;const c=(e&&e.code)||'';if(c==='resource-exhausted'){online='quota';syncErr=c;}else if(c==='permission-denied'){online='error';syncErr=c;}else{online='waiting';}updateStatus();again();});}
+ const set=(o,e)=>{if(online==='on')return;online=o;syncErr=e||'';updateStatus();};
+ // ask the sync service directly (the library reports every failure as "unavailable" once it thinks it's offline)
+ const pid=(window.BB_FIREBASE||{}).projectId;
+ Promise.resolve(fbUser.getIdToken()).then(tok=>fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/users/${fbUser.uid}/docs?pageSize=1&mask.fieldPaths=__none`,{headers:{Authorization:'Bearer '+tok},cache:'no-store'}))
+  .then(async r=>{let body='';try{body=await r.text();}catch(e){}
+   if(r.status===429||/RESOURCE_EXHAUSTED|[Qq]uota/.test(body))set('quota','resource-exhausted');
+   else if(r.status===403&&/PERMISSION_DENIED/.test(body))set('error','permission-denied');
+   else if(r.ok){set('stuck','');if(fbDb&&Date.now()-kicked>120000){kicked=Date.now();fbDb.disableNetwork().then(()=>fbDb.enableNetwork()).catch(()=>{});}}
+   else set('waiting','http-'+r.status);
+   again();})
+  .catch(()=>{set('waiting','unreachable');again();});}
 function syncWhy(){if(!navigator.onLine)return 'This device has no internet connection right now.';
  if(online==='quota')return 'The sync service’s free daily limit for this app has been used up. Sync starts again by itself after midnight Pacific time. Until then everything is saved on this device, and it’s all sent once sync is back.';
+ if(online==='stuck')return 'The sync service is answering, but the live connection got stuck. The app is reconnecting by itself; if this stays for more than a minute or two, reload the page. Everything is saved on this device meanwhile.';
  if(online==='waiting')return 'The internet is on, but the sync service isn’t answering from this network. Try another network (or turn off a VPN or content blocker). Everything is saved on this device and sent once it connects.';return '';}
 function writeDoc(ref,data){if(fbPersist){(data?ref.set(data):ref.delete()).catch(e=>{syncErr=(e&&e.code)||'error';updateStatus();});return Promise.resolve();}return data?ref.set(data):ref.delete();}
 function authMsg(e){const c=(e&&e.code)||'';return ({'auth/invalid-credential':'That email and password don’t match. First time here? Tap Create account.','auth/wrong-password':'That email and password don’t match.','auth/missing-password':'Type a password first.','auth/user-not-found':'No account with that email yet. Tap Create account.','auth/email-already-in-use':'There’s already an account with that email. Tap Sign in.','auth/weak-password':'Use at least 6 characters for the password.','auth/invalid-email':'That email address doesn’t look right.','auth/network-request-failed':'No connection. Sign in when you’re online; your work stays saved here.','auth/operation-not-allowed':'Email sign-in isn’t switched on in Firebase yet.','auth/too-many-requests':'Too many tries. Wait a minute and try again.'})[c]||'Something went wrong. Please try again.';}
@@ -1003,6 +1013,7 @@ function updateStatus(){
  else if(!navigator.onLine){t='No internet · saved here';c='warn';}
  else if(online==='quota'){t='Sync limit reached today · saved here';c='warn';}
  else if(online==='waiting'){t='Can’t reach sync · saved here';c='warn';}
+ else if(online==='stuck'){t='Reconnecting sync…';c='warn';}
  else if(syncErr==='permission-denied'){t='Not approved for sync · saved here';c='warn';}
  else if(online==='error'||syncErr){t='Sync paused · saved here';c='warn';}
  else if(sync.dirty.length)t='Syncing…';
