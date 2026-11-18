@@ -396,7 +396,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118020058';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118023618';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -711,7 +711,27 @@ function migrateScene(s){
  for(const it of s.items)if(it.kind==='dollytrack'){it.h=TRACK_H;it.w=Math.max(4,Math.round(it.w/FT/4)*4)*FT;}
  for(const it of s.items)if(it.type==='cam')for(const m of it.marks)if(m.sbp){m.sba={x:m.x+m.sbp.x,y:m.y+m.sbp.y};delete m.sbp;}
  for(const it of s.items)if(it.type==='cam'&&it.desc!=null){if(!it.marks[0].type)it.marks[0].type=it.desc;delete it.desc;}
+ if(!s.mcp){try{mergeCopies(s);}catch(e){}s.mcp=1;}
 }
+/* a character continued onto a new page used to be copied as a separate person; fold such copies back into the original */
+let mergedNow=[];
+function mergeCopies(s){let n=0;for(let guard=0;guard<50;guard++){const chars=(s.items||[]).filter(i=>i.type==='char'&&i.marks&&i.marks.length),order=[...chars.filter(i=>i.cont),...chars.filter(i=>!i.cont)];let did=false;
+  for(const C of order){const c0=C.marks[0],g2=posPg(C,0);if(!g2&&!C.cont)continue;
+   const cands=chars.filter(o=>{if(o===C||o.charId!==C.charId)return false;const st=posStarts(o),li=st[st.length-1],L=o.marks[li],g1=posPg(o,li);
+    if(!(Math.abs(L.x-c0.x)<1&&Math.abs(L.y-c0.y)<1))return false;if(C.cont)return true;return !!g1&&!!g2&&!g1.some(x=>g2.includes(x));});
+   const O=cands.find(o=>!o.cont)||cands[0];if(!O)continue;mergeInto(s,O,C);n++;did=true;break;}
+  if(!did)break;}
+ if(n){ppFill(s);mergedNow.push(s.id);}return n;}
+/* merged scenes count as changed, so they save and sync */
+function flushMerged(){if(!mergedNow.length)return;const ids=mergedNow;mergedNow=[];for(const id of ids)delete lastJson['scene-'+id];setTimeout(()=>{try{detectChanges();saveLocal();if(typeof schedulePush==='function')schedulePush(800);}catch(e){}},0);}
+function mergeInto(s,O,C){const Ost=posStarts(O);for(const j of Ost){const h=O.marks[j];if(h.vp===undefined){const g=posPg(O,j);h.vp=g?g.slice():null;}}
+ const Cst=posStarts(C),Cg=Cst.map(k=>posPg(C,k)),last=Ost[Ost.length-1],L=O.marks[last],c0=C.marks[0];
+ L.vp=L.vp&&Cg[0]?[...new Set([...L.vp,...Cg[0]])]:null;
+ if(L.st==null&&c0.st!=null)L.st=c0.st;for(const k of ['lab','note'])if(L[k]==null&&c0[k]!=null)L[k]=c0[k];
+ const base=O.marks.length,map={0:last};
+ C.marks.slice(1).forEach((m,i)=>{const k=i+1,nm=Object.assign({},m),pi=Cst.indexOf(k);if(pi>=0)nm.vp=Cg[pi]?Cg[pi].slice():null;else delete nm.vp;map[k]=base+i;O.marks.push(nm);});
+ for(const x of s.items)if(x.type==='axis'){if(x.a===C.id){x.a=O.id;x.am=map[x.am||0]!=null?map[x.am||0]:last;}if(x.b===C.id){x.b=O.id;x.bm=map[x.bm||0]!=null?map[x.bm||0]:last;}}
+ s.items=s.items.filter(i=>i!==C);}
 function migrate(){for(const s of P.scenes)migrateScene(s);}
 
 /* ---------- local storage + sync bookkeeping ---------- */
@@ -742,7 +762,7 @@ function load(big){
  if(!P||!Array.isArray(P.scenes)||!P.scenes.length){const s=blankScene(1);P={characters:[],folders:[],scenes:[s],sceneId:s.id,ui:{}};sync={stamps:{},dirty:[]};}
  delete sync.base;P.ui=P.ui||{};P.characters=P.characters||[];P.folders=P.folders||[];P.labels=P.labels||{};P.text=P.text||{};for(const id in P.text)if(!P.scenes.some(s=>s.id===id))delete P.text[id];
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;
- migrate();ensureLive();baseline();
+ migrate();ensureLive();baseline();flushMerged();
 }
 const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
 function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
@@ -951,7 +971,7 @@ function applyRemote(snap){
  if(join&&!snap.docs.length){const now=Date.now(),d=docs();for(const k in d){if(!sync.stamps[k])sync.stamps[k]=now;markDirty(k);}for(const k in images){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=now;markDirty('img-'+k);}sync.uid=acct;saveLocal();return;}
  const newer=(k,b)=>(b.updatedAt||0)>(sync.stamps[k]||0);
  const pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
- const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);return sc;};
+ const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);return sc;};
  if(meta&&(join||newer('meta',meta))){
   if(join){ /* first time this device meets this account: keep what is here and add what is there */
    const uni=(R,L)=>{const ids=new Set(R.map(x=>x.id));return [...R,...(L||[]).filter(x=>!ids.has(x.id))];};
