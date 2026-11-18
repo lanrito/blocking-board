@@ -403,7 +403,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118195629';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118201903';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -758,30 +758,36 @@ function ancAdd(k,list){const a=ancOf(k);for(const h of list)if(h&&a[a.length-1]
 /* what to do with a version of a scene that arrives from another device */
 function sceneDecide(k,b,local){if(!local)return 'take';const L=sceneFp(local),R=sceneFp(b.scene),known=ancOf(k);
  if(R===L)return 'same';
+ {const cf=sync.cf&&sync.cf[k];if(b.cf&&cf&&cf.key===b.cf&&cf.fp===L)return R<L?'take':'old';}
  /* a version this device has seen before: an old echo, unless the other device had moved past it and went back (undo, restore) */
  if(known.includes(R)){if(b.dev===DEVICE||!Array.isArray(b.anc))return 'old';const ri=known.indexOf(R);if(!b.anc.some(h=>h!==R&&known.indexOf(h)>ri))return 'old';return b.anc.includes(L)?'take':'conflict';}
  if(Array.isArray(b.anc)&&b.anc.includes(L))return 'take';
+ if(Array.isArray(b.anc)){const mine=sync.mine&&sync.mine[k];return mine&&!b.anc.includes(mine)?'conflict':'take';}
  if(!known.length||known[known.length-1]===L)return 'take';
  return 'conflict';}
-function sceneConflict(k,b,local){const other=clone(b.scene);delete other.conflicts;const lt=sync.stamps[k]||0,rt=b.updatedAt||0,remote=rt>lt;
+function cfPlan(sc){const d=planTake(stripScene(sc));if(d.pages&&d.pages.length)d.pageId=d.pages[0].id;return d;}
+function cfWhen(t){const d=new Date(t||0);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
+function sceneConflict(k,b,local){const other=clone(b.scene);delete other.conflicts;const lt=sync.stamps[k]||0,rt=b.updatedAt||0,Lf=sceneFp(local),Rf=sceneFp(b.scene),remote=rt>lt||(rt===lt&&Rf<Lf);
  const win=clone(remote?other:local),lose=remote?local:other,who=remote?DEVNAME:(b.devName||'other device'),when=remote?lt:rt;delete win.conflicts;win.id=local.id;
- (win.plans=win.plans||[]).push({id:uid(),name:`Older version · ${who} · ${confWhen(when||Date.now())}`,d:planTake(lose)});
- for(const c of local.conflicts||[])win.plans.push({id:uid(),name:'Older version · '+confWhen(c.at),d:planTake(c.scene)});
+ const pid='cf'+(remote?Lf:Rf);win.plans=win.plans||[];
+ if(!win.plans.some(p=>p.id===pid))win.plans.push({id:pid,name:`Older version · ${who} · ${cfWhen(when)}`,d:cfPlan(lose)});
+ for(const c of local.conflicts||[]){const id='cfo'+(c.at||0);if(!win.plans.some(p=>p.id===id))win.plans.push({id,name:'Older version · '+cfWhen(c.at),d:cfPlan(c.scene)});}
  for(const p of lose.plans||[])if(p&&p.id&&!win.plans.some(q=>q.id===p.id))win.plans.push(clone(p));
  {const wb=win.beats||[];for(const x of lose.beats||[])if(x&&x.id&&!wb.some(y=>y.id===x.id)){const c=clone(x);if(c.n!=null&&wb.some(y=>y.n!=null&&+y.n===+c.n&&(y.pg||'p')===(c.pg||'p'))){delete c.n;delete c.pg;}wb.push(c);}if(wb.length)win.beats=wb;}
  for(const f of ['synopsis','snote']){const a=String(win[f]||'').trim(),c=String(lose[f]||'').trim();if(!c||a===c||a.includes(c))continue;win[f]=a?win[f]+'\n\n(Older version) '+lose[f]:lose[f];}
- ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);sync.stamps[k]=Date.now();markDirty(k);return win;}
+ ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);sync.stamps[k]=Math.max(Date.now(),lt+1,rt+1);markDirty(k);
+ const wf=sceneFp(stripScene(win));sync.cf=sync.cf||{};sync.cf[k]={key:[Lf,Rf].sort().join('|'),fp:wf};(sync.mine=sync.mine||{})[k]=wf;return win;}
 /* Scenes and text are saved in the small store while they fit, and in the large one (the same kind that holds images)
    once they outgrow it. Exactly one of the two holds them; 'blk.big' says the large store is the one to read. */
-const LS_MAX=2e6,BIG='blk.big';let kvP=null,pSeq=0,pBig=false,pIn=0,pFail=false;
+const LS_MAX=2e6,BIG='blk.big';let pDone=0,kvP=null,pSeq=0,pBig=false,pIn=0,pFail=false;
 const kvOpen=()=>kvP||(kvP=new Promise(res=>{try{const r=indexedDB.open('blocking-board-data',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('kv'))r.result.createObjectStore('kv');};r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);r.onblocked=()=>res(null);}catch(e){res(null);}}));
 const kvGet=k=>kvOpen().then(d=>d?new Promise(res=>{try{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result==null?null:q.result);q.onerror=()=>res(null);}catch(e){res(null);}}):null);
 const kvPut=(k,v)=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
 const kvDel=k=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
-function saveP(j){
- if(j.length<=LS_MAX&&lsSet(LS.p,j)){pSeq++;pFail=false;if(pBig||pIn||lsGet(BIG)){pBig=false;try{localStorage.removeItem(BIG);}catch(e){}kvDel('p');}return true;}
+function saveP(j,sj){
+ if(j.length<=LS_MAX&&lsSet(LS.p,j)){pSeq++;pFail=false;if(sj!==undefined&&!lsSet(LS.sync,sj))pFail=true;if(pBig||pIn||lsGet(BIG)){pBig=false;try{localStorage.removeItem(BIG);}catch(e){}kvDel('p');}return true;}
  const seq=++pSeq;pIn++;updateStatus();
- kvPut('p',j).then(r=>{pIn--;if(seq!==pSeq){updateStatus();return;} /* a newer save has taken over */
+ kvPut('p',j).then(r=>{pIn--;if(r&&sj!==undefined&&seq>pDone){pDone=seq;lsSet(LS.sync,sj);}if(seq!==pSeq){updateStatus();return;} /* a newer save has taken over */
   if(r){lsSet(BIG,'1');try{localStorage.removeItem(LS.p);}catch(e){}pBig=true;}
   pFail=!r;localOk=!pFail&&!imgFail;updateStatus();}).catch(()=>{pIn--;pFail=true;localOk=false;updateStatus();});
  return !pFail;
@@ -796,7 +802,12 @@ function load(big){
 migrate();let castNow=[];try{castNow=castReconcile();}catch(e){}
  ensureLive();baseline();if(castNow.length){mergedNow.push(...castNow);delete lastJson.meta;}flushMerged();
  for(const sc of P.scenes){const k='scene-'+sc.id;if(!ancOf(k).length)ancAdd(k,[sceneFp(stripScene(sc))]);}
+ {const here=new Set(P.scenes.map(x=>x.id)),TS=(P.tomb&&P.tomb.s)||{};sync.sIds=[...here];
+  sync.dirty=(sync.dirty||[]).filter(k=>{const sid=k.startsWith('scene-')?k.slice(6):k.startsWith('txt-')?k.slice(4):null;return !sid||here.has(sid)||!!TS[sid];});}
 }
+function sceneLast(id){let t=Math.max(sync.stamps['scene-'+id]||0,sync.stamps['txt-'+id]||0);try{const c=txCells((P.text||{})[id]||{});for(const key in c)t=Math.max(t,c[key].t||0);}catch(e){}return t;}
+/* the other device deleted this scene: true if that deletion is newer than anything done to it here. If not, the scene stays and is sent again, newer than the deletion */
+function delWins(id,del){if(!del)return false;if(del>=sceneLast(id))return true;const k='scene-'+id,t=Math.max(sync.stamps[k]||0,del+1);if(sync.stamps[k]!==t){sync.stamps[k]=t;markDirty(k);if(txDoc(id))markDirty('txt-'+id);}return false;}
 const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
 function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},locations:P.locations||[],tomb:P.tomb||{},imgs:[...new Set([...Object.keys(images),...(sync.imgK||[])])].sort(),sceneOrder:P.scenes.map(s=>s.id)}};for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
@@ -826,10 +837,10 @@ function metaMerge(meta){const T=P.tomb=P.tomb||{},R=meta.tomb||{};let back=fals
  if(meta.labels){const lb=clone(meta.labels);for(const x in P.labels||{}){const u=[...new Set([...(lb[x]||[]),...P.labels[x]])];if(u.length!==(lb[x]||[]).length)back=true;lb[x]=u;}P.labels=lb;}
  return back;}
 function detectChanges(){try{metaStamp();}catch(e){console.error(e);}const d=docs(),now=Date.now();
- for(const k in d){const j=JSON.stringify(d[k]);if(j!==lastJson[k]){lastJson[k]=j;sync.stamps[k]=now;markDirty(k);}}
+ for(const k in d){const j=JSON.stringify(d[k]);if(j!==lastJson[k]){lastJson[k]=j;sync.stamps[k]=now;markDirty(k);if(k.startsWith('scene-'))(sync.mine=sync.mine||{})[k]=sceneFp(d[k].scene);}}
  for(const k of Object.keys(lastJson))if(!(k in d)){delete lastJson[k];sync.stamps[k]=now;markDirty(k);}}
 function saveLocal(){
- const ok=saveP(JSON.stringify(P))&&lsSet(LS.sync,JSON.stringify(sync));
+ const ok=saveP(JSON.stringify(P),JSON.stringify(sync));
  let ok2=true;if(imgDirty){if(idb){const batch={},keys=[];for(const k in images)if(!imgSaved.has(k)&&!imgPend.has(k)){batch[k]=images[k];keys.push(k);imgPend.add(k);}imgDirty=false;
   if(keys.length){imgIn++;const done=r=>{imgIn--;for(const k of keys)imgPend.delete(k);if(r){for(const k of keys)imgSaved.add(k);imgFail=false;}else{imgFail=true;imgDirty=true;}localOk=!pFail&&!imgFail;updateStatus();};idbPut(batch).then(done).catch(()=>done(false));}}else{ok2=lsSet(LS.img,JSON.stringify(images));if(ok2)imgDirty=false;}}
  localOk=ok&&ok2&&!imgFail;updateStatus();
@@ -880,7 +891,7 @@ async function versionsDialog(){
  modal(`<h3>Earlier versions</h3><p class="mut">A copy is kept every five minutes while you work (about the last six hours), plus one a day for 30 days. Versions you save by name are kept until you delete them. Restoring one replaces what’s here now; you can undo it. These copies live on this device; for a copy you can keep anywhere, use Back up everything.</p><div class="menu">${all.length?all.map((x,i)=>`<button data-t="${x.t}"><b>${x.v.name?esc(x.v.name)+' · ':''}${fmt(x.t)}${i===0?' · latest':''}</b><small>${x.v.scenes} scene${x.v.scenes===1?'':'s'}, ${x.v.shots} shot${x.v.shots===1?'':'s'}${x.v.name?' · kept':''}</small></button>`).join(''):'<p class="mut">No earlier versions yet.</p>'}</div><div class="btns end"><button id="vSave">Save a version now…</button><button data-x>Close</button></div>`,card=>{
   card.querySelector('#vSave').onclick=()=>{closeModal();saveVersionNow();};
   card.querySelector('.menu').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const x=all.find(y=>String(y.t)===b.dataset.t);if(!x)return;
-   confirmBox('Restore this version?',`Everything goes back to how it was at ${fmt(x.t)}. You can undo this.`,'Restore',()=>{const o=JSON.parse(x.v.data);P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;P.scenes=o.s.map(sc=>{migrateScene(sc);return sc;});if(x.v.text)txAdopt(JSON.parse(x.v.text));if(!P.scenes.some(sc=>sc.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();sel=null;inspOpen=false;commit();txFlush();renderDocs(true);fit();toast('Version restored.');});});
+   confirmBox('Restore this version?',`Everything goes back to how it was at ${fmt(x.t)}. You can undo this.`,'Restore',()=>{const o=JSON.parse(x.v.data);P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;P.scenes=o.s.map(sc=>{migrateScene(sc);return sc;});const tx0=x.v.text?clone(P.text||{}):null,u0=undoS.length;if(x.v.text)txAdopt(JSON.parse(x.v.text));if(!P.scenes.some(sc=>sc.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();sel=null;inspOpen=false;commit();if(tx0&&undoS.length>u0)undoS[undoS.length-1].tx=tx0;txFlush();renderDocs(true);fit();toast('Version restored.');});});
  });
 }
 setInterval(takeSnap,5*60*1000);
@@ -929,8 +940,10 @@ function restore(snap){
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();
  cur=snap;sel=null;msel=null;detectChanges();cur=snapshot();saveLocal();schedulePush();render();
 }
-function undo(){if(!undoS.length)return;redoS.push({j:cur,g:rgen});const e=undoS.pop();restore(patchSnap(e.j,e.g));}
-function redo(){if(!redoS.length)return;undoS.push({j:cur,g:rgen});const e=redoS.pop();restore(patchSnap(e.j,e.g));}
+function undoTx(e,into){const n={j:cur,g:rgen};if(e.tx)n.tx=clone(P.text||{});into.push(n);return e.tx;}
+function undoTxApply(tx){if(!tx)return;try{txAdopt(tx);txFlush();renderDocs(true);}catch(x){console.error(x);}}
+function undo(){if(!undoS.length)return;const e=undoS[undoS.length-1],tx=undoTx(e,redoS);undoS.pop();restore(patchSnap(e.j,e.g));undoTxApply(tx);}
+function redo(){if(!redoS.length)return;const e=redoS[redoS.length-1],tx=undoTx(e,undoS);redoS.pop();restore(patchSnap(e.j,e.g));undoTxApply(tx);}
 
 /* ---------- sync (private to the signed-in person, through their Claude account) ---------- */
 let coll=null,online='off',pushT=null,pushing=false,syncErr='',pendingRemote=null,dlNS=null,warnedBig=false;
@@ -994,7 +1007,7 @@ function syncWhy(){if(!navigator.onLine)return 'This device has no internet conn
 function tooBig(c){return c==='invalid-argument'||c==='invalid_argument';}
 function bigToast(k){if(warnedBig)return;warnedBig=true;toast(k&&k.startsWith('img-')?'An image is too large to sync. It is still saved on this device.':'Part of this project could not sync. It is still saved on this device.');}
 function writeDoc(ref,data,k){const w=data?ref.set(data):ref.delete();if(!fbPersist)return w;
- w.catch(e=>{const c=(e&&e.code)||'error';syncErr=c;if(tooBig(c))bigToast(k);else if(k)setTimeout(()=>{markDirty(k);try{lsSet(LS.sync,JSON.stringify(sync));}catch(x){}clearTimeout(wfT);wfT=setTimeout(()=>schedulePush(0),15000);updateStatus();},0);updateStatus();});return Promise.resolve();}
+ w.catch(e=>{const c=(e&&e.code)||'error';syncErr=c;if(tooBig(c))bigToast(k);else if(k)setTimeout(()=>{markDirty(k);try{saveLocal();}catch(x){}clearTimeout(wfT);wfT=setTimeout(()=>schedulePush(0),15000);updateStatus();},0);updateStatus();});return Promise.resolve();}
 let wfT=null;
 function authMsg(e){const c=(e&&e.code)||'';return ({'auth/invalid-credential':'That email and password don’t match. First time here? Tap Create account.','auth/wrong-password':'That email and password don’t match.','auth/missing-password':'Type a password first.','auth/user-not-found':'No account with that email yet. Tap Create account.','auth/email-already-in-use':'There’s already an account with that email. Tap Sign in.','auth/weak-password':'Use at least 6 characters for the password.','auth/invalid-email':'That email address doesn’t look right.','auth/network-request-failed':'No connection. Sign in when you’re online; your work stays saved here.','auth/operation-not-allowed':'Email sign-in isn’t switched on in Firebase yet.','auth/too-many-requests':'Too many tries. Wait a minute and try again.'})[c]||'Something went wrong. Please try again.';}
 function accountDialog(){
@@ -1095,8 +1108,8 @@ function applyRemote(snap){
  if(join&&!snap.docs.length){const now=Date.now(),d=docs();for(const k in d){if(!sync.stamps[k])sync.stamps[k]=now;markDirty(k);}for(const k in images){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=now;markDirty('img-'+k);}sync.uid=acct;saveLocal();return;}
  const newer=(k,b)=>(b.updatedAt||0)>(sync.stamps[k]||0);
  const pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
- let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);return sc;};
- const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
+ let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);if(sync.mine)delete sync.mine[k];if(sync.cf)delete sync.cf[k];return sc;};
+ const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);if(sync.mine)delete sync.mine[k];const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
  let metaBack=false;if(meta){const was=canonJ([P.characters,P.folders,P.productions,P.labels]);try{metaBack=metaMerge(meta);const lw=canonJ(P.locations||[]);P.locations=locMerge(P.locations,meta.locations);if(canonJ(P.locations)!==canonJ(meta.locations||[]))metaBack=true;if(canonJ(P.locations)!==lw)changed=true;}catch(e){console.error(e);}if(canonJ([P.characters,P.folders,P.productions,P.labels])!==was)changed=true;}
  if(meta&&(join||newer('meta',meta))){
   const order=meta.sceneOrder||[],byId={},next=[],placed=new Set(),TS=(P.tomb&&P.tomb.s)||{},RS=(meta.tomb&&meta.tomb.s)||{};for(const s of P.scenes)byId[s.id]=s;
@@ -1104,19 +1117,19 @@ function applyRemote(snap){
    if(byId[id]){next.push(b&&b.scene?arrive(k,b,byId[id]):byId[id]);placed.add(id);}
    else if(b&&b.scene&&!(TS[id]&&TS[id]>=(b.updatedAt||0))){next.push(take(k,b));placed.add(id);if(TS[id])delete TS[id];}}
   /* scenes here that the other device's list doesn't have yet stay, in their place, unless it deleted them after their last change here */
-  P.scenes.forEach((s,i)=>{if(placed.has(s.id))return;const k='scene-'+s.id,del=RS[s.id];if(del&&del>=(sync.stamps[k]||0)&&!sync.dirty.includes(k))return;
+  P.scenes.forEach((s,i)=>{if(placed.has(s.id))return;const k='scene-'+s.id;if(delWins(s.id,RS[s.id]))return;
    let at=0;for(let j=i-1;j>=0;j--){const q=next.findIndex(x=>x.id===P.scenes[j].id);if(q>=0){at=q+1;break;}}next.splice(at,0,s);placed.add(s.id);
    if(join||!sync.stamps[k]){sync.stamps[k]=Date.now();markDirty(k);}metaBack=true;});
   if(next.length||!P.scenes.length)P.scenes=next.length?next:P.scenes;
   if(join){sync.stamps.meta=Date.now();markDirty('meta');}else{sync.stamps.meta=meta.updatedAt;sync.dirty=sync.dirty.filter(x=>x!=='meta');}
   changed=true;
  }
- else if(meta){const RS=(meta.tomb&&meta.tomb.s)||{},keep=P.scenes.filter(s=>{const k='scene-'+s.id,del=RS[s.id];return !(del&&del>=(sync.stamps[k]||0)&&!sync.dirty.includes(k));});if(keep.length&&keep.length!==P.scenes.length){P.scenes=keep;changed=true;}}
  if(meta&&metaBack){sync.stamps.meta=Math.max(Date.now(),(meta.updatedAt||0)+1);markDirty('meta');changed=true;setTimeout(()=>{saveLocal();schedulePush(500);},30);}
  if(meta&&Array.isArray(meta.imgs)){const u=new Set(sync.imgK||[]);for(const i of meta.imgs)u.add(i);sync.imgK=[...u].sort();}
  if(meta)try{imgWant(meta);}catch(e){}
  if(join){const rim=new Set((meta&&meta.imgs)||[]);for(const k in images)if(!seen.has('img-'+k)&&!rim.has(k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
  {const TS=(P.tomb&&P.tomb.s)||{};for(const k in sd){const b=sd[k];if(!b||!b.scene||!k.startsWith('scene-'))continue;const id=k.slice(6);if(P.scenes.some(x=>x.id===id))continue;if(TS[id]&&TS[id]>=(b.updatedAt||0))continue;if(TS[id])delete TS[id];P.scenes.push(take(k,b));changed=true;}}
+ if(meta){const RS=(meta.tomb&&meta.tomb.s)||{},keep=P.scenes.filter(s=>!delWins(s.id,RS[s.id]));if(keep.length&&keep.length!==P.scenes.length){P.scenes=keep;changed=true;}}
  for(const k in sd){const b=sd[k];if(!b.scene)continue;const i=P.scenes.findIndex(s=>'scene-'+s.id===k);if(i<0)continue;const was=P.scenes[i],nx=arrive(k,b,was);if(nx!==was){P.scenes[i]=nx;changed=true;}}
  if(nConf)setTimeout(()=>{toast(nConf===1?'A scene was changed on both devices. The newer version is in place; the older one is saved as a Blocking Plan (Pages menu).':nConf+' scenes were changed on both devices. The newer version of each is in place; the older ones are saved as Blocking Plans (Pages menu).');saveLocal();schedulePush(500);},30);
  let tch=0,tconf=0;for(const k in td){const r=mergeTxt(k,td[k]);if(r){tch+=r.ch;tconf+=r.conf;}}
@@ -1148,8 +1161,9 @@ async function push(){
    if(!sync.dirty.includes(k))continue;at=k;
    const ref=coll.doc(k),d=docs();let sent=null;
    if(k.startsWith('img-')){const iid=k.slice(4);if(images[iid])await writeDoc(ref,{data:images[iid],updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE},k);}
-   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=ancOf(k).slice(-40);extra.fp=sceneFp(d[k].scene);extra.devName=DEVNAME;}await writeDoc(ref,Object.assign(JSON.parse(sent),extra),k);if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
-   else await writeDoc(ref,null,k);
+   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=ancOf(k).slice(-40);extra.fp=sceneFp(d[k].scene);extra.devName=DEVNAME;const cf=sync.cf&&sync.cf[k];if(cf&&cf.fp===extra.fp)extra.cf=cf.key;}await writeDoc(ref,Object.assign(JSON.parse(sent),extra),k);if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
+   else{const sid=k.startsWith('scene-')?k.slice(6):k.startsWith('txt-')?k.slice(4):null,TS=(P.tomb&&P.tomb.s)||{};
+    if(!sid||TS[sid]||(k.startsWith('txt-')&&P.scenes.some(x=>x.id===sid)))await writeDoc(ref,null,k);}
    if(sent!==null&&lastJson[k]!==sent){again=true;continue;} /* changed while it was being sent: stays in line for the next pass */
    sync.dirty=sync.dirty.filter(x=>x!==k);
   }
@@ -2269,7 +2283,7 @@ function applyColor(v){const s=scene(),it=itemById(sel&&sel.id);if(!it)return;
  commit();objPop(popAt.x,popAt.y);}
 function sbDelete(it,i,k){const m=it.marks[i];if(!m)return;
  if(k){m.sbs.splice(k-1,1);if(!m.sbs.length)delete m.sbs;sbxTidy(m);}
- else{const ex=(m.sbs||[]).filter(x=>images[x]);for(const key in FK)if(key!=='a'&&key!=='w')delete m[FK[key]];if(ex.length){m.sb=ex.shift();const e=(m.sbx||{})[m.sb]||{};if(e.a)m.sba=e.a;else delete m.sba;if(e.w)m.sbw=e.w;else delete m.sbw;for(const key in FK)if(key!=='a'&&key!=='w'&&e[key])m[FK[key]]=e[key];if(ex.length)m.sbs=ex;else delete m.sbs;sbxTidy(m);}else{delete m.sb;delete m.sbs;delete m.sbx;delete m.sba;delete m.sbw;}}
+ else{const al=(m.sbs||[]).slice(),ex=[...al.filter(x=>images[x]),...al.filter(x=>!images[x])];for(const key in FK)if(key!=='a'&&key!=='w')delete m[FK[key]];if(ex.length){m.sb=ex.shift();const e=(m.sbx||{})[m.sb]||{};if(e.a)m.sba=e.a;else delete m.sba;if(e.w)m.sbw=e.w;else delete m.sbw;for(const key in FK)if(key!=='a'&&key!=='w'&&e[key])m[FK[key]]=e[key];if(ex.length)m.sbs=ex;else delete m.sbs;sbxTidy(m);}else{delete m.sb;delete m.sbs;delete m.sbx;delete m.sba;delete m.sbw;}}
  sel={id:it.id,mark:i};closePop();commit();toast('Frame removed.');}
 function sbPop(cx,cy){const s=scene(),it=sel&&itemById(sel.id),i=sel&&sel.mark||0,k=sel&&sel.fk||0,m=it&&it.marks&&it.marks[i];if(!m||!images[fImg(m,k)])return;popAt={x:cx,y:cy};
  const B=(o,l,ic)=>`<button data-o="${o}">${ic||''}${l}</button>`,ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`,sec=(t,b)=>`<div class="hd">${t}</div>${b}`;
@@ -5070,7 +5084,8 @@ function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split
 
 function stgFill(){const el=document.getElementById('stgTxt');if(!el||!navigator.storage||!navigator.storage.estimate)return;const f=n=>n>=1073741824?(n/1073741824).toFixed(n<10737418240?1:0)+' GB':n>=1048576?(n/1048576).toFixed(n<10485760?1:0)+' MB':Math.max(1,Math.round(n/1024))+' KB';
  navigator.storage.estimate().then(e=>{if(e&&e.quota&&document.body.contains(el))el.textContent=` Storage on this device: ${f(e.usage||0)} used of about ${f(e.quota)} the app can use.`;}).catch(()=>{});}
-function start(big){load(big);setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();
+let started=false;
+function start(big){if(started)return;started=true;load(big);setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();
  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}}
 /* the scenes are in the large store but it will not open: never start empty over them without being told to */
 function bootFail(){if(document.getElementById('bootFail'))return;const d=document.createElement('div');d.id='bootFail';d.style.cssText='position:fixed;inset:0;z-index:999;background:#f6f5f1;display:flex;align-items:center;justify-content:center;padding:24px;font:16px/1.5 -apple-system,system-ui,sans-serif;color:#1c1c1e';
