@@ -412,7 +412,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119035443';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119041907';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3094,8 +3094,16 @@ const angD=(a,b)=>((b-a)%360+540)%360-180;
 function propPose(it,k){if(k&&it.mv&&it.mv[k-1]){const q=it.mv[k-1];return {x:q.x,y:q.y,r:q.r!=null?q.r:(q.rot!=null?q.rot:(it.rot||0))};}return {x:it.x,y:it.y,r:it.rot||0};}
 function rideWorld(pp,rd){const a=rad(pp.r),c=Math.cos(a),n=Math.sin(a);return {x:pp.x+rd.x*c-rd.y*n,y:pp.y+rd.x*n+rd.y*c,r:pp.r+rd.r};}
 function rideLocal(pp,m){const a=rad(-pp.r),c=Math.cos(a),n=Math.sin(a),dx=m.x-pp.x,dy=m.y-pp.y;return {x:dx*c-dy*n,y:dx*n+dy*c,r:angD(pp.r,m.rot||0)};}
-function rideSync(sc){for(const it of sc.items){if(it.type!=='char')continue;let gone=0;for(const m of it.marks){const rd=m.ride;if(!rd)continue;const pr=sc.items.find(q=>q.id===rd.id);if(!pr||!BOX(pr.type)){delete m.ride;continue;}
+/* the bend in a carried leg is one bend: control points added, dragged or removed on the prop's move or on the character's ride show on both */
+const rideCpJ=o=>JSON.stringify(o&&o.cp&&o.cp.length?o.cp:[]);
+function rideSync(sc){
+ /* a leg is shared when the character rides the same prop at one of its positions and then at the next, however those positions were made */
+ for(const it of sc.items){if(it.type!=='char'||!it.marks)continue;const st=posStarts(it);st.forEach((a,i)=>{const rd=it.marks[a].ride;if(!rd)return;const pm=i?it.marks[st[i-1]]:null;if(pm&&pm.ride&&pm.ride.id===rd.id&&(rd.k||0)===(pm.ride.k||0)+1)rd.lk=1;else delete rd.lk;});}
+ for(const it of sc.items){if(it.type!=='char')continue;for(const m of it.marks){const rd=m.ride;if(!rd||!(rd.f||rd.lk)||!rd.k)continue;const pr=sc.items.find(q=>q.id===rd.id),q=pr&&pr.mv&&pr.mv[rd.k-1];if(!q)continue;const pj=rideCpJ(q),mj=rideCpJ(m);
+  if(rd.cpj===undefined?(pj==='[]'&&mj!=='[]'):(mj!==rd.cpj&&pj===rd.cpj)){if(mj==='[]')delete q.cp;else q.cp=clone(m.cp);}}}
+ for(const it of sc.items){if(it.type!=='char')continue;let gone=0;for(const m of it.marks){const rd=m.ride;if(!rd)continue;const pr=sc.items.find(q=>q.id===rd.id);if(!pr||!BOX(pr.type)){delete m.ride;continue;}
   if(rd.f){const q=rd.k?(pr.mv||[])[rd.k-1]:null;if(!q){m._gone=1;gone++;continue;}if(q.st!=null){if(m.st!==q.st)m.st=q.st;}else if(m.st!=null)delete m.st;}
+  if((rd.f||rd.lk)&&rd.k){const q=(pr.mv||[])[rd.k-1];if(q){const pj=rideCpJ(q);if(rideCpJ(m)!==pj){if(pj==='[]')delete m.cp;else m.cp=clone(q.cp);}rd.cpj=pj;}}
   const pp=propPose(pr,rd.k||0),w=rideWorld(pp,rd);
   if(rd.px!==pp.x||rd.py!==pp.y||rd.pr!==pp.r){m.x=w.x;m.y=w.y;m.rot=Math.round(w.r*10)/10;}
   else if(Math.abs(w.x-m.x)>.01||Math.abs(w.y-m.y)>.01||Math.abs(angD(w.r,m.rot||0))>.05)Object.assign(rd,rideLocal(pp,m));
@@ -5079,7 +5087,7 @@ function stepDur(sc,N){let d=.4;for(const it of animActors(sc)){const tl=timelin
 function animLayer(sc,N,frac){
  const T=frac*stepDur(sc,N);let paths='',bodies='',cams='';
  const ACT=animActors(sc),PO=new Map();for(const it of ACT){const tl=timeline(it,N);if(!tl||tl.idle)continue;PO.set(it.isProp?it.orig.id:it.id,{tl,p:poseAt(it,tl,T)});}
- for(const it of ACT){if(it.type!=='char')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.ride||(!(m.ride.f&&PO.has(m.ride.id))&&Math.hypot(e.p.x-m.x,e.p.y-m.y)>.5))continue;const pr=sc.items.find(q=>q.id===m.ride.id);if(!pr)continue;const pe=PO.get(pr.id),pp=pe?pe.p:propPose(pr,m.ride.k||0),w=rideWorld({x:pp.x,y:pp.y,r:pp.r},m.ride);e.p=Object.assign({},e.p,{x:w.x,y:w.y,r:w.r});}
+ for(const it of ACT){if(it.type!=='char')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.ride||(!((m.ride.f||m.ride.lk)&&PO.has(m.ride.id))&&Math.hypot(e.p.x-m.x,e.p.y-m.y)>.5))continue;const pr=sc.items.find(q=>q.id===m.ride.id);if(!pr)continue;const pe=PO.get(pr.id),pp=pe?pe.p:propPose(pr,m.ride.k||0),w=rideWorld({x:pp.x,y:pp.y,r:pp.r},m.ride);e.p=Object.assign({},e.p,{x:w.x,y:w.y,r:w.r});}
  for(const it of ACT){if(it.type!=='cam'||PO.has(it.id))continue;const cur=lastIdx(effSteps(it),N);if(cur<0)continue;const b=it.marks[verStart(it,cur)];if(!b.aim||!b.aim.id)continue;const te=PO.get(b.aim.id);if(!te||!te.tl.legs||!te.tl.legs.length)continue;const m=it.marks[cur];PO.set(it.id,{tl:{cur,legs:[],segs:[]},p:{x:m.x,y:m.y,r:m.rot||0,op:1}});}
  for(const it of ACT){if(it.type!=='cam')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[verStart(it,e.tl.cur)];if(!m||!m.aim)continue;const te=m.aim.id&&PO.get(m.aim.id),tg=te?te.p:aimTarget(sc,m.aim);if(tg)e.p=Object.assign({},e.p,{r:Math.atan2(tg.y-e.p.y,tg.x-e.p.x)*180/Math.PI});}
  let props='';for(const it of ACT){const e=PO.get(it.isProp?it.orig.id:it.id);if(!e)continue;const tl=e.tl,p=e.p;
