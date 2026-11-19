@@ -412,7 +412,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119022316';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119024757';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -468,8 +468,8 @@ const LIB={
  sqtable:{n:'Square Table',w:120,h:80,s:'<rect class="pf" x="1" y="1" width="98" height="98" rx="3"/>'},
  ovaltable:{n:'Oval Table',w:140,h:80,s:'<rect class="pf" x="1" y="1" width="98" height="98" rx="30" ry="45"/>'},
  roundtable:{n:'Round Table',w:100,h:100,s:'<ellipse class="pf" cx="50" cy="50" rx="49" ry="49"/>'},
- chair:{n:'Chair',w:30,h:30,s:'<path class="pf" d="M6,4H94V80Q94,96 78,96H22Q6,96 6,80Z"/><path class="pl ph" d="M6,60V80Q6,96 22,96H78Q94,96 94,80V60"/>'},
- sofa:{n:'Sofa',w:120,h:50,s:'<path class="pf" d="M2,6H98V82Q98,96 86,96H14Q2,96 2,82Z"/><path class="pl" d="M10,6V72H90V6"/>'},
+ chair:{n:'Chair',w:42,h:42,s:'<path class="pf" d="M6,4H94V80Q94,96 78,96H22Q6,96 6,80Z"/><path class="pl ph" d="M6,60V80Q6,96 22,96H78Q94,96 94,80V60"/>'},
+ sofa:{n:'Sofa',w:150,h:60,s:'<path class="pf" d="M2,6H98V82Q98,96 86,96H14Q2,96 2,82Z"/><path class="pl" d="M10,6V72H90V6"/>'},
  paper:{n:'Paper',w:20,h:26,s:'<rect class="pw" x="2" y="2" width="96" height="96"/><path class="pl" d="M16,20H84M16,34H84M16,48H84M16,62H84M16,76H70"/>'},
  phone:{n:'Cell Phone',w:12,h:22,s:'<rect class="pf" x="4" y="2" width="92" height="96" rx="14"/><rect class="pd" x="16" y="14" width="68" height="64" rx="4"/>'},
  laptop:{n:'Laptop',w:32,h:26,s:'<path class="pf" d="M6,4H94V44H6Z"/><path class="pf" d="M2,46H98L94,98H6Z"/><path class="pl" d="M16,60H84M16,72H84M30,84H70"/>'},
@@ -500,14 +500,14 @@ const LIB={
  // furniture
  bedsingle:{n:'Single Bed',w:60,h:120,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><rect class="pw" x="12" y="6" width="76" height="13" rx="5"/><path class="pl" d="M2,30H98"/>'},
  beddouble:{n:'Double Bed',w:110,h:125,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><rect class="pw" x="8" y="6" width="38" height="13" rx="5"/><rect class="pw" x="54" y="6" width="38" height="13" rx="5"/><path class="pl" d="M2,30H98"/>'},
- nightstand:{n:'Nightstand',w:30,h:30,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><circle class="pw" cx="50" cy="50" r="22"/>'},
+ nightstand:{n:'Nightstand',w:36,h:36,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><circle class="pw" cx="50" cy="50" r="22"/>'},
  dresser:{n:'Dresser',w:90,h:32,s:'<rect class="pf" x="1" y="2" width="98" height="96" rx="3"/><path class="pl" d="M34,2V98M67,2V98"/>'},
  desk:{n:'Desk',w:100,h:50,s:'<rect class="pf" x="1" y="2" width="98" height="96" rx="3"/><path class="pl" d="M66,2V98"/>'},
  bookshelf:{n:'Bookshelf',w:100,h:22,s:'<rect class="pf" x="1" y="2" width="98" height="96"/><path class="pl" d="M20,2V98M40,2V98M60,2V98M80,2V98"/>'},
- armchair:{n:'Armchair',w:55,h:55,s:'<path class="pf" d="M4,6H96V84Q96,96 84,96H16Q4,96 4,84Z"/><path class="pl" d="M22,6V72H78V6M4,72H96"/>'},
+ armchair:{n:'Armchair',w:62,h:62,s:'<path class="pf" d="M4,6H96V84Q96,96 84,96H16Q4,96 4,84Z"/><path class="pl" d="M22,6V72H78V6M4,72H96"/>'},
  coffeetable:{n:'Coffee Table',w:90,h:50,s:'<rect class="pf" x="1" y="1" width="98" height="98" rx="12"/>'},
- bench:{n:'Bench',w:120,h:26,s:'<rect class="pf" x="1" y="8" width="98" height="84" rx="4"/>'},
- barstool:{n:'Bar Stool',w:22,h:22,s:'<circle class="pf" cx="50" cy="50" r="46"/><circle class="pl" cx="50" cy="50" r="26"/>'},
+ bench:{n:'Bench',w:130,h:36,s:'<rect class="pf" x="1" y="8" width="98" height="84" rx="4"/>'},
+ barstool:{n:'Bar Stool',w:30,h:30,s:'<circle class="pf" cx="50" cy="50" r="46"/><circle class="pl" cx="50" cy="50" r="26"/>'},
  piano:{n:'Upright Piano',w:90,h:40,s:'<rect class="pf" x="1" y="2" width="98" height="96" rx="3"/><rect class="pw" x="6" y="64" width="88" height="28"/><path class="pl" d="M17,64V92M28,64V92M39,64V92M50,64V92M61,64V92M72,64V92M83,64V92"/>'},
  grandpiano:{n:'Grand Piano',w:90,h:150,s:'<path class="pf" d="M4,2H96V40Q96,70 70,78Q52,84 50,98H20Q4,98 4,80Z"/><rect class="pw" x="4" y="2" width="92" height="12"/>'},
  tv:{n:'TV',w:70,h:14,s:'<rect class="pbk" x="1" y="8" width="98" height="44" rx="3"/><rect class="pf" x="30" y="56" width="40" height="36" rx="4"/>'},
@@ -520,7 +520,7 @@ const LIB={
  fridge:{n:'Fridge',w:50,h:45,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><path class="pl" d="M2,82H98M30,90H46M54,90H70"/>'},
  stove:{n:'Stove',w:50,h:45,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><circle class="pl" cx="28" cy="30" r="14"/><circle class="pl" cx="72" cy="30" r="14"/><circle class="pl" cx="28" cy="70" r="14"/><circle class="pl" cx="72" cy="70" r="14"/>'},
  sink:{n:'Sink',w:55,h:40,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><rect class="pw" x="14" y="22" width="72" height="66" rx="14"/><circle class="pl" cx="50" cy="12" r="4"/>'},
- toilet:{n:'Toilet',w:28,h:45,s:'<rect class="pf" x="12" y="2" width="76" height="24" rx="4"/><ellipse class="pf" cx="50" cy="62" rx="38" ry="36"/><ellipse class="pw" cx="50" cy="64" rx="24" ry="22"/>'},
+ toilet:{n:'Toilet',w:34,h:54,s:'<rect class="pf" x="12" y="2" width="76" height="24" rx="4"/><ellipse class="pf" cx="50" cy="62" rx="38" ry="36"/><ellipse class="pw" cx="50" cy="64" rx="24" ry="22"/>'},
  bathtub:{n:'Bathtub',w:100,h:45,s:'<rect class="pf" x="1" y="2" width="98" height="96" rx="6"/><rect class="pw" x="8" y="12" width="84" height="76" rx="30"/><circle class="pl" cx="18" cy="50" r="4"/>'},
  shower:{n:'Shower',w:60,h:60,s:'<rect class="pw" x="1" y="1" width="98" height="98"/><path class="pl" d="M1,1L99,99M99,1L1,99"/><circle class="pf" cx="50" cy="50" r="8"/>'},
  // office
@@ -534,12 +534,12 @@ const LIB={
  hospbed:{n:'Hospital Bed',w:70,h:130,s:'<rect class="pw" x="8" y="2" width="84" height="96" rx="5"/><rect class="pf" x="18" y="6" width="64" height="12" rx="5"/><path class="pl ph" d="M4,30V70M96,30V70"/>'},
  gurney:{n:'Gurney',w:40,h:120,s:'<rect class="pw" x="6" y="2" width="88" height="96" rx="10"/><path class="pl" d="M6,24H94"/>'},
  ivpole:{n:'IV Pole',w:24,h:24,s:'<path class="pl" d="M10,50H90M50,10V90"/><circle class="pf" cx="50" cy="50" r="10"/><rect class="pbl" x="62" y="18" width="22" height="28" rx="4"/>'},
- wheelchair:{n:'Wheelchair',w:40,h:50,s:'<rect class="pf" x="14" y="4" width="72" height="70" rx="6"/><rect class="pd" x="2" y="10" width="10" height="70" rx="4"/><rect class="pd" x="88" y="10" width="10" height="70" rx="4"/><path class="pl" d="M30,74V96M70,74V96"/>'},
+ wheelchair:{n:'Wheelchair',w:46,h:58,s:'<rect class="pf" x="14" y="4" width="72" height="70" rx="6"/><rect class="pd" x="2" y="10" width="10" height="70" rx="4"/><rect class="pd" x="88" y="10" width="10" height="70" rx="4"/><path class="pl" d="M30,74V96M70,74V96"/>'},
  patientmon:{n:'Patient Monitor',w:34,h:24,s:'<rect class="pbk" x="2" y="2" width="96" height="70" rx="6"/><path class="pl py" d="M10,40H30L38,20L48,58L56,34L62,40H90"/><rect class="pf" x="34" y="72" width="32" height="26"/>'},
  // restaurant & bar
  booth:{n:'Booth',w:120,h:110,s:'<path class="pf" d="M2,2H98V98H82V18H18V98H2Z"/><rect class="pf" x="26" y="30" width="48" height="56" rx="4"/>'},
  barcounter:{n:'Bar Counter',w:300,h:45,s:'<rect class="pf" x="1" y="8" width="98" height="84" rx="20" ry="40"/>'},
- cafetable:{n:'Café Table + 2',w:45,h:60,s:'<circle class="pf" cx="50" cy="50" r="30"/><rect class="pw" x="34" y="2" width="32" height="14" rx="4"/><rect class="pw" x="34" y="84" width="32" height="14" rx="4"/>'},
+ cafetable:{n:'Café Table + 2',w:72,h:96,s:'<circle class="pf" cx="50" cy="50" r="30"/><rect class="pw" x="34" y="2" width="32" height="14" rx="4"/><rect class="pw" x="34" y="84" width="32" height="14" rx="4"/>'},
  // street & vehicles
  suv:{n:'SUV',w:300,h:125,s:'<rect class="pf" x="1" y="4" width="98" height="92" rx="16" ry="34"/><path class="pl" d="M26,20H16V80H26M49,20H38V80H49M73,18H62V43H73M73,57H62V82H73"/><path class="pl pg" d="M86,18Q92,50 86,82"/>'},
  taxi:{n:'Taxi',w:270,h:110,s:'<rect class="pyl" x="1" y="4" width="98" height="92" rx="22" ry="40"/><path class="pl" d="M38,24H24V76H38M66,22H54V43H66M66,57H54V78H66"/><path class="pl pg" d="M82,22Q88,50 82,78"/><rect class="pw" x="41" y="40" width="9" height="20"/>'},
@@ -563,12 +563,12 @@ const LIB={
  garage:{n:'Garage',w:402,h:402,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect x="50" y="1" width="49" height="98" fill="#000" fill-opacity=".13"/><path class="pl" d="M50,1V99"/>'},
  rowhouse:{n:'Brownstone / Row House',w:366,h:914,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="7" y="3" width="86" height="94"/><rect class="pw" x="30" y="34" width="40" height="16"/><rect class="pd" x="34" y="66" width="22" height="9"/><rect class="pd" x="70" y="8" width="16" height="6"/>'},
  rowblock:{n:'Row of Brownstones',w:1463,h:914,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><path class="pl" d="M25,1V99M50,1V99M75,1V99"/>'+[0,25,50,75].map(x=>`<rect class="pw" x="${x+8}" y="34" width="10" height="16"/><rect class="pd" x="${x+9}" y="66" width="6" height="9"/><rect class="pd" x="${x+17}" y="8" width="4" height="6"/>`).join('')},
- apartment:{n:'Apartment Building',w:1829,h:1463,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="4" y="4" width="92" height="92"/><rect class="pd" x="40" y="38" width="22" height="20"/><circle class="pd" cx="80" cy="22" r="9"/><circle class="pl" cx="80" cy="22" r="5"/><rect class="pw" x="12" y="70" width="12" height="9"/><rect class="pw" x="28" y="70" width="12" height="9"/><rect class="pw" x="14" y="14" width="10" height="8"/>'},
- office:{n:'Office Tower',w:2195,h:2195,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="5" y="5" width="90" height="90"/><rect class="pd" x="30" y="30" width="40" height="40"/><rect class="pl" x="36" y="36" width="28" height="28"/><rect class="pw" x="12" y="12" width="10" height="8"/><rect class="pw" x="78" y="80" width="10" height="8"/><circle class="pl" cx="20" cy="80" r="9"/>'},
- warehouse:{n:'Warehouse',w:2744,h:1829,s:'<rect class="pf" x="1" y="1" width="98" height="98"/>'+[22,44,66,88].map(y=>`<rect class="pw" x="10" y="${y-9}" width="80" height="6"/>`).join('')+[18,38,58,78].map(x=>`<rect class="pd" x="${x}" y="96" width="10" height="3"/>`).join('')},
- store:{n:'Store / Strip Mall',w:2195,h:914,s:'<rect class="pf" x="1" y="1" width="98" height="86"/><rect class="pw" x="1" y="87" width="98" height="12"/><path class="pl" d="M25,1V99M50,1V99M75,1V99"/><rect class="pd" x="8" y="20" width="10" height="16"/><rect class="pd" x="58" y="20" width="10" height="16"/>'},
- gasstation:{n:'Gas Station',w:1463,h:1097,s:'<rect class="pd" x="20" y="2" width="60" height="22"/><rect class="pf" x="6" y="36" width="88" height="56" fill-opacity=".75"/><rect class="pw" x="18" y="58" width="16" height="12"/><rect class="pw" x="42" y="58" width="16" height="12"/><rect class="pw" x="66" y="58" width="16" height="12"/>'},
- church:{n:'Church',w:1097,h:1829,s:'<path class="pf" d="M35,1H65V30H99V48H65V99H35V48H1V30H35Z"/><path class="pl" d="M50,1V99M1,39H99"/><rect class="pd" x="38" y="84" width="24" height="15"/><path class="pl" d="M38,84L62,99M62,84L38,99"/>'},
+ apartment:{n:'Apartment Building',w:914,h:732,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="4" y="4" width="92" height="92"/><rect class="pd" x="40" y="38" width="22" height="20"/><circle class="pd" cx="80" cy="22" r="9"/><circle class="pl" cx="80" cy="22" r="5"/><rect class="pw" x="12" y="70" width="12" height="9"/><rect class="pw" x="28" y="70" width="12" height="9"/><rect class="pw" x="14" y="14" width="10" height="8"/>'},
+ office:{n:'Office Tower',w:1280,h:1280,s:'<rect class="pf" x="1" y="1" width="98" height="98"/><rect class="pl" x="5" y="5" width="90" height="90"/><rect class="pd" x="30" y="30" width="40" height="40"/><rect class="pl" x="36" y="36" width="28" height="28"/><rect class="pw" x="12" y="12" width="10" height="8"/><rect class="pw" x="78" y="80" width="10" height="8"/><circle class="pl" cx="20" cy="80" r="9"/>'},
+ warehouse:{n:'Warehouse',w:1646,h:1097,s:'<rect class="pf" x="1" y="1" width="98" height="98"/>'+[22,44,66,88].map(y=>`<rect class="pw" x="10" y="${y-9}" width="80" height="6"/>`).join('')+[18,38,58,78].map(x=>`<rect class="pd" x="${x}" y="96" width="10" height="3"/>`).join('')},
+ store:{n:'Store / Strip Mall',w:1463,h:610,s:'<rect class="pf" x="1" y="1" width="98" height="86"/><rect class="pw" x="1" y="87" width="98" height="12"/><path class="pl" d="M25,1V99M50,1V99M75,1V99"/><rect class="pd" x="8" y="20" width="10" height="16"/><rect class="pd" x="58" y="20" width="10" height="16"/>'},
+ gasstation:{n:'Gas Station',w:1097,h:823,s:'<rect class="pd" x="20" y="2" width="60" height="22"/><rect class="pf" x="6" y="36" width="88" height="56" fill-opacity=".75"/><rect class="pw" x="18" y="58" width="16" height="12"/><rect class="pw" x="42" y="58" width="16" height="12"/><rect class="pw" x="66" y="58" width="16" height="12"/>'},
+ church:{n:'Church',w:732,h:1220,s:'<path class="pf" d="M35,1H65V30H99V48H65V99H35V48H1V30H35Z"/><path class="pl" d="M50,1V99M1,39H99"/><rect class="pd" x="38" y="84" width="24" height="15"/><path class="pl" d="M38,84L62,99M62,84L38,99"/>'},
  // streets and sidewalks, drawn to scale from their real size
  street:{n:'Street (2 lanes)',w:1829,h:768,f:(w,h)=>streetSVG(w,h,1),s:'<rect x="0" y="0" width="100" height="24" fill="#d9d6cf"/><rect x="0" y="76" width="100" height="24" fill="#d9d6cf"/><rect x="0" y="24" width="100" height="52" fill="#5d636b"/><path d="M0,48H100M0,52H100" stroke="#e3b43a" stroke-width="2"/>'},
  avenue:{n:'Avenue (4 lanes)',w:2195,h:1463,f:(w,h)=>streetSVG(w,h,2),s:'<rect x="0" y="0" width="100" height="14" fill="#d9d6cf"/><rect x="0" y="86" width="100" height="14" fill="#d9d6cf"/><rect x="0" y="14" width="100" height="72" fill="#5d636b"/><path d="M0,49H100M0,51H100" stroke="#e3b43a" stroke-width="1.6"/><path d="M0,32H100M0,68H100" stroke="#fff" stroke-width="1.6" stroke-dasharray="10 12"/>'},
@@ -609,7 +609,7 @@ const LIB={
  flag:{n:'Flag / Floppy',w:60,h:8,s:'<rect class="pbk" x="1" y="18" width="98" height="64"/>'},
  silk:{n:'12×12 Frame',w:216,h:10,s:'<rect class="pw" x="1" y="18" width="98" height="64"/><path class="pl" d="M1,50H99"/>'},
  applebox:{n:'Apple Box',w:36,h:22,s:'<rect class="pbx" x="2" y="2" width="96" height="96" rx="3"/><ellipse class="pl" cx="50" cy="50" rx="18" ry="16"/>'},
- dirchair:{n:'Director’s Chair',w:36,h:36,s:'<rect class="pf" x="12" y="10" width="76" height="80"/><path class="pl ph" d="M12,90H88"/><path class="pd" d="M2,10H12V90H2ZM88,10H98V90H88Z"/>'},
+ dirchair:{n:'Director’s Chair',w:42,h:42,s:'<rect class="pf" x="12" y="10" width="76" height="80"/><path class="pl ph" d="M12,90H88"/><path class="pd" d="M2,10H12V90H2ZM88,10H98V90H88Z"/>'},
  soundcart:{n:'Sound Cart',w:70,h:45,s:'<rect class="pf" x="2" y="2" width="96" height="96" rx="4"/><rect class="pbk" x="12" y="12" width="40" height="30"/><path class="pl" d="M60,20H88M60,34H88"/>'},
  generator:{n:'Generator',w:140,h:80,s:'<rect class="pf" x="1" y="6" width="98" height="88" rx="4"/><path class="pl" d="M10,20H40M10,32H40M10,44H40"/><circle class="pl" cx="72" cy="50" r="20"/>'},
  tent:{n:'Pop-up Tent',w:180,h:180,s:'<rect class="pw" x="1" y="1" width="98" height="98"/><path class="pl" d="M1,1L99,99M99,1L1,99"/>'},
@@ -1571,13 +1571,21 @@ function wallRun(sc,w){const seen=new Set([w]),q=[w];while(q.length){const c=q.p
 function wallGeo(w){const dx=w.x2-w.x1,dy=w.y2-w.y1,L=Math.hypot(dx,dy)||1;return {L,ux:dx/L,uy:dy/L,nx:-dy/L,ny:dx/L,th:Math.atan2(dy,dx)*180/Math.PI};}
 function syncPiece(it,w){const g=wallGeo(w),half=Math.min(it.w/2,g.L/2),d=clamp((it.wt||0)*g.L,half,g.L-half),wy=WALLK[it.kind]*it.h,sd=it.ws||1;
  const px=w.x1+g.ux*d,py=w.y1+g.uy*d;it.x=px-g.nx*wy*sd;it.y=py-g.ny*wy*sd;it.rot=Math.round((g.th+(sd>0?0:180))*100)/100;}
-function syncPieces(sc){for(const it of sc.items)if(it.wall){const w=sc.items.find(x=>x.id===it.wall&&x.type==='wall');if(!w){delete it.wall;continue;}syncPiece(it,w);}}
+/* buildings seen from above: their outline works like walls for doors and windows (outline points in the 0..100 box; a plain rectangle unless listed) */
+const HOSTP={househip:1,housegable:1,garage:1,rowhouse:1,rowblock:1,apartment:1,office:1,warehouse:1,store:1,
+ houseL:[[1,1],[99,1],[99,54],[52,54],[52,99],[1,99]],gasstation:[[6,36],[94,36],[94,92],[6,92]],church:[[35,1],[65,1],[65,30],[99,30],[99,48],[65,48],[65,99],[35,99],[35,48],[1,48],[1,30],[35,30]]};
+const isHost=it=>!!it&&it.type==='prop'&&!!HOSTP[it.kind]&&it.w>0&&it.h>0;
+function hostEdges(b){const pts=Array.isArray(HOSTP[b.kind])?HOSTP[b.kind]:[[0,0],[100,0],[100,100],[0,100]],c=Math.cos(rad(b.rot||0)),sn=Math.sin(rad(b.rot||0));
+ const W=pts.map(([u,v])=>{const lx=(u/100-.5)*b.w,ly=(v/100-.5)*b.h;return {x:b.x+lx*c-ly*sn,y:b.y+lx*sn+ly*c};});
+ return W.map((p,i)=>{const q=W[(i+1)%W.length];return {x1:p.x,y1:p.y,x2:q.x,y2:q.y,host:b.id,e:i};});}
+function hostOf(sc,it){const w=sc.items.find(x=>x.id===it.wall);if(!w)return null;if(w.type==='wall')return w;if(isHost(w)){const E=hostEdges(w);return E[clamp(it.we||0,0,E.length-1)];}return null;}
+function syncPieces(sc){for(const it of sc.items)if(it.wall){const w=hostOf(sc,it);if(!w){delete it.wall;delete it.we;continue;}syncPiece(it,w);}}
 function snapPiece(sc,it,f,reach){let best=null;
- for(const w of pageItems(sc))if(w.type==='wall'){const g=wallGeo(w),rx=f.x-w.x1,ry=f.y-w.y1,d=clamp(rx*g.ux+ry*g.uy,0,g.L),px=w.x1+g.ux*d,py=w.y1+g.uy*d,dist=Math.hypot(f.x-px,f.y-py);
+ for(const o of pageItems(sc))for(const w of (o.type==='wall'?[o]:isHost(o)&&o.id!==it.id?hostEdges(o):[])){const g=wallGeo(w),rx=f.x-w.x1,ry=f.y-w.y1,d=clamp(rx*g.ux+ry*g.uy,0,g.L),px=w.x1+g.ux*d,py=w.y1+g.uy*d,dist=Math.hypot(f.x-px,f.y-py);
   if(!best||dist<best.dist)best={w,g,d,dist,side:(rx*g.nx+ry*g.ny)<0?1:-1};}
  const lim=reach!=null?reach:WALLK[it.kind]*it.h+30;
- if(best&&best.dist<=lim){it.wall=best.w.id;it.wt=best.d/best.g.L;if(WALLK[it.kind]>0)it.ws=best.side;else it.ws=it.ws||1;syncPiece(it,best.w);return true;}
- if(it.wall){delete it.wall;delete it.wt;}it.x=f.x;it.y=f.y;return false;}
+ if(best&&best.dist<=lim){it.wall=best.w.host||best.w.id;if(best.w.host)it.we=best.w.e;else delete it.we;it.wt=best.d/best.g.L;if(WALLK[it.kind]>0)it.ws=best.side;else it.ws=it.ws||1;syncPiece(it,best.w);return true;}
+ if(it.wall){delete it.wall;delete it.wt;delete it.we;}it.x=f.x;it.y=f.y;return false;}
 function wallGaps(sc,w,pid){const g=wallGeo(w),cuts=[];for(const it of sc.items)if(it.wall===w.id&&vis(it,sc,pid)){const half=Math.min(it.w/2,g.L/2),d=clamp((it.wt||0)*g.L,half,g.L-half),gw=(it.kind.includes('door')?it.w*.46:it.w*.5);cuts.push([d-gw,d+gw]);}
  cuts.sort((a,b)=>a[0]-b[0]);const segs=[];let at=0;for(const [a,b] of cuts){if(a>at)segs.push([at,a]);at=Math.max(at,b);}if(at<g.L)segs.push([at,g.L]);
  return {cut:cuts.length>0,segs:segs.map(([a,b])=>[w.x1+g.ux*a,w.y1+g.uy*a,w.x1+g.ux*b,w.y1+g.uy*b])};}
@@ -2549,7 +2557,7 @@ function objAct(o){
    const len=clamp(G.L*.1,40,80);for(const e of [1,2]){const p=wEnd(it,e);s.items.push({id:uid(),type:'wall',x1:p.x,y1:p.y,x2:p.x+G.nx*sd*len,y2:p.y+G.ny*sd*len,t:it.t||WALL_T,pgs:it.pgs?it.pgs.slice():null,locked:false});}
    commit();toast('A piece came out at each end. Drag the ends, or join them with the Wall Tool.');break;}
   case 'wflip':it.ws=-(it.ws||1);commit();break;
-  case 'wdetach':{delete it.wall;delete it.wt;moveItem(it,'all',-Math.sin(rad(it.rot||0))*-40,Math.cos(rad(it.rot||0))*-40);commit();toast('Detached from the wall.');break;}
+  case 'wdetach':{delete it.wall;delete it.wt;delete it.we;moveItem(it,'all',-Math.sin(rad(it.rot||0))*-40,Math.cos(rad(it.rot||0))*-40);commit();toast('Detached from the wall.');break;}
   case 'pan':{const m=it.marks[sel.mark||0],P=m.pans||[];insPan(it,sel.mark||0,P.length,(P.length?P[P.length-1].rot:m.rot||0)+45);break;}
   case 'pafter':{const m=it.marks[sel.mark||0],P=m.pans||[],j=sel.pan||0;insPan(it,sel.mark||0,j,(j?P[j-1].rot:m.rot||0)+45);break;}
   case 'pbefore':{if(!sel.pan){const m=it.marks[sel.mark||0],r0=m.rot||0;m.pans=m.pans||[];m.pans.unshift({rot:normA(r0)});m.rot=normA(r0-45);if(!m.move)m.move='Pan';sel={id:it.id,mark:sel.mark||0,badge:true};commit();toast('Pan added. Drag its number to point the camera where you want.');break;}const m=it.marks[sel.mark||0],P=m.pans||[],j=sel.pan,pr=j>1?P[j-2].rot:(m.rot||0),cu=P[j-1].rot,d=((cu-pr)%360+540)%360-180;insPan(it,sel.mark||0,j-1,Math.abs(d)<20?pr-45:pr+d/2);break;}
@@ -3106,8 +3114,8 @@ function ftBuild(key,cat,title,loc,make){
  const K={
   wall(x1,y1,x2,y2){const w={id:id(),type:'wall',x1,y1,x2,y2,t:WALL_T,pgs:null,locked:false};items.push(w);return w.id;},
   room(x,y,w,h){return [K.wall(x,y,x+w,y),K.wall(x+w,y,x+w,y+h),K.wall(x+w,y+h,x,y+h),K.wall(x,y+h,x,y)];},
-  piece(kind,wall,wt,ws){const L=LIB[kind];items.push({id:id(),type:'set',kind,x:0,y:0,w:L.w,h:L.h,rot:0,wall,wt,ws:ws||1,pgs:null,locked:false,label:''});},
-  thing(kind,x,y,rot,o){const L=LIB[kind];const it=Object.assign({id:id(),type:catOf(kind),kind,x,y,w:L.w,h:L.h,rot:rot||0,pgs:null,locked:false,label:''},o||{});items.push(it);return it;},
+  piece(kind,wall,wt,ws){const L=tsz(kind);items.push({id:id(),type:'set',kind,x:0,y:0,w:L.w,h:L.h,rot:0,wall,wt,ws:ws||1,pgs:null,locked:false,label:''});},
+  thing(kind,x,y,rot,o){const L=tsz(kind);const it=Object.assign({id:id(),type:catOf(kind),kind,x,y,w:L.w,h:L.h,rot:rot||0,pgs:null,locked:false,label:''},o||{});items.push(it);return it;},
   char(letter,marks){items.push({id:id(),type:'char',charId:'tplc-'+letter,pgs:null,locked:false,marks:marks.map(m=>Object.assign({rot:0},m))});},
   cam(num,letter,x,y,look,v,more){let st=setups.find(q=>q.num===num);if(!st){st={id:`ft-${key}-su${num}`,num,color:SETUP_COLORS[(num-1)%SETUP_COLORS.length]};setups.push(st);}
    const rot=typeof look==='number'?look:Math.round(Math.atan2(look.y-y,look.x-x)*180/Math.PI);
@@ -3173,6 +3181,7 @@ const FT_DEFS=[
  ['circle','Four+ Characters','Circle, Standing','',K=>{const R=85;['A','B','C','D','E'].forEach((L,i)=>{const a=i/5*Math.PI*2-Math.PI/2,x=Math.round(Math.cos(a)*R),y=Math.round(Math.sin(a)*R);K.char(L,[{x,y,rot:Math.round(a*180/Math.PI+180)}]);});
    K.cam(1,'A',0,330,-90,{size:'Wide Shot',type:'Group'});K.cam(2,'A',-240,-180,look(0,0),{size:'Medium Shot',type:'Group',angle:'High Angle'});}],
 ];
+const TSZ={chair:[30,30],barstool:[22,22],armchair:[55,55],sofa:[120,50],bench:[120,26],nightstand:[30,30],toilet:[28,45],dirchair:[36,36],wheelchair:[40,50],cafetable:[45,60],apartment:[1829,1463],office:[2195,2195],warehouse:[2744,1829],store:[2195,914],gasstation:[1463,1097],church:[1097,1829]},tsz=k=>TSZ[k]?{w:TSZ[k][0],h:TSZ[k][1]}:LIB[k];
 function ftInstall(){
  if((P.ui.ftv||0)>=FT_V)return false;
  for(const [L,c] of FT_CHARS)if(!P.characters.some(x=>x.id==='tplc-'+L))P.characters.push({id:'tplc-'+L,name:L,color:c,tpl:1});
