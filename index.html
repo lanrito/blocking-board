@@ -542,7 +542,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119182246';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119210559';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -618,6 +618,9 @@ const LIB={
  plate:{n:'Plate',w:22,h:22,s:'<circle class="pf" cx="50" cy="50" r="48"/><circle class="pl" cx="50" cy="50" r="30"/>'},
  cup:{n:'Cup',w:10,h:10,s:'<circle class="pf" cx="50" cy="50" r="46"/>'},
  dog:{n:'Dog',w:60,h:36,s:'<path class="pf" d="M4,40L12,36L20,40L58,38L70,36L76,22L78,8L84,16L94,20L98,28L90,34L84,44L80,56L82,96H74L70,62L34,62L30,96H22L22,58L14,48Z"/>'},
+ explosion:{n:'Explosion',w:150,h:150,s:'<circle class="pf" cx="50" cy="50" r="46"/>'}, blast:{n:'Big Explosion',w:400,h:400,s:'<circle class="pf" cx="50" cy="50" r="46"/>'}, sparks:{n:'Sparks / Bullet Hit',w:36,h:36,s:'<circle class="pf" cx="50" cy="50" r="46"/>'},
+ fire:{n:'Fire',w:80,h:90,s:'<circle class="pf" cx="50" cy="50" r="46"/>'}, smoke:{n:'Smoke',w:220,h:200,s:'<circle class="pf" cx="50" cy="50" r="46"/>'}, blastradius:{n:'Blast Radius',w:500,h:500,s:'<circle class="pf" cx="50" cy="50" r="46"/>'},
+ dynamite:{n:'Dynamite',w:30,h:16,s:'<circle class="pf" cx="50" cy="50" r="46"/>'}, bomb:{n:'Bomb',w:26,h:26,s:'<circle class="pf" cx="50" cy="50" r="46"/>'},
  gun:{n:'Gun',w:30,h:20,s:'<path class="pd" d="M2,14H96V40H56L54,52H44L40,96H18L24,52L20,40H2Z"/>'},
  rifle:{n:'Rifle',w:70,h:22,s:'<path class="pd" d="M2,34L24,26H70V14H78V26H98V42H72L68,56H58L56,92H44L48,56H40L22,74H2Z"/>'},
  bush:{n:'Bush',w:50,h:50,s:`<path class="pf" d="${scallop(50,50,40,8)}"/>`},
@@ -916,8 +919,6 @@ function nSemi(L,W,c,o,roof){const a=L/2,b=W/2,ih=b-14;                         
  if(roof)return g+nR(-a+L*.18,-ih,L*.16,2*ih,5,lt(c,.12))+nR(-a+L*.22,-ih*.6,L*.09,ih*1.2,4,'#fff','fill-opacity=".16" stroke="none"');
  g+=nR(-a+L*.18,-ih,L*.16,2*ih,5,'#f1f3f6');for(const y of [ih-ih*.8-3,-ih+3])g+=nR(-a+L*.2,y,30,ih*.8,6,'#59616d')+nR(-a+L*.2+21,y,9,ih*.8,4.5,'#434a55');
  return g+nC(-a+L*.195,ih-3-ih*.4,8,'none','stroke="#23272e" stroke-width="2.2" vector-effect="non-scaling-stroke"')+nR(-a+L*.3,-ih+3,L*.035,2*ih-6,3,'#8d96a1');}
-function nTrailer(w,h,c,o){const x=-w/2,y=-h/2;let d='';const n=Math.max(3,Math.round(w/70));for(let i=1;i<n;i++)d+=`M${nf(x+w*i/n)},${nf(y+2)}V${nf(-y-2)}`;
- return nR(-x-w*.2,y-5,w*.07,h+10,4,'#2b2d33',NS0)+nR(-x-w*.11,y-5,w*.07,h+10,4,'#2b2d33',NS0)+nSh({sx:o.sx*1.8,sy:o.sy*1.8},x,y,w,h,3)+nR(x,y,w,h,3,c)+nR(x+4,y+4,w-8,h-8,2,lt(c,.25),NS0)+nL(d,.2);}
 function nMoto(L,W,c,o){const a=L/2;return nR(-a,-4,L*.24,8,4,'#2b2d33',NS0)+nR(a-L*.24,-4,L*.24,8,4,'#2b2d33',NS0)+`<path d="M${nf(a-L*.3)},${nf(-W*.46)}V${nf(W*.46)}" stroke="#4b5563" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`+nR(a-L*.32,-W*.5,5,7,2,'#1f2126',NS0)+nR(a-L*.32,W*.5-7,5,7,2,'#1f2126',NS0)
   +nEl(o.sx,o.sy,L*.3,W*.24,'#000',NSH)+nEl(L*.06,0,L*.19,W*.24,c)+nR(-L*.3,-W*.17,L*.27,W*.34,6,'#33363d')+nR(-a+L*.12,-W*.1,L*.1,W*.2,3,'#d6453f')+nC(a-L*.2,0,W*.11,'#fff6d6');}
 function nBike(L,W,c,o){const a=L/2;return nR(-a,-1.8,L*.34,3.6,1.8,'#2b2d33',NS0)+nR(a-L*.34,-1.8,L*.34,3.6,1.8,'#2b2d33',NS0)+`<path d="M${nf(-a+L*.17)},0H${nf(a-L*.2)}" stroke="${c}" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M${nf(a-L*.22)},${nf(-W*.46)}V${nf(W*.46)}" stroke="#4b5563" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/><path d="M${nf(-L*.02)},${nf(-W*.34)}V${nf(W*.34)}" stroke="#6b7280" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`+nEl(-L*.14,0,L*.09,W*.2,'#33363d');}
@@ -1007,20 +1008,6 @@ function nBottle(w,h,c,o){const x=-w/2,y=-h/2,d=`M${nf(x+w*.32)},${nf(y)}H${nf(-
  return nShP(o,d)+nP(d,c)+nR(x+w*.26,y,w*.48,h*.07,0,dk(c,.4),NS0)+nR(x+w*.14,y+h*.58,w*.72,h*.22,0,'#f3efe4','stroke="none" fill-opacity=".9"');}
 function nCandle(w,h,c,o){const r=Math.min(w,h)/2;return nC(0,0,r*1.7,'#ffd97a','stroke="none" fill-opacity=".25"')+nShC(o,0,0,r)+nC(0,0,r,c)+nC(0,0,r*.4,'#f6a21c',NS0);}
 /* big machines: front is as it always was (tank to the right; aircraft nose up) */
-function nTank(w,h,c,o){const x=-w/2,y=-h/2,bw=w*.72,tr='#2f3329';let d='';for(let i=1;i<12;i++){const px=x+bw*i/12;d+=`M${nf(px)},${nf(y+2)}V${nf(y+h*.2-2)}M${nf(px)},${nf(-y-h*.2+2)}V${nf(-y-2)}`;}
- return nSh(o,x,y,bw,h,6)+nR(x,y,bw,h*.2,5,tr)+nR(x,-y-h*.2,bw,h*.2,5,tr)+nLw(d,.2)+nR(x+bw*.03,y+h*.13,bw*.94,h*.74,8,c)+nR(x+bw*.08,y+h*.2,bw*.16,h*.6,4,dk(c,.14),NS0)
-  +nSh(o,x+bw*.62,-h*.045,w-bw*.62-2,h*.09,2)+nR(x+bw*.62,-h*.045,w-bw*.62-2,h*.09,2,dk(c,.25))+nR(-x-w*.055,-h*.065,w*.05,h*.13,1,dk(c,.42))
-  +nSh(o,x+bw*.32,y+h*.26,bw*.44,h*.48,h*.18)+nR(x+bw*.32,y+h*.26,bw*.44,h*.48,h*.18,lt(c,.14))+nC(x+bw*.47,-h*.07,h*.075,dk(c,.3))+nC(x+bw*.47,-h*.07,h*.03,lt(c,.3),NS0);}
-function nHeli(w,h,c,o){return nBx(w,h,o,5,q=>{const f='M50,18C59,18 61,36 57,48L52.6,62L52,94H48L47.4,62L43,48C39,36 41,18 50,18Z';
- return nShP(q,f)+nL('M40,24V52M60,24V52',.9)+nL('M40,30H44M40,46H44M56,30H60M56,46H60',.7)+nP(f,c)+nP('M50,21C55.6,21 57.2,30 56,36H44C42.8,30 44.4,21 50,21Z',NGLASS)+nR(42,89,16,3.4,1,dk(c,.2))+nR(53.5,82,2,12,1,NTIRE,NS0)
-  +nC(50,40,43,'#8aa0b4','stroke="#3b4250" stroke-opacity=".28" stroke-width="1" stroke-dasharray="3 4" vector-effect="non-scaling-stroke" fill-opacity=".1"')+nSeg(19,9,81,71,2.2,NTIRE,NS0)+nSeg(81,9,19,71,2.2,NTIRE,NS0)+nC(50,40,3,lt(c,.4));});}
-function nPlane(w,h,c,o){return nBx(w,h,o,5,q=>{const wing='M3,36H97Q99,36 99,38V45Q99,47 97,47L56,49H44L3,47Q1,47 1,45V38Q1,36 3,36Z',tail='M33,84H67Q68.5,84 68.5,85.5V90Q68.5,91.5 67,91.5H33Q31.5,91.5 31.5,90V85.5Q31.5,84 33,84Z',fus='M50,4C55,4 56.5,14 56.5,26L55,70L52.2,95H47.8L45,70L43.5,26C43.5,14 45,4 50,4Z';
- return nShP(q,wing)+nShP(q,fus)+nShP(q,tail)+nP(wing,dk(c,.07))+nP(tail,dk(c,.07))+nL('M14,41.5H38M62,41.5H86',.25)+nP(fus,c)+nP('M50,13C53.6,13 54.6,20 54.2,27H45.8C45.4,20 46.4,13 50,13Z',NGLASS)+nSeg(40,3.4,60,3.4,1.5,NTIRE,NS0)+nC(50,3.6,2,dk(c,.4));});}
-function nFighter(w,h,c,o){return nBx(w,h,o,5,q=>{const wing='M44,42L4,76V83L42,78ZM56,42L96,76V83L58,78Z',st='M45,80L28,94V98L46,94ZM55,80L72,94V98L54,94Z',fus='M50,2C53,10 55.5,26 56,42L57,80L55,96H45L43,80L44,42C44.5,26 47,10 50,2Z';
- return nShP(q,wing)+nShP(q,fus)+nP(wing,dk(c,.1))+nP(st,dk(c,.18))+nP(fus,c)+nP('M50,14C52.6,18 53.2,26 53,34H47C46.8,26 47.4,18 50,14Z','#9cc3e0')+nR(45.6,94,3.4,4.5,.6,NTIRE,NS0)+nR(51,94,3.4,4.5,.6,NTIRE,NS0)+nL('M50,38V90',.25);});}
-function nJet(w,h,c,o){return nBx(w,h,o,6,q=>{const wing='M45,38L2,64V70L45,58ZM55,38L98,64V70L55,58Z',st='M46,84L32,94V97L46,93ZM54,84L68,94V97L54,93Z',fus='M50,1C53.6,1 55,8 55,16V84L52,98H48L45,84V16C45,8 46.4,1 50,1Z';let e='';
- for(const [ex,ey] of [[30,46],[70,46],[17,54],[83,54]])e+=nR(ex-2.2,ey,4.4,9,2,dk(c,.32));
- return nShP(q,wing)+nShP(q,fus)+nP(wing,dk(c,.08))+nP(st,dk(c,.12))+e+nP(fus,c)+nP('M46.6,8Q50,3 53.4,8L53,11H47Z','#33475c',NS0)+nL('M47,18V80M53,18V80',.14)+nL('M50,84V97',.3);});}
 /* on the street */
 function nCrosswalk(w,h,c,o){const x=-w/2,y=-h/2,n=Math.max(3,Math.round(w/36)),sw=w/n*.6;let g='';for(let i=0;i<n;i++)g+=nR(x+(i+.2)*w/n,y,sw,h,1,c,'stroke="#3b4250" stroke-opacity=".28" stroke-width="1" vector-effect="non-scaling-stroke"');return g;}
 function nStreetLamp(w,h,c,o){const x=-w/2,r=h*.34,hx=-x-h*.9;return nC(-x-h*.45,0,h*.95,NGLOW,'stroke="none" fill-opacity=".3"')+nSeg(x+r,0,hx+2,0,h*.13,c)+nShC(o,x+r,0,r)+nC(x+r,0,r,c)+nC(x+r,0,r*.42,lt(c,.4),NS0)+nSh(o,hx,-h*.3,h*.9,h*.6,3)+nR(hx,-h*.3,h*.9,h*.6,3,lt(c,.15))+nR(hx+h*.12,-h*.18,h*.66,h*.36,2,NGLOW,NS0);}
@@ -1114,12 +1101,79 @@ Object.assign(ND,{laptop:nLaptop,keyboard:nKeyboard,monitor:nMonitor,phone:nPhon
  actormark:nActorMark,crane:nCrane,cstand:(w,h,c,o)=>nStand(w,h,c,o,1),lightstand:(w,h,c,o)=>nStand(w,h,c,o,0),flag:nFlag,silk:nSilk,boom:nBoom,village:nVillage,equipment:nGear,
  bars:nBars,stairs:nStairs,column:nColumn,pillar:nPillar,railing:nRailing,fence:nFence,curtain:nCurtain,elevator:nElevator,
  fresnel:nFresnel,ledpanel:nLedPanel,softbox:nSoftbox,kino:nKino,practical:nPractical,sun:nSun});
-const ROOFK={car:1,taxi:1,police:1,suv:1,ambulance:1,minibus:1,bus:1,semi:1};
+/* ---------- effects for stunt scenes, and vehicles that open up so people can sit inside ---------- */
+const nMix=(a,b,t)=>{const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)||0),A=p(hex7(a)),B=p(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');};
+const nFx=(w,h,inner)=>`<g transform="scale(${+(w/100).toFixed(4)},${+(h/100).toFixed(4)})">${inner}</g>`;
+const NJ=[1,.78,.94,.7,1,.82,.9,.74,.97,.8,.92,.72,1,.76,.88,.8];
+function nBurst(r,n,ri,rot){let d='';for(let i=0;i<n*2;i++){const a=(i/(n*2))*Math.PI*2+(rot||0),k=i%2?ri*(.86+.28*NJ[(i*3)%16]):NJ[i%16],x=Math.cos(a)*r*k,y=Math.sin(a)*r*k;d+=(i?'L':'M')+nf(x)+','+nf(y);}return d+'Z';}
+const nHot=c=>nMix(c,'#c81e1e',.6),nGlow=c=>nMix(c,'#ffe45c',.82);
+function nExplosion(w,h,c,o){return nFx(w,h,nP(nBurst(49,12,.62),nHot(c))+nP(nBurst(36,10,.6,.3),c,NS0)+nP(nBurst(22,8,.6,.1),nGlow(c),NS0)+nC(0,0,7,'#fffbe6',NS0));}
+function nSparks(w,h,c,o){let d='';for(let i=0;i<10;i++){const a=i*Math.PI/5+.2,k=NJ[i];d+=`M${nf(Math.cos(a)*27)},${nf(Math.sin(a)*27)}L${nf(Math.cos(a)*(34+14*k))},${nf(Math.sin(a)*(34+14*k))}`;}
+ return nFx(w,h,`<path d="${d}" fill="none" stroke="${nHot(c)}" stroke-width="1.6" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`+nP(nBurst(25,8,.5),nGlow(c))+nC(0,0,6,'#fffbe6',NS0));}
+function nBlast(w,h,c,o){let g='',d='';const sm='stroke="#3b4250" stroke-opacity=".35" stroke-width="1" vector-effect="non-scaling-stroke" fill-opacity=".85"';
+ for(let i=0;i<11;i++){const a=i*Math.PI*2/11+.3,R=30+5*NJ[i];g+=nC(Math.cos(a)*R,Math.sin(a)*R,10+4*NJ[(i*5)%16],i%2?'#5b5f66':'#74787f',sm);}
+ for(let i=0;i<9;i++){const a=i*Math.PI*2/9+.9,R=40+7*NJ[(i*7)%16],x=Math.cos(a)*R,y=Math.sin(a)*R;d+=nPg(`${nf(x-2)},${nf(y-1.4)} ${nf(x+1.8)},${nf(y-2)} ${nf(x+2.4)},${nf(y+1.6)} ${nf(x-1.2)},${nf(y+2.2)}`,'#2f3238',NS0);}
+ return nFx(w,h,g+nP(nBurst(34,13,.62),nHot(c))+nP(nBurst(25,11,.6,.3),c,NS0)+nP(nBurst(15,9,.6,.1),nGlow(c),NS0)+nC(0,0,5,'#fffbe6',NS0)+d);}
+function nRadius(w,h,c,o){const st=(op,da)=>`stroke="${c}" stroke-opacity="${op}" stroke-width="1.6" ${da?'stroke-dasharray="7 5" ':''}vector-effect="non-scaling-stroke"`;
+ return nEl(0,0,w/2-1,h/2-1,c,'fill-opacity=".06" '+st(.9,1))+nEl(0,0,w*.33,h*.33,c,'fill-opacity=".07" '+st(.7,1))+nEl(0,0,w*.165,h*.165,c,'fill-opacity=".12" '+st(.9,0))+nFx(w,h,nP(nBurst(6,8,.5),nGlow(c)));}
+const NFLAME='M0,-48C8,-30 30,-18 30,8C30,30 17,46 0,46C-17,46 -30,30 -30,8C-30,-6 -21,-13 -17,-25C-12,-13 -8,-10 -5,-15C-1,-25 -3,-37 0,-48Z';
+function nFire(w,h,c,o){const f=(k,dy,fill,ex)=>`<g transform="translate(0,${dy}) scale(${k})">${nP(NFLAME,fill,ex)}</g>`;
+ return nFx(w,h,nEl(0,42,34,7,'#2b2d33','stroke="none" fill-opacity=".28"')+f(1,0,nHot(c))+f(.7,13,c,NS0)+f(.42,25,nGlow(c),NS0));}
+function nSmoke(w,h,c,o){const P=[[-24,10,22],[4,18,25],[28,4,20],[-8,-16,25],[20,-20,19],[-31,-10,16],[0,0,24]],sm='stroke="#3b4250" stroke-opacity=".3" stroke-width="1" vector-effect="non-scaling-stroke" fill-opacity=".8"';let g='';
+ P.forEach(([x,y,r],i)=>{g+=nC(x,y,r,i%2?lt(c,.2):c,sm);});return nFx(w,h,g+nC(-8,-8,9,'#fff','stroke="none" fill-opacity=".2"'));}
+function nDynamite(w,h,c,o){const x=-w/2,y=-h/2,bw=w*.8,sh=h*.3;let g='';for(let i=0;i<3;i++)g+=nR(x,y+h*.05+i*sh,bw,sh,sh*.3,i===1?lt(c,.12):c);
+ return nSh(o,x,y+h*.05,bw,sh*3,2)+g+nR(x+bw*.2,y+h*.02,bw*.1,h*.96,.5,'#2b2d33',NS0)+nR(x+bw*.7,y+h*.02,bw*.1,h*.96,.5,'#2b2d33',NS0)
+  +`<path d="M${nf(x+bw)},0Q${nf(x+bw+w*.1)},${nf(-h*.42)} ${nf(-x-w*.05)},${nf(-h*.22)}" fill="none" stroke="#6b5b3a" stroke-width="1.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`+nC(-x-w*.05,-h*.22,Math.min(w,h)*.09,'#ffd45c',NS0);}
+function nBomb(w,h,c,o){const r=Math.min(w,h)*.38,cx=-w*.06,cy=h*.1,fx=cx+r*.95,fy=cy-r*1.25;
+ return nShC(o,cx,cy,r)+nR(cx-r*.22,cy-r*1.16,r*.44,r*.3,1,lt(c,.3))+nC(cx,cy,r,c)+nC(cx-r*.32,cy-r*.32,r*.2,'#fff','stroke="none" fill-opacity=".35"')
+  +`<path d="M${nf(cx)},${nf(cy-r*1.16)}Q${nf(cx+r*.3)},${nf(cy-r*1.6)} ${nf(fx)},${nf(fy)}" fill="none" stroke="#6b5b3a" stroke-width="1.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`+`<g transform="translate(${nf(fx)},${nf(fy)})">${nP(nBurst(r*.34,6,.45),'#ffd45c',NS0)}</g>`;}
+/* seats: in a drawing that faces up the page (aircraft), and the floor you see once the top is off */
+const NFLOOR='#f1f3f6';
+const nSeatUp=(cx,cy,sw,sh)=>nR(cx-sw/2,cy-sh/2,sw,sh,Math.min(sw,sh)*.22,'#59616d')+nR(cx-sw/2,cy+sh*.2,sw,sh*.3,Math.min(sw,sh)*.14,'#434a55',NS0);
+function nTrailer(w,h,c,o,roof){const x=-w/2,y=-h/2;let d='';const n=Math.max(3,Math.round(w/70)),base=nR(-x-w*.2,y-5,w*.07,h+10,4,'#2b2d33',NS0)+nR(-x-w*.11,y-5,w*.07,h+10,4,'#2b2d33',NS0)+nSh({sx:o.sx*1.8,sy:o.sy*1.8},x,y,w,h,3)+nR(x,y,w,h,3,c);
+ if(roof){for(let i=1;i<n;i++)d+=`M${nf(x+w*i/n)},${nf(y+2)}V${nf(-y-2)}`;return base+nR(x+4,y+4,w-8,h-8,2,lt(c,.25),NS0)+nL(d,.2);}
+ const t=Math.min(6,h*.05);for(let i=1;i<5;i++)d+=`M${nf(x+t+2)},${nf(y+t+(h-2*t)*i/5)}H${nf(-x-t-2)}`;return base+nR(x+t,y+t,w-2*t,h-2*t,1.5,'#d8c6a2',nS2)+nL(d,.22);}
+function nTank(w,h,c,o,roof){const x=-w/2,y=-h/2,bw=w*.72,tr='#2f3329';let d='';for(let i=1;i<12;i++){const px=x+bw*i/12;d+=`M${nf(px)},${nf(y+2)}V${nf(y+h*.2-2)}M${nf(px)},${nf(-y-h*.2+2)}V${nf(-y-2)}`;}
+ const tx=x+bw*.32,ty=y+h*.26,tw=bw*.44,th=h*.48,S=h*.14;
+ let g=nSh(o,x,y,bw,h,6)+nR(x,y,bw,h*.2,5,tr)+nR(x,-y-h*.2,bw,h*.2,5,tr)+nLw(d,.2)+nR(x+bw*.03,y+h*.13,bw*.94,h*.74,8,c)+nR(x+bw*.08,y+h*.2,bw*.16,h*.6,4,dk(c,.14),NS0)
+  +nSh(o,x+bw*.62,-h*.045,w-bw*.62-2,h*.09,2)+nR(x+bw*.62,-h*.045,w-bw*.62-2,h*.09,2,dk(c,.25))+nR(-x-w*.055,-h*.065,w*.05,h*.13,1,dk(c,.42));
+ if(roof)return g+nSh(o,tx,ty,tw,th,h*.18)+nR(tx,ty,tw,th,h*.18,lt(c,.14))+nC(x+bw*.47,-h*.07,h*.075,dk(c,.3))+nC(x+bw*.47,-h*.07,h*.03,lt(c,.3),NS0);
+ return g+nR(tx,ty,tw,th,h*.18,dk(c,.1))+nR(tx+5,ty+5,tw-10,th-10,h*.15,NFLOOR,nS2)+nSeat(tx+tw*.14,-S-3,S,S)+nSeat(tx+tw*.14,3,S,S)+nSeat(tx+tw*.52,-S/2,S,S)+nR(tx+tw*.84,-h*.04,tw*.12,h*.08,1,dk(c,.3))
+  +nR(x+bw*.8,-S*.72,S*1.44,S*1.44,5,NFLOOR,nS2)+nSeat(x+bw*.8+S*.2,-S/2,S,S);}
+function nHeli(w,h,c,o,roof){return nBx(w,h,o,5,q=>{const f='M50,18C59,18 61,36 57,48L52.6,62L52,94H48L47.4,62L43,48C39,36 41,18 50,18Z',disc='stroke="#3b4250" stroke-opacity=".28" stroke-width="1" stroke-dasharray="3 4" vector-effect="non-scaling-stroke" fill-opacity=".1"';
+ const base=nShP(q,f)+nL('M40,24V52M60,24V52',.9)+nL('M40,30H44M40,46H44M56,30H60M56,46H60',.7)+nP(f,c);
+ if(roof)return base+nP('M50,21C55.6,21 57.2,30 56,36H44C42.8,30 44.4,21 50,21Z',NGLASS)+nR(42,89,16,3.4,1,dk(c,.2))+nR(53.5,82,2,12,1,NTIRE,NS0)+nC(50,40,43,'#8aa0b4',disc)+nSeg(19,9,81,71,2.2,NTIRE,NS0)+nSeg(81,9,19,71,2.2,NTIRE,NS0)+nC(50,40,3,lt(c,.4));
+ return base+nP('M50,20.5C56.6,20.5 58.4,34 55.6,46.5H44.4C41.6,34 43.4,20.5 50,20.5Z',NFLOOR,nS2)+nSeatUp(46.6,29,4.1,4.1)+nSeatUp(53.4,29,4.1,4.1)+nSeatUp(45.5,39.5,4.1,4.1)+nSeatUp(50,39.5,4.1,4.1)+nSeatUp(54.5,39.5,4.1,4.1)
+  +nR(42,89,16,3.4,1,dk(c,.2))+nR(53.5,82,2,12,1,NTIRE,NS0)+nC(50,40,43,'#8aa0b4',disc.replace('fill-opacity=".1"','fill-opacity=".04"'));});}
+function nPlane(w,h,c,o,roof){return nBx(w,h,o,5,q=>{const wing='M3,36H97Q99,36 99,38V45Q99,47 97,47L56,49H44L3,47Q1,47 1,45V38Q1,36 3,36Z',tail='M33,84H67Q68.5,84 68.5,85.5V90Q68.5,91.5 67,91.5H33Q31.5,91.5 31.5,90V85.5Q31.5,84 33,84Z',fus='M50,4C55,4 56.5,14 56.5,26L55,70L52.2,95H47.8L45,70L43.5,26C43.5,14 45,4 50,4Z';
+ const base=nShP(q,wing)+nShP(q,fus)+nShP(q,tail)+nP(wing,dk(c,.07))+nP(tail,dk(c,.07))+nL('M14,41.5H38M62,41.5H86',.25)+nP(fus,c),prop=nSeg(40,3.4,60,3.4,1.5,NTIRE,NS0)+nC(50,3.6,2,dk(c,.4));
+ if(roof)return base+nP('M50,13C53.6,13 54.6,20 54.2,27H45.8C45.4,20 46.4,13 50,13Z',NGLASS)+prop;
+ return base+nP('M50,14C54.4,14 55.4,20 55.4,27L54.8,43H45.2L44.6,27C44.6,20 45.6,14 50,14Z',NFLOOR,nS2)+nR(46,16.4,8,1.6,.6,dk(c,.3),NS0)+nSeatUp(47.4,23.5,4.6,5.4)+nSeatUp(52.6,23.5,4.6,5.4)+nSeatUp(47.4,32,4.6,5.4)+nSeatUp(52.6,32,4.6,5.4)+nR(45.6,37.5,8.8,4.4,1,'#d9dde3',nS2)+prop;});}
+function nFighter(w,h,c,o,roof){return nBx(w,h,o,5,q=>{const wing='M44,42L4,76V83L42,78ZM56,42L96,76V83L58,78Z',st='M45,80L28,94V98L46,94ZM55,80L72,94V98L54,94Z',fus='M50,2C53,10 55.5,26 56,42L57,80L55,96H45L43,80L44,42C44.5,26 47,10 50,2Z';
+ const base=nShP(q,wing)+nShP(q,fus)+nP(wing,dk(c,.1))+nP(st,dk(c,.18))+nP(fus,c),tailp=nR(45.6,94,3.4,4.5,.6,NTIRE,NS0)+nR(51,94,3.4,4.5,.6,NTIRE,NS0)+nL('M50,38V90',.25);
+ if(roof)return base+nP('M50,14C52.6,18 53.2,26 53,34H47C46.8,26 47.4,18 50,14Z','#9cc3e0')+tailp;
+ return base+nP('M50,14.5C52.8,18 53.4,24 53.3,34H46.7C46.6,24 47.2,18 50,14.5Z',NFLOOR,nS2)+nSeatUp(50,21.6,4.4,3.3)+nSeatUp(50,28.6,4.4,3.3)+tailp;});}
+function nJet(w,h,c,o,roof){return nBx(w,h,o,6,q=>{const wing='M45,38L2,64V70L45,58ZM55,38L98,64V70L55,58Z',st='M46,84L32,94V97L46,93ZM54,84L68,94V97L54,93Z',fus='M50,1C53.9,1 55.4,8 55.4,16V84L52,98H48L44.6,84V16C44.6,8 46.1,1 50,1Z',f2=v=>+v.toFixed(2);let e='';
+ for(const [ex,ey] of [[30,46],[70,46],[17,54],[83,54]])e+=nR(ex-2.2,ey,4.4,9,2,dk(c,.32));
+ const base=nShP(q,wing)+nShP(q,fus)+nP(wing,dk(c,.08))+nP(st,dk(c,.12))+e+nP(fus,c);
+ if(roof)return base+nP('M46.6,8Q50,3 53.4,8L53,11H47Z','#33475c',NS0)+nL('M47,18V80M53,18V80',.14)+nL('M50,84V97',.3);
+ let a='',b='';const seat=(cx,cy,sw,sh)=>{a+=`M${f2(cx-sw/2)},${f2(cy-sh/2)}h${f2(sw)}v${f2(sh)}h${f2(-sw)}z`;b+=`M${f2(cx-sw/2)},${f2(cy+sh*.2)}h${f2(sw)}v${f2(sh*.3)}h${f2(-sw)}z`;};
+ seat(48.5,9.6,1.4,1.3);seat(51.5,9.6,1.4,1.3);                                         /* the two pilots */
+ for(let r=0;r<3;r++)for(const cx of [46.2,48.3,51.7,53.8])seat(cx,17.4+r*3,1.9,1.7);         /* first class: two and two */
+ for(let r=0;r<27;r++)for(const cx of [45.77,47.175,48.58,51.42,52.825,54.23])seat(cx,27.6+r*2.06,1.3,1.25);   /* then three and three, with the aisle down the middle */
+ return base+nP('M50,4.5C53.2,4.5 54.95,9 54.95,16V84H45.05V16C45.05,9 46.8,4.5 50,4.5Z',NFLOOR,nS2)+`<path d="${a}" fill="#59616d" ${nS2}/><path d="${b}" fill="#434a55" stroke="none"/>`
+  +nL('M45.05,13H49M51,13H54.95M45.05,25.6H49.2M50.8,25.6H54.95',.5)+nR(45.3,82.4,3.7,1.5,.2,'#d9dde3',nS2)+nR(51,82.4,3.7,1.5,.2,'#d9dde3',nS2)+nL('M50,84V97',.3);});}
+Object.assign(ND,{explosion:nExplosion,blast:nBlast,sparks:nSparks,blastradius:nRadius,fire:nFire,smoke:nSmoke,dynamite:nDynamite,bomb:nBomb});
+for(const [k,f] of [['trailer',nTrailer],['tank',nTank],['helicopter',nHeli],['plane',nPlane],['fighter',nFighter],['jet',nJet]])ND[k]=(w,h,c,o,it)=>f(w,h,c,o,it?roofOn(it):true);
+const ROOFK={car:1,taxi:1,police:1,suv:1,ambulance:1,minibus:1,bus:1,semi:1,trailer:1,tank:1,helicopter:1,plane:1,fighter:1,jet:1};
+/* these arrive closed; cars and vans arrive open, as they always have */
+const ROOFDEF={trailer:1,tank:1,helicopter:1,plane:1,fighter:1,jet:1};
+const roofOn=it=>!!it&&(it.roof!=null?!!it.roof:!!ROOFDEF[it.kind]);
 /* the shadow falls down and to the right on the page whichever way the piece is turned */
 function shOff(it){const a=-rad((it&&it.rot)||0),x=2.2,y=3,c=Math.cos(a),s=Math.sin(a);let sx=x*c-y*s;const sy=x*s+y*c;if(it&&it.mir)sx=-sx;return {sx:+sx.toFixed(2),sy:+sy.toFixed(2)};}
 const propCol=it=>(it&&it.fill)||PCOL[it.kind]||'#cfd8e3';
 /* pieces whose size is the point of them stay stretchable when dropped; everything else drops at its real size and stays there until Scalable is ticked */
-const STRETCHY={street:1,avenue:1,sidewalk:1,inter4:1,interT:1,parking:1,crosswalk:1,rug:1,hedge:1,pond:1,image:1,arrow:1,carrow:1,dollytrack:1};
+const STRETCHY={explosion:1,blast:1,sparks:1,fire:1,smoke:1,blastradius:1,street:1,avenue:1,sidewalk:1,inter4:1,interT:1,parking:1,crosswalk:1,rug:1,hedge:1,pond:1,image:1,arrow:1,carrow:1,dollytrack:1};
 const CATS={
  prop:{t:'Add Prop',sec:[
   ['Furniture',['sqtable','ovaltable','roundtable','coffeetable','chair','armchair','sofa','bench','barstool','bedsingle','beddouble','nightstand','dresser','desk','bookshelf','tv','floorlamp','rug','plant','piano','grandpiano']],
@@ -1133,7 +1187,8 @@ const CATS={
   ['Street',['streetlamp','hydrant','cone','trashcan','dumpster','mailbox','busstop','stroller']],
   ['Nature & animals',['tree','bush','hedge','rock','pond','dog','cat','horse']],
   ['Hand props',['image','book','briefcase','suitcase','bag','box','keys','cash','flashlight','camprop','knife','bat']],
-  ['Weapons',['gun','rifle','shotgun','sword']],
+  ['Weapons',['gun','rifle','shotgun','sword','dynamite','bomb']],
+  ['Explosions & fire',['explosion','blast','sparks','fire','smoke','blastradius']],
   ['Film gear',['actormark','dollytrack','dolly','crane','cstand','lightstand','flag','silk','applebox','dirchair','boom','village','soundcart','generator','tent','equipment']],
   ['Arrows',['arrow','carrow']]]},
  set:{t:'Add Set',k:['walltool','window','dooropen','doorclosed','dbldooropen','dbldoorclosed','opening','bars','stairs','column','pillar','railing','fence','archway','curtain','elevator']},
@@ -2151,7 +2206,7 @@ function trackShape(it){
  return g;
 }
 function trackRadiusTxt(it){const k=trackK(it);if(Math.abs(k)<1e-7)return 'Straight';const ft=1/Math.abs(k)/FT;return `Curved · radius about ${ft<10?ft.toFixed(1):Math.round(ft)} ft`;}
-const PCOL={"househip":"#9C8F84","housegable":"#9C8F84","houseL":"#A08C7C","garage":"#8F8F8C","rowhouse":"#8E8A86","rowblock":"#8E8A86","apartment":"#A7A9AD","office":"#9FA7B1","warehouse":"#B4B7BA","store":"#B0ADA6","gasstation":"#D8DCE0","church":"#8B7F78","arrow":"#E5484D","carrow":"#E5484D","window":"#BFE0F2","doorclosed":"#C9A27A","dbldoorclosed":"#C9A27A","village":"#5B6573","fresnel":"#3A3D44","ledpanel":"#2F3640","softbox":"#E9E6DF","kino":"#4B5563","sqtable": "#B7834D", "ovaltable": "#A9703F", "roundtable": "#C08A55", "coffeetable": "#8B5A33", "cafetable": "#C9A27A", "conftable": "#7A4E2D", "desk": "#9C6B3F", "chair": "#8C6239", "armchair": "#B0563F", "sofa": "#4F6D8F", "bench": "#9A7B4F", "barstool": "#5B4636", "bedsingle": "#A9C4E0", "beddouble": "#C7B2D6", "nightstand": "#8B5A33", "dresser": "#7E5233", "bookshelf": "#6E4527", "tv": "#26282D", "floorlamp": "#E8C468", "rug": "#B5534A", "plant": "#4E9A4A", "piano": "#2B2D33", "grandpiano": "#1F1F23", "counter": "#D9D2C5", "island": "#CFC6B5", "fridge": "#E6E8EB", "stove": "#C9CDD2", "sink": "#DCE6EE", "toilet": "#F4F6F8", "bathtub": "#EEF3F7", "shower": "#CFE3F0", "cubicle": "#9AA7B5", "filing": "#8A96A3", "whiteboard": "#F7F8FA", "copier": "#BFC5CC", "cooler": "#8EC5EA", "laptop": "#A8AFB8", "keyboard": "#3A3D44", "monitor": "#2E3138", "phone": "#1F2125", "paper": "#FAFAF7", "hospbed": "#D6E6F2", "gurney": "#C5D0DA", "ivpole": "#A9B2BC", "wheelchair": "#3F4650", "patientmon": "#2E3138", "booth": "#8E2F35", "barcounter": "#6B4226", "plate": "#F4F1EA", "cup": "#E9E2D0", "glass": "#CDE7F2", "bottle": "#3E7A4C", "candle": "#F3E3B3", "car": "#3E63DD", "suv": "#2F3A4A", "taxi": "#F5C518", "police": "#1E2A44", "ambulance": "#F4F5F7", "minibus": "#F0A23B", "bus": "#3D7EA6", "semi": "#C2412D", "trailer": "#D5D9DE", "moto": "#B42318", "bicycle": "#1F8A70", "boat": "#A8693A", "tank": "#5E6B3A", "helicopter": "#3B4A5A", "plane": "#E9ECEF", "fighter": "#7D8793", "jet": "#F2F4F6", "streetlamp": "#3A3D44", "hydrant": "#D62828", "cone": "#F77F00", "trashcan": "#4A6B52", "dumpster": "#2F6B3E", "mailbox": "#2B4C9B", "busstop": "#8FA8B8", "crosswalk": "#F4F4F4", "stroller": "#5A6E8C", "tree": "#6BAA4F", "bush": "#5E9E50", "hedge": "#3F7D3A", "rock": "#8E8A84", "pond": "#79B8E0", "dog": "#B08055", "cat": "#E39A4F", "horse": "#7B4A2D", "book": "#8E2F35", "briefcase": "#4A3324", "suitcase": "#2F4858", "bag": "#B5523B", "box": "#C9A26B", "keys": "#C9A227", "cash": "#6FA36B", "flashlight": "#2E3138", "camprop": "#2B2D33", "knife": "#A9B2BC", "bat": "#C49A6C", "gun": "#1F2125", "rifle": "#3B2E25", "shotgun": "#5A3E2B", "sword": "#B8C0C8", "actormark": "#F5C518", "dolly": "#4A4F57", "crane": "#F2A900", "cstand": "#8C949D", "lightstand": "#3A3D44", "flag": "#1F1F23", "silk": "#F2F2EE", "applebox": "#C9A26B", "dirchair": "#3A3D44", "boom": "#6B7280", "village": "#2B2D33", "soundcart": "#4B5563", "generator": "#E6B800", "tent": "#2F5D8C", "equipment": "#5B6573", "bars": "#5B6573", "stairs": "#BFA27A", "column": "#D9D4CA", "pillar": "#CFC8BB", "railing": "#7A5C3E", "fence": "#A57C52", "curtain": "#8E2F35", "elevator": "#A9B2BC"};
+const PCOL={"explosion":"#F77F00","blast":"#F77F00","sparks":"#F5A623","fire":"#F77F00","smoke":"#7B8088","blastradius":"#E5484D","dynamite":"#C8322B","bomb":"#26282D","househip":"#9C8F84","housegable":"#9C8F84","houseL":"#A08C7C","garage":"#8F8F8C","rowhouse":"#8E8A86","rowblock":"#8E8A86","apartment":"#A7A9AD","office":"#9FA7B1","warehouse":"#B4B7BA","store":"#B0ADA6","gasstation":"#D8DCE0","church":"#8B7F78","arrow":"#E5484D","carrow":"#E5484D","window":"#BFE0F2","doorclosed":"#C9A27A","dbldoorclosed":"#C9A27A","village":"#5B6573","fresnel":"#3A3D44","ledpanel":"#2F3640","softbox":"#E9E6DF","kino":"#4B5563","sqtable": "#B7834D", "ovaltable": "#A9703F", "roundtable": "#C08A55", "coffeetable": "#8B5A33", "cafetable": "#C9A27A", "conftable": "#7A4E2D", "desk": "#9C6B3F", "chair": "#8C6239", "armchair": "#B0563F", "sofa": "#4F6D8F", "bench": "#9A7B4F", "barstool": "#5B4636", "bedsingle": "#A9C4E0", "beddouble": "#C7B2D6", "nightstand": "#8B5A33", "dresser": "#7E5233", "bookshelf": "#6E4527", "tv": "#26282D", "floorlamp": "#E8C468", "rug": "#B5534A", "plant": "#4E9A4A", "piano": "#2B2D33", "grandpiano": "#1F1F23", "counter": "#D9D2C5", "island": "#CFC6B5", "fridge": "#E6E8EB", "stove": "#C9CDD2", "sink": "#DCE6EE", "toilet": "#F4F6F8", "bathtub": "#EEF3F7", "shower": "#CFE3F0", "cubicle": "#9AA7B5", "filing": "#8A96A3", "whiteboard": "#F7F8FA", "copier": "#BFC5CC", "cooler": "#8EC5EA", "laptop": "#A8AFB8", "keyboard": "#3A3D44", "monitor": "#2E3138", "phone": "#1F2125", "paper": "#FAFAF7", "hospbed": "#D6E6F2", "gurney": "#C5D0DA", "ivpole": "#A9B2BC", "wheelchair": "#3F4650", "patientmon": "#2E3138", "booth": "#8E2F35", "barcounter": "#6B4226", "plate": "#F4F1EA", "cup": "#E9E2D0", "glass": "#CDE7F2", "bottle": "#3E7A4C", "candle": "#F3E3B3", "car": "#3E63DD", "suv": "#2F3A4A", "taxi": "#F5C518", "police": "#1E2A44", "ambulance": "#F4F5F7", "minibus": "#F0A23B", "bus": "#3D7EA6", "semi": "#C2412D", "trailer": "#D5D9DE", "moto": "#B42318", "bicycle": "#1F8A70", "boat": "#A8693A", "tank": "#5E6B3A", "helicopter": "#3B4A5A", "plane": "#E9ECEF", "fighter": "#7D8793", "jet": "#F2F4F6", "streetlamp": "#3A3D44", "hydrant": "#D62828", "cone": "#F77F00", "trashcan": "#4A6B52", "dumpster": "#2F6B3E", "mailbox": "#2B4C9B", "busstop": "#8FA8B8", "crosswalk": "#F4F4F4", "stroller": "#5A6E8C", "tree": "#6BAA4F", "bush": "#5E9E50", "hedge": "#3F7D3A", "rock": "#8E8A84", "pond": "#79B8E0", "dog": "#B08055", "cat": "#E39A4F", "horse": "#7B4A2D", "book": "#8E2F35", "briefcase": "#4A3324", "suitcase": "#2F4858", "bag": "#B5523B", "box": "#C9A26B", "keys": "#C9A227", "cash": "#6FA36B", "flashlight": "#2E3138", "camprop": "#2B2D33", "knife": "#A9B2BC", "bat": "#C49A6C", "gun": "#1F2125", "rifle": "#3B2E25", "shotgun": "#5A3E2B", "sword": "#B8C0C8", "actormark": "#F5C518", "dolly": "#4A4F57", "crane": "#F2A900", "cstand": "#8C949D", "lightstand": "#3A3D44", "flag": "#1F1F23", "silk": "#F2F2EE", "applebox": "#C9A26B", "dirchair": "#3A3D44", "boom": "#6B7280", "village": "#2B2D33", "soundcart": "#4B5563", "generator": "#E6B800", "tent": "#2F5D8C", "equipment": "#5B6573", "bars": "#5B6573", "stairs": "#BFA27A", "column": "#D9D4CA", "pillar": "#CFC8BB", "railing": "#7A5C3E", "fence": "#A57C52", "curtain": "#8E2F35", "elevator": "#A9B2BC"};
 function lum(h){const [r,g,b]=rgbOf(h);return (r*299+g*587+b*114)/255000;}
 const _mc={};function mainCls(k){if(_mc[k])return _mc[k];const src=(LIB[k]||{}).s||'';if(/class="pf"/.test(src))return _mc[k]='pf';let best='pf',n=0;for(const c of ['pd','pgr','pbl','pbx','pgf','pw','pred','pblue','por','pyl','pbk']){const m=(src.match(new RegExp(`class="${c}"`,'g'))||[]).length;if(m>n){n=m;best=c;}}return _mc[k]=best;}
 const PMAIN={shower:'pw',hospbed:'pw',knife:'pw',window:'pw',doorclosed:'pgf',dbldoorclosed:'pgf',village:'pw'};
@@ -3051,7 +3106,7 @@ function objPop(cx,cy){
     +(it.type==='wall'&&!it.locked?sec('Wall',(wallJoined(s,it)?B('selrun','Move All Joined Walls')+(unhook===it.id?'':B('wunhook','Unhook This Wall')):'')+(unhook===it.id||wallAway(it)?B('wrehook','Rehook This Wall'):'')+B('wcorner','Add a Corner Here')+([1,2].some(e=>wallJoint(s,it,e).length===1)?B('wuncorner','Remove Nearest Corner'):'')+B('wextrude','Add Side Walls')):'')
     +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')
     +(()=>{const a=it.type==='prop'||it.type==='set'||it.type==='light'||it.type==='ink'?B('label',it.label?'Edit Label…':'Add Label…'):'',b=labCan(it)?(labIsFree(it)?B('labback','Reattach Label'):B('labfree','Detach Label')):'';return sec('Label',a&&b?duo(a,b):a+b);})()
-    +(it.type==='ink'?sec('Drawing',B('inkmore','Draw More on This')+B('rsize','Reset Size')+ck('keepar','Keep Proportions',it.ar))+colorGrid(INK_COLS,(it.strokes[0]||{}).c,'ink'):sec('Shape',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+(ROOFK[it.kind]?ck('roof','Roof On',it.roof):'')+ck('scal','Allow Resizing',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Details…')))
+    +(it.type==='ink'?sec('Drawing',B('inkmore','Draw More on This')+B('rsize','Reset Size')+ck('keepar','Keep Proportions',it.ar))+colorGrid(INK_COLS,(it.strokes[0]||{}).c,'ink'):sec('Shape',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+(ROOFK[it.kind]?ck('roof','Roof On',roofOn(it)):'')+ck('scal','Allow Resizing',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Details…')))
     +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#2B2D33'],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages
     +sec('Arrange',(mates.length>1?B('ungroup','Ungroup'):'')+duo(B('dup','Duplicate'),lk)+duo(B('front','Bring to Front'),B('back','Send to Back')))
     +end(sel.mark?R('delmark','Delete Position '+(sel.mark+1))+R('del','Delete the Whole '+esc(name)+' ('+np+' Positions)'):R('del',np>1?'Delete '+esc(name)+' (All '+np+' Positions)':'Delete '+esc(name)));}
@@ -3097,7 +3152,7 @@ function objAct(o){
   case 'ctype':{swapFor=it.id;openPop('',$('#bAdd'));gridMenu(catOf(it.kind)==='set'?'set':catOf(it.kind)==='light'?'light':'prop');return;}
   case 'rsize':{const L=LIB[it.kind]||{};if(L.w){it.w=L.w;it.h=L.h;}commit();break;}
   case 'mirror':it.mir=!it.mir;if(!it.mir)delete it.mir;commit();objPop(popAt.x,popAt.y);break;
-  case 'roof':it.roof=!it.roof;if(!it.roof)delete it.roof;commit();objPop(popAt.x,popAt.y);break;
+  case 'roof':{const v=!roofOn(it);if(ROOFDEF[it.kind]){if(v)delete it.roof;else it.roof=false;}else if(v)it.roof=true;else delete it.roof;}commit();objPop(popAt.x,popAt.y);break;
   case 'scal':it.fixed=!it.fixed;if(!it.fixed)delete it.fixed;commit();objPop(popAt.x,popAt.y);break;
   case 'keepar':it.ar=!it.ar;if(!it.ar)delete it.ar;commit();objPop(popAt.x,popAt.y);break;
   case 'selrun':{const ids=wallRun(s,it).map(i=>i.id);sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();toast(`${ids.length} walls selected. Drag any of them to move them all.`);break;}
