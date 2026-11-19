@@ -410,6 +410,13 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 #pop .gh{background:var(--pb);color:var(--pm);font-size:11px;letter-spacing:.07em;text-transform:uppercase;padding:12px 14px 6px}
 #pop .gs{background:var(--pb);padding:10px 12px}
 #pop .gs input{background:var(--pc);border:1px solid var(--pl);color:var(--pi)}
+
+.crbox{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:#fff;border:1px solid var(--line);margin:10px 0 0;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.crbox:active{cursor:grabbing}
+.crbox img{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;pointer-events:none;-webkit-user-drag:none}
+.crbox i{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% + .5px),transparent calc(66.666% + .5px)),linear-gradient(to bottom,transparent calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% + .5px),transparent calc(66.666% + .5px));mix-blend-mode:difference}
+.crz{display:flex;align-items:center;gap:12px;margin-top:14px;color:var(--mut);font-size:20px;line-height:1}
+.crz input{flex:1;min-width:0;accent-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -479,7 +486,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119131025';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119150136';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1659,7 +1666,7 @@ const FW0=220,FMIN=120,FMAX=1100;
 function fsz(s){return clamp(Math.round((s&&s.fsz)||FW0),FMIN,FMAX);}
 const fszH=w=>Math.round(w*9/16);
 function fW(s,m){return clamp(Math.round((m&&m.sbw)||fsz(s)),FMIN,FMAX);}
-const FK={a:'sba',w:'sbw',c:'sbc',fh:'sbfh',fv:'sbfv',nf:'sbnf',det:'sbdet'};
+const FK={a:'sba',w:'sbw',c:'sbc',fh:'sbfh',fv:'sbfv',nf:'sbnf',det:'sbdet',o:'sbo',cr:'sbcr'};
 function fGet(m,k,key){if(!k)return m[FK[key]];const e=fx(m,k);return e&&e[key];}
 function fSet(m,k,key,v){const off=v==null||v===false||v==='';if(!k){if(off)delete m[FK[key]];else m[FK[key]]=v;return;}const id=fImg(m,k);if(!id)return;m.sbx=m.sbx||{};const e=Object.assign({},m.sbx[id]);if(off)delete e[key];else e[key]=v;m.sbx[id]=e;}
 function fImgTag(src,W,H,m,k,x,y){const fh=fGet(m,k,'fh'),fv=fGet(m,k,'fv');x=x||0;y=y||0;const im=`<image href="${src}" xlink:href="${src}" x="${x}" y="${y}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid slice"/>`;return fh||fv?`<g transform="translate(${fh?2*x+W:0},${fv?2*y+H:0}) scale(${fh?-1:1},${fv?-1:1})">${im}</g>`:im;}
@@ -2194,9 +2201,10 @@ function sbHTML(id,vi,m){const it=itemById(id)||(findCam(id)||{}).it,src=m.sb&&i
  const one=(f,i)=>{const fm=it?it.marks[f.j]:m,fh=fGet(fm,f.k,'fh'),fv=fGet(fm,f.k,'fv');return `<div class="sbf"><button class="sb has" data-act="${f.k?'sbOpt':'sbAdd'}" data-id="${id}" data-v="${f.j}"${f.k?` data-k="${f.k-1}"`:''} title="${f.p?'Dolly position '+(f.p+1):'Frame '+(i+1)}"><img src="${images[f.id]}" alt="Storyboard frame ${i+1}"${fh||fv?` style="transform:scale(${fh?-1:1},${fv?-1:1})"`:''}></button>${f.k?'':`<button class="sbx" data-act="sbDel" data-id="${id}" data-v="${f.j}" aria-label="Remove frame">×</button>`}${n>1?`<span class="sbn">${i+1}${f.p?` · pos ${f.p+1}`:''}</span>`:''}</div>`;};
  return `<div class="sbw sbst">${F.map(one).join('')}<button class="sbt add sbadd" data-act="${src?'sbMore':'sbAdd'}" data-id="${id}" data-v="${vi}" title="Add another frame">+</button></div>`;}
 function sbOpt(id,vi,k){const c=findCam(id);if(!c)return;const m=c.it.marks[vi],x=(m.sbs||[])[k];if(!x||!images[x])return;const n=sbAll(m).length;
- modal(`<h3>Shot ${esc(shotCode(c.s,c.it))} · frame ${k+2} of ${n}</h3><img class="sbbig" src="${images[x]}" alt="Storyboard frame"><div class="btns end"><button id="sbR" class="danger">Remove</button><button id="sbP">Replace…</button><button id="sbM">Make Main Frame</button><button class="pri" data-x>Done</button></div>`,card=>{
+ modal(`<h3>Shot ${esc(shotCode(c.s,c.it))} · frame ${k+2} of ${n}</h3><img class="sbbig" src="${images[x]}" alt="Storyboard frame"><div class="btns end"><button id="sbR" class="danger">Remove</button><button id="sbC">Crop…</button><button id="sbP">Replace…</button><button id="sbM">Make Main Frame</button><button class="pri" data-x>Done</button></div>`,card=>{
   card.querySelector('#sbR').onclick=()=>{m.sbs.splice(k,1);if(!m.sbs.length)delete m.sbs;sbxTidy(m);closeModal();commit();};
   card.querySelector('#sbP').onclick=()=>{closeModal();pendingSb={id,vi,k};$('#fSb').click();};
+  card.querySelector('#sbC').onclick=()=>{closeModal();sbCrop(id,vi,k+1);};
   card.querySelector('#sbM').onclick=()=>{const e=(m.sbx||{})[x]||{},old={};for(const key in FK){if(m[FK[key]]!=null)old[key]=m[FK[key]];if(e[key]!=null)m[FK[key]]=e[key];else if(key!=='a')delete m[FK[key]];}m.sbs[k]=m.sb;m.sb=x;m.sbx=m.sbx||{};delete m.sbx[x];m.sbx[m.sbs[k]]=old;sbxTidy(m);closeModal();if(frameOn())freezeFrames(c.s);commit();toast('That frame is now the main one. It shows on the floor plan and in the shot list.');};});}
 function pageSelect(it){const s=scene();return `<div class="lbl">Shows on <span style="font-weight:400">· tap a page for only that page; Shift-tap to add more</span></div><div class="pgck"><button data-act="pgset" data-v="all" class="${it.pgs?'':'on'}">All pages</button>${s.pages.map((p,i)=>`<button data-act="pgset" data-v="${p.id}" class="${it.pgs&&it.pgs.includes(p.id)?'on':''}">${i+1} · ${esc(p.name)}</button>`).join('')}</div>`;}
 function inspHTML(){
@@ -2779,13 +2787,14 @@ function sbDelete(it,i,k){const m=it.marks[i];if(!m)return;
  sel={id:it.id,mark:i};closePop();commit();toast('Frame removed.');}
 function sbPop(cx,cy){const s=scene(),it=sel&&itemById(sel.id),i=sel&&sel.mark||0,k=sel&&sel.fk||0,m=it&&it.marks&&it.marks[i];if(!m||!images[fImg(m,k)])return;popAt={x:cx,y:cy};
  const B=(o,l,ic)=>`<button data-o="${o}">${ic||''}${l}</button>`,ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`,sec=(t,b)=>`<div class="hd">${t}</div>${b}`;
- pop.innerHTML=`<h4>Storyboard Frame</h4><div class="ls" style="width:290px">`+sec('Storyboard',B('det',fGet(m,k,'det')?'Attach':'Detach')+B('rsz','Reset Size')+B('cap','Edit Caption…')+B('imp','Import Image…'))+sec('Object',B('del','Delete',IC.x))+sec('Settings',ck('fh','Flip Horizontally',fGet(m,k,'fh'))+ck('fv','Flip Vertically',fGet(m,k,'fv'))+ck('nf','Frame',!fGet(m,k,'nf')))+`</div>`;
+ pop.innerHTML=`<h4>Storyboard Frame</h4><div class="ls" style="width:290px">`+sec('Picture',B('crop','Crop…')+B('imp','Replace Picture…')+ck('fh','Flip Horizontally',fGet(m,k,'fh'))+ck('fv','Flip Vertically',fGet(m,k,'fv')))+sec('On the Plan',B('cap','Edit Caption…')+B('det',fGet(m,k,'det')?'Attach':'Detach')+B('rsz','Reset Size')+ck('nf','Frame',!fGet(m,k,'nf')))+`<div class="dv"></div><button data-o="del" class="dng">Delete This Frame</button></div>`;
  pop.classList.add('on');popFor=null;placePopAt(cx,cy);
  pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-o]');if(!x)return;const o=x.dataset.o;if(it.locked&&o!=='imp'){toast('This camera is locked.');return;}
   if(o==='det'){fSet(m,k,'det',!fGet(m,k,'det'));closePop();commit();}
   else if(o==='rsz'){fSetW(m,k,FW0);closePop();commit();}
   else if(o==='cap'){const def=`Shot ${shotCode(s,it)}`;closePop();modal(`<h3>Caption</h3><p class="mut">Leave it empty to go back to the shot number.</p><label class="fld">Caption<input id="cpx" value="${esc(fGet(m,k,'c')||'')}" placeholder="${esc(def)}" autocomplete="off"></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const inp=card.querySelector('#cpx'),go=()=>{fSet(m,k,'c',inp.value.trim());closeModal();commit();};card.querySelector('#ok').onclick=go;inp.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});setTimeout(()=>{inp.focus();inp.select();},30);});}
   else if(o==='imp'){closePop();pendingSb=k?{id:it.id,vi:i,k:k-1}:{id:it.id,vi:i};$('#fSb').click();}
+  else if(o==='crop'){closePop();sbCrop(it.id,i,k);}
   else if(o==='del')sbDelete(it,i,k);
   else if(o==='fh'||o==='fv'){fSet(m,k,o,!fGet(m,k,o));commit();sbPop(cx,cy);}
   else if(o==='nf'){fSet(m,k,'nf',!fGet(m,k,'nf'));commit();sbPop(cx,cy);}};}
@@ -4155,10 +4164,53 @@ $('#fProp').addEventListener('change',async e=>{
  catch(err){toast('That image could not be read. Try a PNG or JPEG.');}
 });
 let pendingSb=null;
+/* ---------- framing a storyboard picture: the frame is 16:9; choose what of the picture sits in it ---------- */
+const CROP_MAX=720,CROP_LIM=110000;
+function cropRender(img,z,ox,oy,W){let OW=Math.min(CROP_MAX,Math.max(160,Math.round(W/z)));
+ for(let pass=0;pass<6;pass++){const OH=Math.round(OW*9/16),f=OW/W,c=document.createElement('canvas');c.width=OW;c.height=OH;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,OW,OH);x.imageSmoothingQuality='high';
+  x.drawImage(img,ox*f,oy*f,img.naturalWidth*z*f,img.naturalHeight*z*f);for(const q of [.82,.7,.58,.46]){const d=c.toDataURL('image/jpeg',q);if(d.length<CROP_LIM)return d;}OW=Math.round(OW*.8);}
+ return null;}
+/* resolves {def:true} when the picture is left as it comes (centered, filling the frame), {data,cr} when it was framed by hand, null when cancelled */
+function cropDialog(src,start){return loadImg(src).then(img=>new Promise(res=>{const iw=img.naturalWidth,ih=img.naturalHeight;let done=false,obs=null,ro=null;
+ const fin=v=>{if(done)return;done=true;if(obs)obs.disconnect();if(ro)ro.disconnect();res(v);};
+ modal(`<h3>Frame the Picture</h3><p class="mut">Drag the picture to place it. Pinch, scroll or use the slider to zoom. All the way out shows the whole picture.</p><div class="crbox" id="crB"><img id="crI" alt="" draggable="false"><i></i></div><div class="crz"><span>−</span><input type="range" id="crZ" min="0" max="1000" step="1" aria-label="Zoom"><span>+</span></div><div class="btns end"><button id="crR">Reset</button><button data-x>Cancel</button><button class="pri" id="crOk">Use This</button></div>`,card=>{
+  const B=card.querySelector('#crB'),I=card.querySelector('#crI'),Z=card.querySelector('#crZ');I.src=src;
+  let W=B.clientWidth||600,H=W*9/16,z=1,ox=0,oy=0;
+  const lo=()=>Math.min(W/iw,H/ih),cov=()=>Math.max(W/iw,H/ih),hi=()=>cov()*5;
+  const fix=()=>{z=clamp(z,lo(),hi());const w=iw*z,h=ih*z;ox=w>=W?clamp(ox,W-w,0):(W-w)/2;oy=h>=H?clamp(oy,H-h,0):(H-h)/2;};
+  const paint=()=>{fix();I.style.width=iw*z+'px';I.style.height=ih*z+'px';I.style.transform=`translate(${ox}px,${oy}px)`;Z.value=Math.round(1000*Math.log(z/lo())/Math.log(hi()/lo()));};
+  const zoomAt=(nz,px,py)=>{nz=clamp(nz,lo(),hi());const ix=(px-ox)/z,iy=(py-oy)/z;z=nz;ox=px-ix*z;oy=py-iy*z;paint();};
+  const reset=()=>{z=cov();ox=(W-iw*z)/2;oy=(H-ih*z)/2;paint();};
+  const isDef=()=>{fix();return Math.abs(z-cov())<cov()*1e-3&&Math.abs(ox-(W-iw*z)/2)<.75&&Math.abs(oy-(H-ih*z)/2)<.75;};
+  if(start&&start.s>0){z=W/(start.s*iw);ox=-start.x*iw*z;oy=-start.y*ih*z;paint();}else reset();
+  const pts=new Map();
+  B.addEventListener('pointerdown',e=>{try{B.setPointerCapture(e.pointerId);}catch(_){ }pts.set(e.pointerId,{x:e.clientX,y:e.clientY});e.preventDefault();});
+  B.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;
+   if(pts.size===1){ox+=e.clientX-p.x;oy+=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;paint();return;}
+   const [a,b]=[...pts.values()],d0=Math.hypot(a.x-b.x,a.y-b.y),mx0=(a.x+b.x)/2,my0=(a.y+b.y)/2;p.x=e.clientX;p.y=e.clientY;
+   const d1=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2,r=B.getBoundingClientRect();ox+=mx-mx0;oy+=my-my0;if(d0>0)zoomAt(z*d1/d0,mx-r.left,my-r.top);else paint();});
+  const up=e=>{pts.delete(e.pointerId);};B.addEventListener('pointerup',up);B.addEventListener('pointercancel',up);
+  B.addEventListener('wheel',e=>{e.preventDefault();const r=B.getBoundingClientRect();zoomAt(z*Math.exp(-e.deltaY*.0015),e.clientX-r.left,e.clientY-r.top);},{passive:false});
+  Z.addEventListener('input',()=>{zoomAt(lo()*Math.pow(hi()/lo(),Z.value/1000),W/2,H/2);});
+  card.querySelector('#crR').onclick=reset;
+  card.querySelector('#crOk').onclick=()=>{let out;if(isDef())out={def:true};else{const data=cropRender(img,z,ox,oy,W);out=data?{data,cr:{s:+(W/z/iw).toFixed(5),x:+(-ox/z/iw).toFixed(5),y:+(-oy/z/ih).toFixed(5)}}:{def:true};}fin(out);closeModal();};
+  if(window.ResizeObserver){ro=new ResizeObserver(()=>{const nw=B.clientWidth;if(!nw||Math.abs(nw-W)<.5)return;const f=nw/W;z*=f;ox*=f;oy*=f;W=nw;H=W*9/16;paint();});ro.observe(B);}
+  obs=new MutationObserver(()=>{if(!modalEl.contains(card)||modalEl.hidden)fin(null);});obs.observe(modalEl,{childList:true,attributes:true,attributeFilter:['hidden']});
+ },'imcard');}));}
+/* change the framing of a frame that is already there: always cut from the picture as it was first brought in */
+async function sbCrop(id,i,k){const c0=findCam(id);if(!c0)return;const m0=c0.it.marks[i],cur=m0&&fImg(m0,k);if(!cur||!images[cur])return;const oid=fGet(m0,k,'o'),src=oid&&images[oid]?oid:cur;
+ let cut;try{cut=await cropDialog(images[src],src===oid?fGet(m0,k,'cr'):null);}catch(e){toast('That picture could not be opened.');return;}
+ if(!cut)return;const c=findCam(id);if(!c)return;const m=c.it.marks[i];if(!m||fImg(m,k)!==cur){toast('That frame changed while you were framing it. Nothing was changed.');return;}
+ const nid=cut.def?src:addImage(cut.data);
+ if(nid!==cur){if(k){const ex=Object.assign({},(m.sbx||{})[cur]);m.sbs[k-1]=nid;m.sbx=m.sbx||{};delete m.sbx[cur];m.sbx[nid]=ex;}else m.sb=nid;}
+ if(nid===src){fSet(m,k,'o',null);fSet(m,k,'cr',null);}else{fSet(m,k,'o',src);fSet(m,k,'cr',cut.cr);}
+ if(nid===cur&&cut.def)return;commit();if(mode==='list'||mode==='split')renderList();toast(cut.def?'Back to the whole picture, centered.':'Framing changed. Crop… again to adjust it; the full picture is kept.');}
 $('#fSb').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f||!pendingSb)return;const t=pendingSb;pendingSb=null;
- try{const c=findCam(t.id);if(!c)return;const {data}=await shrinkImage(f,720,110000),m=c.it.marks[t.vi],id=addImage(data);
-  const fresh=!m.sb||!images[m.sb];if(t.add&&m.sb)(m.sbs=m.sbs||[]).push(id);else if(t.k!=null&&m.sbs&&m.sbs[t.k]!=null){const o=m.sbs[t.k];m.sbs[t.k]=id;if(m.sbx&&m.sbx[o]){m.sbx[id]=m.sbx[o];delete m.sbx[o];}}else m.sb=id;
+ try{if(!findCam(t.id))return;let cut;{const url=URL.createObjectURL(f);try{cut=await cropDialog(url,null);}finally{URL.revokeObjectURL(url);}}
+  if(!cut)return;/* a framed picture keeps a larger copy of the whole, so a later Crop… still has detail to cut from */const {data}=await shrinkImage(f,cut.def?720:1280,cut.def?110000:235000),c=findCam(t.id);if(!c)return;const m=c.it.marks[t.vi];if(!m)return;const whole=addImage(data),id=cut.def?whole:addImage(cut.data);
+  const fresh=!m.sb||!images[m.sb];let fk=0;if(t.add&&m.sb){(m.sbs=m.sbs||[]).push(id);fk=m.sbs.length;}else if(t.k!=null&&m.sbs&&m.sbs[t.k]!=null){const o=m.sbs[t.k];m.sbs[t.k]=id;if(m.sbx&&m.sbx[o]){m.sbx[id]=m.sbx[o];delete m.sbx[o];}fk=t.k+1;}else m.sb=id;
+  fSet(m,fk,'o',cut.def?null:whole);fSet(m,fk,'cr',cut.def?null:cut.cr);
   let msg='';if(t.add&&frameOn()&&m.sb&&images[m.sb]){const k=(m.sbs||[]).length;if(!fx(m,k))fSetW(m,k,fWk(c.s,m,0));placeFrame(c.s,c.it,t.vi,k);msg=`Frame ${k+1} added to Shot ${shotCode(c.s,c.it)} on the floor plan.`;}
   else if(fresh&&!t.add&&t.k==null){const was=frameOn();if(!was){P.ui.frames=true;renderTop();}delete m.sba;if(!m.sbw)m.sbw=commonFW(c.s,m);placeFrame(c.s,c.it,t.vi);
    msg=`Frame added on the floor plan next to Shot ${shotCode(c.s,c.it)}${was?'':' (Frames is back on)'}. Drag it anywhere; drag its corner to resize it.`;}
