@@ -542,7 +542,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119210559';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119215647';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1237,7 +1237,7 @@ function iconSVG(k){
 }
 
 /* ---------- model ---------- */
-function blankScene(num){const pg={id:uid(),name:'Page 1'};return {id:uid(),number:String(num),title:'',heading:'',synopsis:'',code:'',day:'',setups:[],items:[],pages:[pg],bgId:null,bg:null,pageId:pg.id,wv:1};}
+function blankScene(num){const pg={id:uid(),name:'Page 1'};return {id:uid(),number:String(num),title:'',heading:'',synopsis:'',code:'',day:'',setups:[],items:[],pages:[pg],bgId:null,bg:null,pageId:'all',wv:1};}
 let P=null,images={},sel=null;
 const scene=()=>P.scenes.find(s=>s.id===P.sceneId)||P.scenes[0];
 function posStarts(it){if(it.type==='char')return it.marks.map((m,i)=>m.t?-1:i).filter(i=>i>=0);if(it.type==='cam')return it.marks.map((m,i)=>i);if(it.type==='prop'||it.type==='light')return [0,...(it.mv||[]).map((_,i)=>i+1)];return [0];}
@@ -2935,7 +2935,7 @@ function extrasGroups(s){const ids=new Set();for(const x of liveScenes().concat(
 function placeExtras(s,charId,n,x0,y0,arr,gm,pg){
  const have=s.items.filter(i=>i.type==='char'&&i.charId===charId).reduce((m,i)=>Math.max(m,i.xn||0),0),cols=arr==='row'?n:Math.ceil(Math.sqrt(n*1.4)),sp=48,out=[];
  for(let k=0;k<n;k++){const r=Math.floor(k/cols),c=k%cols;let x=x0+(c-(Math.min(cols,n)-1)/2)*sp,y=y0+r*sp;if(arr==='cluster'){const h=Math.sin((k+1)*12.9898)*43758.5453;x+=((h-Math.floor(h))-.5)*22+(r%2)*sp/2;y+=((h*7-Math.floor(h*7))-.5)*18;}
-  const it={id:uid(),type:'char',charId,xn:have+k+1,marks:[{x,y,rot:90}],locked:false,pgs:pg?[pg]:curPgs()};if(gm==='mix')it.g=k%2?'f':'m';s.items.push(it);out.push(it);}
+  const it={id:uid(),type:'char',charId,xn:have+k+1,marks:[{x,y,rot:90}],locked:false,pgs:pg===0?null:pg?[pg]:curPgs()};if(gm==='mix')it.g=k%2?'f':'m';s.items.push(it);out.push(it);}
  return out;}
 function extrasDialog(){closePop();const s=scene(),groups=extrasGroups(s);let n=10,arr='cluster',gm='mix',gid=null,color=distinctColor(rootColors(rootOf(s)),EXTRA_COLORS);
  modal(`<h3>Add extras</h3><p class="mut">Places a group of background people at once. They’re numbered, drawn a little smaller than your cast, and can walk and animate like anyone else.</p>
@@ -3303,7 +3303,7 @@ function deletePage(){const s=scene(),p=s.pages.find(x=>x.id===s.pageId);if(!p)r
  confirmBox(`Delete ${p.name}?`,'Everything that shows only on this page is removed, including its cameras. Items on all pages stay.','Delete page',()=>{const i=s.pages.indexOf(p);s.pages.splice(i,1);s.items=s.items.filter(it=>{if(!it.pgs)return true;it.pgs=it.pgs.filter(x=>x!==p.id);return it.pgs.length>0;});s.pageId=s.pages[Math.max(0,i-1)].id;sel=null;commit();});}
 function renderPageBits(){
  const s=scene();$('#pgLbl').textContent=(s.pageId==='all'?'All Pages':pageName(s,s.pageId))+(s.plans&&s.plans.length?' · '+planName(s):'');
- $('#pq').innerHTML=(s.pages.length>1?`<button class="pq${s.pageId==='all'?' cur':''}" data-p="all" title="All pages">A</button>`:'')+s.pages.map((p,i)=>`<button class="pq${s.pageId===p.id?' cur':''}" data-p="${p.id}" title="${esc(p.name)}">${i+1}</button>`).join('')+'<button class="pq" data-p="new" title="New page">+</button>';
+ $('#pq').innerHTML=(s.pages.length>1||s.pageId==='all'?`<button class="pq${s.pageId==='all'?' cur':''}" data-p="all" title="All pages">A</button>`:'')+s.pages.map((p,i)=>`<button class="pq${s.pageId===p.id?' cur':''}" data-p="${p.id}" title="${esc(p.name)}">${i+1}</button>`).join('')+'<button class="pq" data-p="new" title="New page">+</button>';
 }
 $('#pq').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;if(b.dataset.p==='new')newPageDialog();else gotoPage(b.dataset.p);});
 
@@ -3630,7 +3630,7 @@ function boxSnap(sc,it,p,g){const tol=8/view.k,me=aabb(it,p),R=[],W=[];
 /* ---------- beats: the scene's turns, each linked to a time on the floor plan; shots cover beats ---------- */
 const WIDES=new Set(['Wide Shot','Extreme Wide Shot','Full Shot','Medium Wide Shot']);
 const rowCode=(s,r)=>shotCode(s,r.it)+(nVer(r.it)>1?' V'+verCode(s,r.vn):'');
-const pgKey=s=>s.pageId||'p';
+const pgKey=s=>pgK(s);
 function covAuto(s,r,b){if(!b.n)return false;if(b.pg&&s.pages.some(p=>p.id===b.pg)&&!posOn(r.it,r.vi,b.pg))return false;const [a,z]=camRun(r.it,r.vi);for(let j=a;j<=z;j++)if(+r.it.marks[j].st===+b.n)return true;return false;}
 function covers(s,r,b){const o=r.m.cov&&r.m.cov[b.id];return o===1?true:o===0?false:covAuto(s,r,b);}
 function beatFlag(s,b,rows){const c=rows.filter(r=>covers(s,r,b));if(!c.length)return 'none';if(c.every(r=>WIDES.has(r.m.size)||/^(Master|Establishing)$/.test(r.m.type||'')))return 'wide';return '';}
@@ -3890,13 +3890,13 @@ function cloneScene(s){let j=JSON.stringify(stripScene(s));for(const id of [s.id
 function tplMatches(t,target){const k=t.loc||locKey(t.heading);if(!k)return [];return liveScenes().filter(s=>s!==target&&rootOf(s)===rootOf(target)&&locKey(s.heading)===k&&!(s.tplApplied||[]).includes(t.id));}
 function applyTemplate(t,target,replaceBg){
  const c=cloneScene(t),pg=target.pageId&&target.pageId!=='all'?target.pageId:target.pages[0].id,setI=[],actI=[];
- for(const it of c.items){if(ACTOR(it.type)||it.type==='axis'){it.pgs=[pg];actI.push(it);}else{it.pgs=null;setI.push(it);}}
+ for(const it of c.items){if(ACTOR(it.type)||it.type==='axis'){it.pgs=target.pageId==='all'?null:[pg];actI.push(it);}else{it.pgs=null;setI.push(it);}}
  target.items=[...setI,...target.items,...actI];
  for(const st of (c.setups||[]))if(actI.some(i=>i.setupId===st.id))target.setups.push(st);
  if(c.bgId&&(!target.bgId||replaceBg)){target.bgId=c.bgId;target.bg=clone(c.bg);}
  target.tplApplied=[...(target.tplApplied||[]),t.id];
 }
-function sceneFromTemplate(t,folder){const n=cloneScene(t);delete n.tpl;delete n.loc;delete n.tplApplied;delete n.numbering;n.title='';n.tplApplied=[t.id];
+function sceneFromTemplate(t,folder){const n=cloneScene(t);n.pageId='all';if(n.pages.length===1)for(const i of n.items)if(i.pgs)i.pgs=null;delete n.tpl;delete n.loc;delete n.tplApplied;delete n.numbering;n.title='';n.tplApplied=[t.id];
  if(folder&&fById(folder))n.folder=folder;else delete n.folder;n.number=String(fScenes(folder||null).reduce((m,s)=>Math.max(m,parseInt(s.number,10)||0),0)+1);
  delete n.cat;delete n.factory;closeModal();castDialog(n,()=>{P.scenes.push(n);noteRecent(n.id);P.sceneId=n.id;sel=null;msel=null;inspOpen=false;endTool();closeModal();commit();fit();sceneInfo();});}
 function saveTemplateDialog(){const s=scene(),lk=locKey(s.heading),hasActors=s.items.some(i=>ACTOR(i.type));
@@ -4375,8 +4375,8 @@ function importReview(ps,chars,fname,into){
     if(!xg[lab]){const col=distinctColor(usedC,EXTRA_COLORS);usedC.push(col);const c={id:uid(),name:lab,color:col,extra:true,home:rootId};P.characters.push(c);xg[lab]=c;}(xBy[xrows[i].si]=xBy[xrows[i].si]||[]).push({c:xg[lab],n});});
    let first=null;
    ps.scenes.forEach((sc,i)=>{const s=blankScene(sc.num||i+1);s.heading=sc.heading;s.folder=fo.id;s.src=scHash(sc);s.sig=scSig(sc);{const cs=(sc.present||[]).map(n=>ids[n]).filter(Boolean);if(cs.length)s.cast=cs;}
-    if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of sc.present.filter(n=>ids[n])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}
-     let yy=y+(x>0?150:60);for(const g of (xBy[i]||[])){placeExtras(s,g.c.id,g.n,300,yy,'cluster','mix',pg);yy+=Math.ceil(g.n/Math.ceil(Math.sqrt(g.n*1.4)))*48+70;}}
+    if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of sc.present.filter(n=>ids[n])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:null});x+=w;}
+     let yy=y+(x>0?150:60);for(const g of (xBy[i]||[])){placeExtras(s,g.c.id,g.n,300,yy,'cluster','mix',0);yy+=Math.ceil(g.n/Math.ceil(Math.sqrt(g.n*1.4)))*48+70;}}
     if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
     P.scenes.push(s);if(!first)first=s;});
    P.sceneId=first.id;noteRecent(first.id);sel0();commit();fit();closeModal();openBrowser(fo.id);
@@ -4391,7 +4391,7 @@ function revApply(fid,col,plan,chars,place,useTpl,K){const f=fById(fid);if(!f)re
  for(const r of plan.rows){
   if(r.s){{const cs=(r.sc.present||[]).map(n=>ids[n.toUpperCase()]).filter(Boolean);if(cs.length)r.s.cast=[...new Set([...(r.s.cast||[]),...cs])];}r.s.src=r.h;r.s.sig=scSig(r.sc);if(r.k==='changed'){r.s.heading=r.sc.heading;if(r.sc.num)r.s.number=r.sc.num;r.s.rev={k:'changed',c:col,d};if(r.renum)r.s.rev.was=r.renum;}else if(r.renum){r.s.number=r.sc.num;r.s.rev={k:'renum',c:col,d,was:r.renum};}continue;}
   const s=blankScene(r.sc.num||(Math.max(0,...folderScenes(fid).map(x=>parseInt(x.number,10)||0))+1));s.heading=r.sc.heading;s.folder=fid;s.src=r.h;s.sig=scSig(r.sc);s.rev={k:'new',c:col,d};{const cs=(r.sc.present||[]).map(n=>ids[n.toUpperCase()]).filter(Boolean);if(cs.length)s.cast=cs;}
-  if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of r.sc.present.filter(n=>ids[n.toUpperCase()])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n.toUpperCase()],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:[pg]});x+=w;}}
+  if(place){const pg=s.pages[0].id;let x=0,y=0;for(const n of r.sc.present.filter(n=>ids[n.toUpperCase()])){const w=Math.max(90,n.length*12+30);if(x>0&&x+w>760){x=0;y+=90;}s.items.push({id:uid(),type:'char',charId:ids[n.toUpperCase()],marks:[{x:x+w/2,y,rot:90}],locked:false,pgs:null});x+=w;}}
   if(useTpl){const t=templates().find(t=>t.loc&&t.loc===locKey(s.heading));if(t)applyTemplate(t,s,false);}
   P.scenes.push(s);}
  for(const o of plan.gone)o.rev={k:'omitted',c:col,d};
@@ -5591,14 +5591,15 @@ function animActors(sc){const pid=sc.pageId,out=[];
   if(A.marks.length)out.push(A);}
  return out;}
 /* per page: section labels and speeds for each time */
-function tlOf(sc,make){const pid=sc.pageId||'p';if(!sc.tl)sc.tl={};if(!sc.tl[pid]&&make)sc.tl[pid]={lab:{},spd:{}};return sc.tl[pid]||{lab:{},spd:{}};}
+const pgK=sc=>sc.pageId==='all'&&sc.pages&&sc.pages.length===1?sc.pages[0].id:(sc.pageId||'p');
+function tlOf(sc,make){const pid=pgK(sc);if(!sc.tl)sc.tl={};if(!sc.tl[pid]&&make)sc.tl[pid]={lab:{},spd:{}};return sc.tl[pid]||{lab:{},spd:{}};}
 const spdV=v=>v==null?50:v<=5?[10,30,50,70,90][v-1]||50:v; /* 0-100, 50 is normal */
 function spdOf(sc,N){const q=(tlOf(sc).spd||{})[N]||{};const a=spdV(q.a),same=q.same!==false;return {a,c:same?a:spdV(q.c),same};}
 function spdF(sc,N,cam){const q=spdOf(sc,N);return Math.pow(2,((cam?q.c:q.a)-50)/25);}
 /* move every time at or after `from` by `d`; times equal to `drop` lose their time first */
 function shiftTime(sc,from,d,drop){
  for(const it of animActors(sc))for(const q of it.marks){if(q.st==null)continue;if(drop!=null&&+q.st===drop){delete q.st;continue;}if(+q.st>=from)q.st=+q.st+d;}
- {const pk=sc.pageId||'p';for(const b of sc.beats||[]){if(!b.n||(b.pg||'p')!==pk)continue;if(drop!=null&&+b.n===drop){delete b.n;delete b.pg;continue;}if(+b.n>=from)b.n=+b.n+d;}}
+ {const pk=pgK(sc);for(const b of sc.beats||[]){if(!b.n||(b.pg||'p')!==pk)continue;if(drop!=null&&+b.n===drop){delete b.n;delete b.pg;continue;}if(+b.n>=from)b.n=+b.n+d;}}
  const T=tlOf(sc,true);for(const key of ['lab','spd']){const o=T[key]||{},n={};for(const k in o){const v=+k;if(drop!=null&&v===drop)continue;n[v>=from?v+d:v]=o[k];}T[key]=n;}
 }
 function maxStep(sc){let m=1;for(const it of animActors(sc))for(const q of it.marks)if(q.st!=null)m=Math.max(m,+q.st);const T=tlOf(sc);for(const k in (T.lab||{}))m=Math.max(m,+k);for(const k in (T.spd||{}))m=Math.max(m,+k);return m;}
