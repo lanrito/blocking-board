@@ -9,7 +9,8 @@
 <link rel="apple-touch-icon" href="icons/dn-touch.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/dn-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/dn-192.png">
-<meta name="theme-color" content="#1e1f22">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1e22">
 <meta name="apple-mobile-web-app-title" content="Director’s Notebook">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
@@ -473,11 +474,27 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 #pop .ls .duo.mvd button:hover,#pop .ls .duo.mvd button:active{background:#2a62c6}
 #pop .ls .duo.mvd button:only-child{flex:1}
 #pop .ls>.duo.mvd+.hd{margin-top:2px}
+
+/* the main menu: a button at the top left of every page; a short list, with the rest one step in */
+#top #bMenu{flex:none;width:38px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--ink)}
+#top #bMenu svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#drop.mm{width:320px;max-width:calc(100vw - 16px);overflow:auto;-webkit-overflow-scrolling:touch}
+#drop.mm h4{display:flex;align-items:center;gap:9px}
+#drop.mm button{display:flex;align-items:center;gap:10px;text-align:left}
+#drop.mm h4 .back{flex:none;width:auto;min-height:0;height:32px;margin:-5px 2px -5px -8px;padding:0 10px;border-radius:7px;background:var(--chip);font-size:14px}
+#drop.mm .kb{float:none;margin:0 0 0 auto;font-size:13px}
+#drop.mm small{margin-left:auto;color:var(--mut);font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+#drop.mm .mmc{font-style:normal;margin-left:auto;color:var(--mut);font-size:20px;line-height:1}
+#drop.mm small+.mmc{margin-left:2px}
+#drop.mm .mmsep{height:1px;margin:5px 0;background:var(--line)}
+#drop.mm button.dng{color:light-dark(#c93a36,#ff6b63)}
+#drop.mm .pnote{padding:8px 16px 6px;font-size:13px;line-height:1.4;color:var(--mut)}
 </style>
 </head>
 <body>
 <div id="app">
  <header id="top">
+  <button id="bMenu" aria-label="Menu" title="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   <div class="brand"><img alt="" width="26" height="26" src="data:image/png;base64,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">The Director’s Notebook</div>
   <button id="sceneBtn" aria-label="Open a scene" title="Open a scene (⌘O)"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#e9c46a" stroke="#b8902f" stroke-width="1.2"/></svg><span id="sceneBtnT"></span><svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
   <div class="seg" id="tabs"><button id="mNb">Breakdown</button><button id="mSt">Strategy</button><button id="mDia" class="on">Floor Plan</button><button id="mList">Shot List</button></div>
@@ -507,7 +524,6 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
   <div id="nbView" class="docv"></div>
   <div id="stView" class="docv"></div>
   <footer id="bar">
-   <button id="bMenu" aria-label="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
    <button id="bAdd" aria-label="Add new"><svg viewBox="0 0 24 24" style="stroke-width:2.6"><path d="M12 4v16M4 12h16"/></svg><span class="lbt">Add</span></button>
    <button id="bPages" aria-label="Pages"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/></svg><span class="lbt" id="pgLbl">Pages</span></button>
    <button id="bLayers" title="Layers: lock and fade"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5" opacity=".6"/></svg><span class="lbt">Layers</span></button>
@@ -542,7 +558,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119215647';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119234426';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1420,6 +1436,13 @@ const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
 let outdated=false;
 function showUpdate(msg){if(document.getElementById('updBar'))return;const d=document.createElement('div');d.id='updBar';d.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:900;background:#1c1c1e;color:#fff;padding:10px 14px;border-radius:12px;font:14px/1.4 -apple-system,system-ui,sans-serif;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.25)';
  d.innerHTML='<span></span><button style="font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:#2f6fde;color:#fff">Reload</button>';d.firstChild.textContent=msg;d.querySelector('button').onclick=()=>{try{flushNotes();if(typeof txFlush==='function')txFlush();saveLocal();}catch(e){}const t0=Date.now(),go=()=>{if((pIn>0||imgIn>0)&&Date.now()-t0<5000){setTimeout(go,150);return;}location.reload();};go();};document.body.appendChild(d);}
+/* opened as its own app on a computer: fill the screen at launch (a browser tab, an iPad and a phone are left alone) */
+function fillScreen(){try{const mq=q=>!!(window.matchMedia&&matchMedia(q).matches);
+ if(mq('(display-mode: browser)')||!(mq('(display-mode: standalone)')||mq('(display-mode: window-controls-overlay)')||mq('(display-mode: minimal-ui)')))return false;
+ if(/iPad|iPhone|Android/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent)))return false;
+ const sc=window.screen,w=sc.availWidth,h=sc.availHeight;if(!w||!h)return false;if(window.outerWidth>=w-8&&window.outerHeight>=h-8)return false;
+ window.moveTo(sc.availLeft||0,sc.availTop||0);window.resizeTo(w,h);return true;}catch(e){return false;}}
+fillScreen();
 if('serviceWorker' in navigator){let hadSW=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW)showUpdate('A new version of the app is ready.');hadSW=true;});}
 function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},prefs:P.prefs||{},locations:P.locations||[],tomb:P.tomb||{},imgs:[...new Set([...Object.keys(images),...(sync.imgK||[])])].sort(),sceneOrder:P.scenes.map(s=>s.id)}};if(window.BB_VERSION)d.meta.appV=window.BB_VERSION;for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
@@ -1487,9 +1510,9 @@ async function takeSnap(){
 async function snapPrune(){const all=await snapList(),keep=new Set(),days=new Set(),now=Date.now(),day=t=>new Date(t).toDateString();
  all.forEach((x,i)=>{if(x.v&&x.v.name){keep.add(x.t);return;}if(i<72){keep.add(x.t);days.add(day(x.t));return;}if(now-x.t<30*864e5&&!days.has(day(x.t))){days.add(day(x.t));keep.add(x.t);}});
  const del=all.filter(x=>!keep.has(x.t)).map(x=>x.t);if(del.length)await snapDel(del);}
-async function saveVersionNow(){if(!idb){toast('Saved versions aren’t available in this browser. Use Back up everything instead.');return;}
+async function saveVersionNow(){if(!idb){toast('Saved versions aren’t available in this browser. Use Back Up Everything instead.');return;}
  askText('Save a version','Name it so you can find it later','e.g. Before shoot day 1',async v=>{const name=(v||'').trim()||'Saved version';const cur0=snapshot(),tx0=JSON.stringify(P.text||{}),n=liveScenes().length,shots=liveScenes().reduce((a,x)=>a+x.items.filter(i=>i.type==='cam').reduce((b,i)=>b+i.marks.length,0),0);
-  if(await snapPut(Date.now(),{data:cur0,text:tx0,scenes:n,shots,name}))toast(`Saved “${name}”. It’s kept until you delete it (Menu › Earlier versions).`);else toast('Couldn’t save that version on this device.');});}
+  if(await snapPut(Date.now(),{data:cur0,text:tx0,scenes:n,shots,name}))toast(`Saved “${name}”. It’s kept until you delete it (Menu › Sync & Backup › Earlier Versions).`);else toast('Couldn’t save that version on this device.');});}
 /* ---------- Ready for Set: is everything for this project on this device, and has it all reached the cloud? ---------- */
 function sceneImgs(x){const out=new Set(),add=(items,bg)=>{if(bg)out.add(bg);for(const it of items||[]){if(it.img)out.add(it.img);if(it.type==='cam')for(const m of it.marks||[]){if(m.sb)out.add(m.sb);for(const q of m.sbs||[])out.add(q);}}};add(x.items,x.bgId);for(const p of x.plans||[])if(p&&p.d)add(p.d.items,p.d.bgId);return out;}
 function readyDialog(){try{flushNotes();if(txTimer)txFlush();}catch(e){}const s=scene(),r=rootKey(s),scs=liveScenes().filter(x=>rootKey(x)===r&&!x.scout),scouts=liveScenes().filter(x=>rootKey(x)===r&&x.scout),need=new Set();
@@ -1498,7 +1521,7 @@ function readyDialog(){try{flushNotes();if(txTimer)txFlush();}catch(e){}const s=
  const ios=/iPad|iPhone/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent)),home=window.matchMedia&&matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,swOk='serviceWorker' in navigator&&!!navigator.serviceWorker.controller;
  const row=(ok,txt,extra)=>`<div class="rdy ${ok===true?'ok':ok===false?'bad':'info'}"><i>${ok===true?'✓':ok===false?'!':'i'}</i><div>${txt}${extra||''}</div></div>`;
  const unsaved=idb?[...need].filter(id=>images[id]&&!imgSaved.has(id)).length:0,bigL=Object.keys(sync.big||{}).map(k=>{if(k.startsWith('img-'))return 'an image';const z=P.scenes.find(x=>x.id===k.replace(/^(scene|txt)-/,''));return z?(k.startsWith('txt-')?'the writing for ':'')+'scene '+(z.number||'')+(z.title?' '+z.title:''):k==='meta'?'the shared lists and locations':'a deleted item';});
- let h=!localOk?row(false,'<b>This device isn’t saving right now.</b> Use Menu › Back up everything, then free up space or reload the app.'):pIn>0||imgIn>0?row(false,'Still saving to this device. Give it a moment, then check again.'):row(true,`<b>${plural(scs.length,'scene')}</b> in ${esc(pname)} are on this device, with ${plural(shots,'shot')}${scouts.length?` and ${plural(scouts.length,'location scout')}`:''}.`);
+ let h=!localOk?row(false,'<b>This device isn’t saving right now.</b> Use Menu › Sync & Backup › Back Up Everything, then free up space or reload the app.'):pIn>0||imgIn>0?row(false,'Still saving to this device. Give it a moment, then check again.'):row(true,`<b>${plural(scs.length,'scene')}</b> in ${esc(pname)} are on this device, with ${plural(shots,'shot')}${scouts.length?` and ${plural(scouts.length,'location scout')}`:''}.`);
  if(unsaved)h+=row(false,`<b>${plural(unsaved,'image')}</b> ${unsaved===1?'is':'are'} still being saved to this device. Check again in a moment.`);
  h+=miss.length?row(false,`<b>${plural(miss.length,'image')}</b> (storyboard frames, plans or photos) haven’t downloaded to this device yet.`,coll?'<div><button class="sm" id="rdImg">Download them now</button></div>':''):row(true,need.size?`All <b>${plural(need.size,'image')}</b> are on this device.`:'No images to download.');
  if(!coll)h+=row(null,'Not signed in to sync: this device only has what was made here.');
@@ -1516,7 +1539,7 @@ async function versionsDialog(){
  if(!idb){toast('Earlier versions aren’t available in this browser.');return;}
  await takeSnap();const all=await snapList();
  const fmt=t=>{const d=new Date(t),today=new Date().toDateString()===d.toDateString();return (today?'Today':d.toLocaleDateString(undefined,{month:'short',day:'numeric'}))+', '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});};
- modal(`<h3>Earlier versions</h3><p class="mut">A copy is kept every five minutes while you work (about the last six hours), plus one a day for 30 days. Versions you save by name are kept until you delete them. Restoring one replaces what’s here now; you can undo it. These copies live on this device; for a copy you can keep anywhere, use Back up everything.</p><div class="menu">${all.length?all.map((x,i)=>`<button data-t="${x.t}"><b>${x.v.name?esc(x.v.name)+' · ':''}${fmt(x.t)}${i===0?' · latest':''}</b><small>${x.v.scenes} scene${x.v.scenes===1?'':'s'}, ${x.v.shots} shot${x.v.shots===1?'':'s'}${x.v.name?' · kept':''}</small></button>`).join(''):'<p class="mut">No earlier versions yet.</p>'}</div><div class="btns end"><button id="vSave">Save a version now…</button><button data-x>Close</button></div>`,card=>{
+ modal(`<h3>Earlier versions</h3><p class="mut">A copy is kept every five minutes while you work (about the last six hours), plus one a day for 30 days. Versions you save by name are kept until you delete them. Restoring one replaces what’s here now; you can undo it. These copies live on this device; for a copy you can keep anywhere, use Back Up Everything.</p><div class="menu">${all.length?all.map((x,i)=>`<button data-t="${x.t}"><b>${x.v.name?esc(x.v.name)+' · ':''}${fmt(x.t)}${i===0?' · latest':''}</b><small>${x.v.scenes} scene${x.v.scenes===1?'':'s'}, ${x.v.shots} shot${x.v.shots===1?'':'s'}${x.v.name?' · kept':''}</small></button>`).join(''):'<p class="mut">No earlier versions yet.</p>'}</div><div class="btns end"><button id="vSave">Save a version now…</button><button data-x>Close</button></div>`,card=>{
   card.querySelector('#vSave').onclick=()=>{closeModal();saveVersionNow();};
   card.querySelector('.menu').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const x=all.find(y=>String(y.t)===b.dataset.t);if(!x)return;
    confirmBox('Restore this version?',`Everything goes back to how it was at ${fmt(x.t)}, on your other device too. Scenes made since then go to Trash, not away. You can undo this.`,'Restore',()=>{const o=JSON.parse(x.v.data),mk=rvMark();P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;const extraIds=[];{const keepIds=new Set(o.s.map(z=>z.id)),now=Date.now();for(const z of P.scenes)if(!keepIds.has(z.id)){if(!z.trashed&&!z.tpl)z.trashed=now;o.s.push(z);extraIds.push(z.id);}}P.scenes=o.s.map(sc=>{migrateScene(sc);return sc;});const tx0=x.v.text?clone(P.text||{}):null,u0=undoS.length,j0=cur,g0=rgen;if(x.v.text)txAdopt(JSON.parse(x.v.text),extraIds);if(!P.scenes.some(sc=>sc.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();sel=null;inspOpen=false;rvBump(mk);commit();undoWithText(tx0,u0,j0,g0);txFlush();renderDocs(true);fit();toast('Version restored.');});});
@@ -1851,7 +1874,7 @@ function markSynced(){lastSync=Date.now();try{localStorage.setItem('blk.lastSync
 function whenTxt(t){if(!t)return 'never';const d=new Date(t),now=new Date(),same=d.toDateString()===now.toDateString(),y=new Date(now-864e5).toDateString()===d.toDateString();
  return (same?'today':y?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'}))+' at '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});}
 function confirmSynced(){if(sync.dirty.length||outdated||bigN())return;if(fbDb&&fbDb.waitForPendingWrites){fbDb.waitForPendingWrites().then(()=>{if(!sync.dirty.length&&!bigN()&&!syncErr)markSynced();}).catch(()=>{});}else if(coll)markSynced();}
-function syncNow(){if(!coll){toast(fbAuth?'Sign in first (Menu › Sign in to sync).':'Sync isn’t set up in this copy of the app.');return;}
+function syncNow(){if(!coll){toast(fbAuth?'Sign in first (Menu › Sync & Backup).':'Sync isn’t set up in this copy of the app.');return;}
  if(!navigator.onLine){toast('No internet connection. Everything is saved on this device and will sync when you’re back online.');return;}
  toast('Syncing…');const go=()=>{detectChanges();saveLocal();schedulePush(0);try{const m=docs().meta;if(m&&coll){for(const id of m.imgs)if(!images[id])imgTry[id]=0;imgPull();}}catch(e){}
   const t0=Date.now(),wait=()=>{if(!sync.dirty.length&&!pushing){if(fbDb&&fbDb.waitForPendingWrites)fbDb.waitForPendingWrites().then(()=>{if(sync.dirty.length||syncErr){toast('Not everything could be sent yet. Your work is saved here; it will keep trying.');return;}if(bigN()){toast('Sent, except what is too large to sync. Ready for Set shows which part.');return;}markSynced();toast('Sent. Everything made here is in the cloud; your other device gets it the next time it’s online.');}).catch(()=>toast('Couldn’t reach the cloud. Your work is saved here; try again in a moment.'));else{markSynced();toast('Synced.');}}else if(Date.now()-t0<20000)setTimeout(wait,500);else toast('Still sending. It will finish in the background.');};setTimeout(wait,400);};
@@ -3342,9 +3365,9 @@ function saveLocDialog(){const s=scene(),k=locKey(s.heading),r=rootKey(s),pieces
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="lOk">Save location</button></div>`,card=>{
   card.querySelector('#lOk').onclick=()=>{const L=locCreate(s,card.querySelector('#lN').value.trim().toUpperCase()||k);let n=1;
    for(const b of card.querySelectorAll('[data-s]:checked')){const x=P.scenes.find(q=>q.id===b.dataset.s);if(x){locLink(x,L,true);n++;}}
-   closeModal();commit();toast(n>1?`${L.name} is linked to ${plural(n,'scene')}. Undo takes it all back.`:`${L.name} saved. Use Menu › Use a location… in other scenes to link them.`);};});}
+   closeModal();commit();toast(n>1?`${L.name} is linked to ${plural(n,'scene')}. Undo takes it all back.`:`${L.name} saved. Use Menu › This Scene › Use a Location… in other scenes to link them.`);};});}
 function useLocDialog(){const s=scene(),k=locKey(s.heading),Ls=projLocs(s).sort((a,b)=>((b.key===k)-(a.key===k))||natCmp(a.name,b.name));
- if(!Ls.length){toast('No locations in this project yet. Use Menu › Save this set as a location… on a scene with the set built.');return;}
+ if(!Ls.length){toast('No locations in this project yet. Use Menu › This Scene › Save This Set as a Location… on a scene with the set built.');return;}
  const own=s.items.some(it=>LOCT(it)&&!it.lid);
  modal(`<h3>Use a location</h3><div class="menu">${Ls.map(L=>`<button data-l="${L.id}">${esc(L.name)} <span class="mut">${plural(locScenes(L).length,'scene')}</span></button>`).join('')}</div>
   ${own?`<div class="lbl">This scene’s own set</div><label class="imopt"><input type="radio" name="lr" value="r" checked> Replace it with the location’s</label><label class="imopt"><input type="radio" name="lr" value="k"> Keep it as well (stays in this scene only)</label>`:''}
@@ -3917,10 +3940,10 @@ function applyTemplateDialog(t){const s=scene();if(s.tpl){toast('This is a templ
   ${others.length?`<label class="imopt"><input type="checkbox" id="aAll" checked> Also add it to the ${plural(others.length,'other scene')} at ${esc(k)} in this project</label>`:''}
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="aOk">Add template</button></div>`,card=>{
   card.querySelector('#aOk').onclick=()=>{const rb=!!(card.querySelector('#aBg')||{}).checked,all=!!(card.querySelector('#aAll')||{}).checked;applyTemplate(t,s,rb);let n=1;if(all)for(const o of others){applyTemplate(t,o,false);n++;}closeModal();commit();fit();toast(n>1?`Added to ${plural(n,'scene')}. Undo takes it all back.`:'Template added.');};});}
-function pickTemplateDialog(){const s=scene(),ts=templates();if(!ts.length){toast('No templates yet. Use Menu › Save as template on a scene with your set.');return;}
+function pickTemplateDialog(){const s=scene(),ts=templates();if(!ts.length){toast('No templates yet. Use Menu › This Scene › Save as Template… on a scene with your set.');return;}
  const k=locKey(s.heading),m=t=>k&&(t.loc||locKey(t.heading))===k;ts.sort((a,b)=>m(b)-m(a));
  modal(`<h3>Add a template</h3><div class="menu tplm">${tplGroups(ts).map(([g,l])=>`<div class="mgh">${esc(g)}</div>`+l.map(t=>`<button data-t="${t.id}"><b>${esc(t.title)}${m(t)?' · matches this scene':''}</b><small>${esc(t.loc||'')}</small></button>`).join('')).join('')}</div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{card.querySelector('.menu').onclick=e=>{const b=e.target.closest('[data-t]');if(b)applyTemplateDialog(P.scenes.find(x=>x.id===b.dataset.t));};});}
-function brTemplates(){const ts=templates();if(!ts.length)return `<div class="brempty">No templates yet.<br><small>Open a scene with your set built, then Menu › Save as template. Standing sets you return to every episode are the best use.</small></div>`;
+function brTemplates(){const ts=templates();if(!ts.length)return `<div class="brempty">No templates yet.<br><small>Open a scene with your set built, then Menu › This Scene › Save as Template… Standing sets you return to every episode are the best use.</small></div>`;
  const row=t=>{const n=t.items.filter(i=>!ACTOR(i.type)&&i.type!=='axis').length,nc=t.items.filter(i=>i.type==='char').length,nk=t.items.filter(i=>i.type==='cam').length;return `<div class="brr" data-t="${t.id}"><span class="bri">${BIC.tpl}</span><span class="brt"><b>${esc(t.title)}</b><small>${esc([t.loc,n?plural(n,'set piece'):'',nc?plural(nc,'character'):'',nk?plural(nk,'camera'):'',t.bgId?'floor plan':''].filter(Boolean).join(' · '))}</small></span><button class="brm" data-tm="${t.id}" aria-label="Template options">•••</button></div>`;};
  const groups=tplGroups(ts);
  return groups.map(([g,l])=>`<div class="brsec">${esc(g)}</div>`+l.map(row).join('')).join('');}
@@ -4800,7 +4823,7 @@ function mergeTxt(k,R){
   const nw=lt>=rt?L:r,od=nw===L?r:L,m=clone(nw),main=h=>String(h||'').split(TX_MARK)[0];
   if(key==='order')m.v=[...(nw.v||[]),...(od.v||[]).filter(i=>!(nw.v||[]).includes(i))];
   else if(nw.del&&!od.del)Object.assign(m,clone(od));
-  else if(!od.del){const oh=main(od.h);if(oh&&oh!==main(nw.h)&&!(nw.h||'').includes(oh)&&rtText(rtParse(oh))){if((nw.h||'').length+oh.length<400000){m.h=(nw.h||'')+TX_MARK+oh;conf++;}else if(od===L){try{if(idb)snapPut(Date.now()-1,{data:snapshot(),text:JSON.stringify(P.text||{}),scenes:liveScenes().length,shots:0,name:'Before a long text was replaced by your other device’s version'});}catch(e){}setTimeout(()=>toast('A very long piece of writing was changed on both devices. The newer one is in place; yours is kept in Menu › Earlier versions.'),50);}}
+  else if(!od.del){const oh=main(od.h);if(oh&&oh!==main(nw.h)&&!(nw.h||'').includes(oh)&&rtText(rtParse(oh))){if((nw.h||'').length+oh.length<400000){m.h=(nw.h||'')+TX_MARK+oh;conf++;}else if(od===L){try{if(idb)snapPut(Date.now()-1,{data:snapshot(),text:JSON.stringify(P.text||{}),scenes:liveScenes().length,shots:0,name:'Before a long text was replaced by your other device’s version'});}catch(e){}setTimeout(()=>toast('A very long piece of writing was changed on both devices. The newer one is in place; yours is kept in Menu › Sync & Backup › Earlier Versions.'),50);}}
    if(od.title&&nw.title&&od.title!==nw.title&&!(m.h||'').includes(esc(od.title))){m.h=(m.h||'')+TX_MARK+'<p>Other title: '+esc(od.title)+'</p>';conf++;}}
   m.vv=vvMax(L,r);m.vv[DEVICE]=(m.vv[DEVICE]||0)+1;delete m.a;m.t=Math.max(now,lt+1,rt+1);txPut(x,key,m);ch++;dirty=true;
  }
@@ -5501,17 +5524,32 @@ $('#fJson').addEventListener('change',async e=>{
   });
  }catch(err){toast('That file isn’t a backup from The Director’s Notebook.');}
 });
-function menu(){
- const b=$('#bMenu');if(popFor===b){closePop();return;}const s=scene();
- openPop(`<h4>Menu</h4><div class="ls" style="width:320px">
-  <button data-m="open">Open scene… <span class="kb">⌘O</span></button>${sFolder(s)?`<button data-m="overview">${esc(fById(sFolder(s)).name)} overview & questions…</button>`:''}<button data-m="new">New scene${sFolder(s)?' in '+esc(fById(sFolder(s)).name):''}</button><button data-m="info">Scene info…</button><button data-m="trash">Move this scene to Trash</button>
-  <button data-m="keys">Keyboard shortcuts <span class="kb">?</span></button><div class="hd">Floor plan</div><button data-m="tidylab">Tidy labels on this page</button><div class="hd">Templates</div><button data-m="savetpl">Save as template…</button>${s.tpl?'':'<button data-m="usetpl">Add a template to this scene…</button>'}${s.tpl?'':`<div class="hd">Location</div>${s.loc&&locById(s.loc)?`<button data-m="locmenu">Linked to ${esc(locById(s.loc).name)}…</button>`:`<button data-m="saveloc">Save this set as a location…</button>${projLocs(s).length?'<button data-m="useloc">Use a location…</button>':''}`}`}<div class="hd">Script</div><button data-m="import">Import a script…</button><button data-m="docx">Import a breakdown and strategy…</button><div class="hd">Export</div><button data-m="pdf">Export PDF… <span class="kb">⌘P</span></button><button data-m="prods">Productions & letterheads…</button><button data-m="png">Download this page as an image</button><button data-m="video">Save the blocking as a video…</button>
-  <div class="hd">Your data</div>${fbAuth?`<button data-m="account">${fbUser?'Sync account ('+esc(fbUser.email||'')+')':'Sign in to sync…'}</button>`:''}<button data-m="ready">Ready for Set check…</button><button data-m="versions">Earlier versions…</button><button data-m="savever">Save a version now…</button><button data-m="backup">Back up everything</button><button data-m="restore">Restore from backup…</button>
-  <div class="pnote">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}<span id="stgTxt"></span></div></div>`,b,p=>{stgFill();
-  p.querySelector('.ls').addEventListener('click',e=>{const x=e.target.closest('[data-m]');if(!x)return;closePop();
-   ({account:accountDialog,versions:versionsDialog,info:sceneInfo,new:newScene,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,rotplan:()=>{if(mode!=='diagram')setMode('diagram');rotateStart();},video:exportVideo,overview:()=>overviewDialog(sFolder(s)),backup,restore:()=>$('#fJson').click(),
-     open:()=>openBrowser(),docx:()=>$('#fDocx').click(),keys:keysDialog,tidylab:tidyLabels,ready:readyDialog,savever:saveVersionNow,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,saveloc:saveLocDialog,useloc:useLocDialog,locmenu:locManage,import:importScript,camdesc:()=>{P.ui.camDesc=!P.ui.camDesc;saveLocal();render();toast(P.ui.camDesc?'Shot descriptions now show by each camera.':'Shot descriptions hidden on the diagram. They’re still in the shot list.');},new:()=>newScene(),trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open scene… › Trash to get it back.`);}})[x.dataset.m]();});
- });
+function menu(sub){
+ const b=$('#bMenu'),cur=document.querySelector('#drop.mm');if(sub===undefined&&cur){closeDrop();return;}
+ closePop();closeDrop();const s=scene(),fo=sFolder(s)?fById(sFolder(s)):null,onPlan=!offCanvas();
+ const B=(m,l,kb,cls)=>`<button data-m="${m}"${cls?` class="${cls}"`:''}>${l}${kb?`<span class="kb">${kb}</span>`:''}</button>`,
+  G=(g,l,note)=>`<button data-g="${g}">${l}${note?`<small>${note}</small>`:''}<i class="mmc">›</i></button>`,SEP='<div class="mmsep"></div>';
+ let h;
+ if(!sub)h='<h4>Menu</h4>'+B('new','New Scene'+(fo?' in '+esc(fo.name):''))+B('open','Open Scene…','⌘O')+G('scene','This Scene')+SEP
+   +(fo?B('overview',esc(fo.name)+' Overview & Questions…'):'')+G('import','Import')+G('export','Export')+SEP
+   +G('data','Sync & Backup',esc($('#status').textContent||''))+B('keys','Keyboard Shortcuts','?');
+ else{let body='';
+  if(sub==='scene')body=B('info','Scene Info…')+B('savetpl','Save as Template…')+(s.tpl?'':B('usetpl','Add a Template to This Scene…')
+    +(s.loc&&locById(s.loc)?B('locmenu','Linked to '+esc(locById(s.loc).name)+'…'):B('saveloc','Save This Set as a Location…')+(projLocs(s).length?B('useloc','Use a Location…'):'')))
+    +(onPlan?B('tidylab','Tidy Labels on This Page'):'')+SEP+B('trash','Move This Scene to Trash','','dng');
+  else if(sub==='import')body=B('import','Import a Script…')+B('docx','Import a Breakdown and Strategy…');
+  else if(sub==='export')body=B('pdf','Export PDF…','⌘P')+B('png','Download This Page as an Image')+B('video','Save the Blocking as a Video…')+SEP+B('prods','Productions & Letterheads…');
+  else body=(fbAuth?B('account',fbUser?'Sync Account ('+esc(fbUser.email||'')+')':'Sign In to Sync…'):'')+B('ready','Ready for Set Check…')+SEP+B('savever','Save a Version Now…')+B('versions','Earlier Versions…')+SEP+B('backup','Back Up Everything')+B('restore','Restore from Backup…')
+    +`<div class="pnote">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}<span id="stgTxt"></span></div>`;
+  h=`<h4><button class="back" data-g="">‹ Back</button>${({scene:'This Scene',import:'Import',export:'Export',data:'Sync & Backup'})[sub]}</h4>`+body;}
+ const d=document.createElement('div');d.id='drop';d.className='mm';d.innerHTML=h;document.body.appendChild(d);
+ const r=b.getBoundingClientRect();d.style.top=(r.bottom+6)+'px';d.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';d.style.left=Math.max(8,Math.min(innerWidth-d.offsetWidth-8,r.left))+'px';
+ if(sub==='data')stgFill();
+ const ACT={account:accountDialog,versions:versionsDialog,info:sceneInfo,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,video:exportVideo,overview:()=>overviewDialog(sFolder(s)),backup,restore:()=>$('#fJson').click(),
+   open:()=>openBrowser(),docx:()=>$('#fDocx').click(),keys:keysDialog,tidylab:tidyLabels,ready:readyDialog,savever:saveVersionNow,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,saveloc:saveLocDialog,useloc:useLocDialog,locmenu:locManage,import:importScript,new:()=>newScene(),
+   trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open Scene… › Trash to get it back.`);}};
+ d.addEventListener('click',e=>{const g=e.target.closest('[data-g]');if(g){menu(g.dataset.g||null);return;}const x=e.target.closest('[data-m]');if(!x)return;closeDrop();ACT[x.dataset.m]();});
+ setTimeout(()=>addEventListener('pointerdown',dropOut,true),0);
 }
 
 
@@ -5550,7 +5588,7 @@ function bindShotDrag(box,rowSel){
 }
 function dropMenu(btn,html,bind){closeDrop();const d=document.createElement('div');d.id='drop';d.innerHTML=html;document.body.appendChild(d);const r=btn.getBoundingClientRect();d.style.top=(r.bottom+6)+'px';d.style.left=Math.max(8,Math.min(innerWidth-d.offsetWidth-8,r.right-d.offsetWidth))+'px';
  d.addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(b){closeDrop();bind(b.dataset.d);}});setTimeout(()=>addEventListener('pointerdown',dropOut,true),0);}
-function dropOut(e){const d=$('#drop');if(d&&!d.contains(e.target))closeDrop();}
+function dropOut(e){const d=$('#drop');if(d&&!d.contains(e.target)&&!(d.classList.contains('mm')&&e.target.closest&&e.target.closest('#bMenu')))closeDrop();}
 function closeDrop(){const d=$('#drop');if(d)d.remove();removeEventListener('pointerdown',dropOut,true);}
 function shotMenu(btn){dropMenu(btn,`<h4>Shot List</h4><button data-d="new">New Shot…</button><button data-d="num">Shot Numbering…</button><button data-d="ren">Renumber…</button><button data-d="cols">Columns…</button>${mode==='list'?'':'<button data-d="full">Open Full Shot List</button>'}`,k=>({new:setupDialog,num:numberingDialog,ren:renumberDialog,cols:colDialog,full:()=>setMode('list')})[k]());}
 function numberingDialog(){const s=scene(),c=numCfg(s);
@@ -6185,7 +6223,7 @@ svg.addEventListener('gesturechange',e=>{e.preventDefault();if(pointers.size>=2)
 document.addEventListener('gesturestart',e=>e.preventDefault());
 
 /* ---------- toolbar + keys ---------- */
-$('#bMenu').onclick=menu;$('#bAdd').onclick=addMenu;$('#bPages').onclick=pagesMenu;
+$('#bMenu').onclick=()=>menu();$('#bAdd').onclick=addMenu;$('#bPages').onclick=pagesMenu;
 $('#bLayers').onclick=layersPop;$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;$('#bFit').onclick=fit;
 $('#bFr').onclick=()=>{P.ui.frames=!frameOn();saveLocal();renderTop();renderCanvas();if(frameOn()&&!pageItems(scene()).some(i=>i.type==='cam'&&i.marks.some(m=>m.sb)))toast('No storyboard frames yet. Select a camera and tap Frame.');};
 const narrow=()=>matchMedia('(max-width:640px)').matches;
@@ -6200,6 +6238,7 @@ if(0){const dv=null;let drag=null;
 addEventListener('keydown',e=>{
  const t=e.target,typing=(t.matches&&t.matches('input,textarea,select'))||!!t.isContentEditable;
  if(!modalEl.hidden){if(e.key==='Escape'){if(br&&br.sub&&$('#br')){br.sub=null;brRender();}else closeModal();}return;}
+ if(e.key==='Escape'&&document.querySelector('#drop.mm')){closeDrop();return;}
  if(e.key==='Escape'&&pop.classList.contains('on')){closePop();return;}
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='o'){e.preventDefault();openBrowser();return;}
  if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&e.key.toLowerCase()==='i'&&!setOn){e.preventDefault();bulkGo();return;}
