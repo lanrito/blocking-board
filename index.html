@@ -412,7 +412,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119032512';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119035443';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1232,6 +1232,7 @@ function remoteRebase(pre,post){const p=snapDiff(pre,post);if(!p)return;rgen++;r
  const lo=Math.min(rgen,...undoS.map(e=>e.g),...redoS.map(e=>e.g));rpat=rpat.filter(r=>r.g>lo);}
 const snapshot=()=>JSON.stringify({c:P.characters,f:P.folders,l:P.locations||[],s:P.scenes.map(stripScene)});
 function commit(opt){
+ if(penT){clearTimeout(penT);penT=null;penPend=[];}
  try{castReconcile();}catch(e){}
  try{typeRefresh();}catch(e){}
  try{metaStamp();}catch(e){}
@@ -1254,8 +1255,8 @@ function restore(snap){
 function undoWithText(tx0,u0,j0,g0){if(!tx0)return;if(undoS.length>u0)undoS[undoS.length-1].tx=tx0;else if(JSON.stringify(tx0)!==JSON.stringify(P.text||{})){undoS.push({j:j0,g:g0,tx:tx0});redoS=[];updateStatus();}}
 function undoTx(e,into){const n={j:cur,g:rgen};if(e.tx)n.tx=clone(P.text||{});into.push(n);return e.tx;}
 function undoTxApply(tx){if(!tx)return;try{txAdopt(tx);txFlush();renderDocs(true);}catch(x){console.error(x);}}
-function undo(){if(!undoS.length)return;const e=undoS[undoS.length-1],tx=undoTx(e,redoS);undoS.pop();restore(patchSnap(e.j,e.g));undoTxApply(tx);}
-function redo(){if(!redoS.length)return;const e=redoS[redoS.length-1],tx=undoTx(e,undoS);redoS.pop();restore(patchSnap(e.j,e.g));undoTxApply(tx);}
+function undo(){penCommit();if(!undoS.length)return;const e=undoS[undoS.length-1],tx=undoTx(e,redoS);undoS.pop();restore(patchSnap(e.j,e.g));undoTxApply(tx);}
+function redo(){penCommit();if(!redoS.length)return;const e=redoS[redoS.length-1],tx=undoTx(e,undoS);redoS.pop();restore(patchSnap(e.j,e.g));undoTxApply(tx);}
 
 /* ---------- sync (private to the signed-in person, through their Claude account) ---------- */
 let coll=null,online='off',pushT=null,pushing=false,syncErr='',pendingRemote=null,dlNS=null,warnedBig=false;
@@ -1275,7 +1276,7 @@ function initFirebase(){
     if(!snap.metadata.fromCache&&!snap.metadata.hasPendingWrites&&!sync.dirty.length)markSynced();
     if(!snap.metadata.fromCache){clearTimeout(t);clearTimeout(probeT);online='on';if(['resource-exhausted','unavailable','deadline-exceeded'].includes(syncErr))syncErr='';
      if(snap.empty){const now=Date.now(),d=docs();for(const k in d){if(!sync.stamps[k])sync.stamps[k]=now;markDirty(k);}for(const k in images){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=now;markDirty('img-'+k);}sync.uid=acct;}}
-    if(gesture)pendingRemote=snap;else applyRemote(snap);
+    if(gesture||penT)pendingRemote=snap;else applyRemote(snap);
     updateStatus();schedulePush(400);
    },err=>{if(!full&&err&&['invalid-argument','failed-precondition','unimplemented'].includes(err.code)){if(fbUnsub)try{fbUnsub();}catch(e){}fbUnsub=listen(true);return;}clearTimeout(t);online='error';syncErr=(err&&err.code)||'error';updateStatus();
     if(syncErr==='permission-denied')toast(`${u.email||'This account'} isn’t approved for sync yet. Your work is saved on this device.`);});};
@@ -1419,7 +1420,7 @@ async function initSync(){
   const t=setTimeout(()=>{if(online==='connecting'){online='waiting';updateStatus();}},10000);
   coll.onSnapshot(snap=>{
    if(!snap.metadata.fromCache){clearTimeout(t);online='on';}
-   if(gesture)pendingRemote=snap;else applyRemote(snap);
+   if(gesture||penT)pendingRemote=snap;else applyRemote(snap);
    updateStatus();schedulePush(400);
   },err=>{clearTimeout(t);online='error';syncErr=(err&&err.code)||'error';updateStatus();});
  }catch(e){updateStatus();}
@@ -1477,7 +1478,7 @@ function applyRemote(snap){
  if(sel&&sel.id!=='__bg'&&!itemById(sel.id))sel=null;
  saveLocal();render();if(tch)docSync();
 }
-function flushRemote(){if(pendingRemote&&!gesture){const s=pendingRemote;pendingRemote=null;applyRemote(s);}}
+function flushRemote(){if(pendingRemote&&!gesture&&!penT){const s=pendingRemote;pendingRemote=null;applyRemote(s);}}
 function schedulePush(ms){if(!coll)return;clearTimeout(pushT);pushT=setTimeout(push,ms==null?1200:ms);}
 let pushDefer=0;
 async function push(){
@@ -2025,7 +2026,8 @@ function bendHandles(it){
 }
 function uiMarkup(){
  let h='';
- if(gesture&&gesture.type==='pen'&&gesture.pts.length)h+=`<path d="${gesture.snap?'M'+gesture.snap.pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L')+(gesture.snap.closed?'Z':''):'M'+gesture.pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join('L')}" fill="none" stroke="${P.ui.penCol||INK_COLS[0]}" stroke-width="${P.ui.penW||4}" stroke-linecap="round" stroke-linejoin="round" class="deco"/>`;
+ for(const q of penPend)h+=`<path d="${q.d}" fill="none" stroke="${q.c}" stroke-width="${q.w}" stroke-linecap="round" stroke-linejoin="round" class="deco"/>`;
+ if(gesture&&gesture.type==='pen'&&gesture.pts.length)h+=`<path id="penLive" d="${gesture.snap?'M'+gesture.snap.pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L')+(gesture.snap.closed?'Z':''):'M'+gesture.pts.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join('L')}" fill="none" stroke="${P.ui.penCol||INK_COLS[0]}" stroke-width="${P.ui.penW||4}" stroke-linecap="round" stroke-linejoin="round" class="deco"/>`;
  if(gesture&&gesture.type==='lasso'&&gesture.pts.length>1)h+=`<path d="M${gesture.pts.map(p=>p.x+','+p.y).join('L')}Z" fill="#2f6fde" fill-opacity=".07" stroke="#2f6fde" stroke-width="1.5" stroke-dasharray="6 4" vector-effect="non-scaling-stroke" class="deco"/>`;
  if(msel)for(const it of mselItems()){const b=msBox(it);if(b)h+=`<rect class="ring" x="${b.x0}" y="${b.y0}" width="${b.x1-b.x0}" height="${b.y1-b.y0}" rx="6"/>`+(it.locked?lockBadge(b.x1,b.y0):'');}
  if(tool&&tool.t==='wall'&&tool.last){h+=`<circle cx="${tool.last.x}" cy="${tool.last.y}" r="${6/view.k}" fill="#2f6fde"/>`;if(tool.hover)h+=`<line x1="${tool.last.x}" y1="${tool.last.y}" x2="${tool.hover.x}" y2="${tool.hover.y}" stroke="#2f6fde" stroke-width="${WALL_T}" stroke-opacity=".45" stroke-linecap="square"/>`;}
@@ -2284,7 +2286,7 @@ function act(a,b){
 /* ---------- tools: tap-to-place moves, wall drawing ---------- */
 let tool=null;
 const INK_COLS=['#E5484D','#F76B15','#F5C518','#30A46C','#3E63DD','#8E4EC6','#1C1C1E','#FFFFFF'],INK_W=[[2,'Fine'],[4,'Medium'],[8,'Thick']];
-let penSeen=false;
+let penSeen=false,penAt=0,penT=null,penPend=[];
 function penBanner(){const c=P.ui.penCol||INK_COLS[0],w=P.ui.penW||4;$('#bannerTxt').innerHTML=`<span class="pent">Draw</span>${INK_COLS.map(x=>`<button class="penc${x===c?' on':''}" data-pc="${x}" style="--c:${x}" aria-label="Pen color"></button>`).join('')}<span class="pensep"></span>${INK_W.map(([v,l])=>`<button class="penw${v===w?' on':''}" data-pw="${v}" title="${l}"><i style="width:${v+3}px;height:${v+3}px"></i></button>`).join('')}`;}
 $('#banner').addEventListener('click',e=>{const b=e.target.closest('[data-pc],[data-pw]');if(!b||!tool||tool.t!=='pen')return;if(b.dataset.pc)P.ui.penCol=b.dataset.pc;else P.ui.penW=+b.dataset.pw;saveLocal();penBanner();});
 /* finish a stroke: the strokes of one drawing session make one drawing */
@@ -2420,7 +2422,8 @@ function penStroke(pts,opt){opt=opt||{};if(pts.length===1)pts.push({x:pts[0].x+.
  const strokes=all.map(o=>Object.assign({},o,{p:o.p.map(q=>[+(q[0]-cx).toFixed(1),+(q[1]-cy).toFixed(1)])}));
  if(!it){it={id:uid(),type:'ink',x:cx,y:cy,w,h,bw:w,bh:h,rot:0,ar:true,strokes,pgs:curPgs(),locked:false};if(s.scout)it.lk=1;s.items.push(it);if(!opt.own)tool.ink=it.id;}
  else Object.assign(it,{x:cx,y:cy,w,h,bw:w,bh:h,rot:0,strokes});
- commit({insp:false});}
+ penPend.push({d:'M'+st.p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join('L')+(st.cl?'Z':''),c:st.c,w:st.w});clearTimeout(penT);penT=setTimeout(penCommit,650);}
+function penCommit(){if(!penT)return;clearTimeout(penT);if(gesture&&gesture.type==='pen'){penT=setTimeout(penCommit,400);return;}penT=null;penPend=[];commit({insp:false});flushRemote();}
 /* ---------- rotate the floor plan: everything turns around the middle; text stays upright ---------- */
 let rotS=null;
 function rotPt(p,a,cx,cy){const r=rad(a),c=Math.cos(r),sn=Math.sin(r),dx=p.x-cx,dy=p.y-cy;return {x:cx+dx*c-dy*sn,y:cy+dx*sn+dy*c};}
@@ -2470,7 +2473,7 @@ function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
  else if(t.t==='pan')$('#bannerTxt').textContent=t.mode==='change'?'Tap the new direction for this turn.':'Tap the direction the camera pans to.';
  else $('#bannerTxt').textContent='Tap to place wall corners. It finishes by itself when it meets another corner. Or tap Done.';
  $('#bannerDone').textContent=t.t==='wall'?'Done':'Cancel';$('#banner').classList.add('on');renderUI();}
-function endTool(){if(!tool)return;const was=tool;tool=null;$('#banner').classList.remove('on','rotb');if(was.t==='rot'){rotFinish(true);return;}$('#bPen').classList.remove('on');if(was.t==='pen'&&was.ink&&itemById(was.ink)){sel={id:was.ink,mark:null};}renderUI();}
+function endTool(){if(!tool)return;if(tool.t==='pen')penCommit();const was=tool;tool=null;$('#banner').classList.remove('on','rotb');if(was.t==='rot'){rotFinish(true);return;}$('#bPen').classList.remove('on');if(was.t==='pen'&&was.ink&&itemById(was.ink)){sel={id:was.ink,mark:null};}renderUI();}
 $('#bannerDone').onclick=endTool;
 $('#bRot').onclick=()=>{if(tool&&tool.t==='rot'){endTool();return;}if(tool)endTool();rotateStart();};
 $('#banner').addEventListener('click',e=>{if(!tool||tool.t!=='rot')return;const b=e.target.closest('[data-ra],#rotX');if(!b)return;if(b.id==='rotX'){tool=null;$('#banner').classList.remove('on','rotb');rotFinish(false);return;}rotTo((rotS?rotS.a:0)+(+b.dataset.ra));});
@@ -2497,7 +2500,7 @@ function toolTap(w){
  if(tool.t==='axis'){const it=itemById(tool.id);let best=null,bd=40/Math.min(view.k,1);for(const o of pageItems(s))if(o.type==='char'&&o.id!==it.id)o.marks.forEach((m,mi)=>{const d=Math.hypot(m.x-w.x,m.y-w.y);if(d<bd){bd=d;best={o,mi};}});
   if(!best){toast('Tap another character to draw the axis line to.');return;}
   const ax={id:uid(),type:'axis',a:it.id,am:tool.mark,b:best.o.id,bm:best.mi,pgs:curPgs(),locked:false};s.items.push(ax);sel={id:ax.id,mark:null};endTool();commit();return;}
- if(tool.t==='move'&&!itemById(tool.id).marks){const it=itemById(tool.id),ps=positions(it),last=ps[ps.length-1];it.mv=it.mv||[];it.mv.push({x:w.x,y:w.y,rot:last.rot||0});sel={id:it.id,mark:it.mv.length};endTool();commit();return;}
+ if(tool.t==='move'&&!itemById(tool.id).marks){const it=itemById(tool.id),ps=positions(it),last=ps[ps.length-1];it.mv=it.mv||[];it.mv.push({x:w.x,y:w.y,rot:last.rot||0});const rc=rideCarry(s,it,it.mv.length-1);sel={id:it.id,mark:it.mv.length};endTool();commit();if(rc.length)toast(`${rc.join(', ')} ${rc.length>1?'go':'goes'} with the ${propName(it)}. Drag a character out, or delete that position, if they get out first.`);return;}
  if(tool.t==='move'&&tool.tk){const it=itemById(tool.id);if(!it){endTool();return;}
   if(tool.tk==='to'){const b=tool.at,p=it.marks[b],m={x:w.x,y:w.y,rot:p.rot||0,tk:1};it.marks.splice(b+1,0,m);sel={id:it.id,mark:b+1};}
   else{const a=tool.at,old=it.marks[a],m={x:w.x,y:w.y,rot:old.rot||0};for(const k of VFIELDS)if(old[k]!==undefined){m[k]=old[k];delete old[k];}if(old.sp)m.sp=old.sp;if(old.mid){m.mid=old.mid;delete old.mid;}delete old.sp;old.tk=1;it.marks.splice(a,0,m);sel={id:it.id,mark:a};}
@@ -3091,10 +3094,22 @@ const angD=(a,b)=>((b-a)%360+540)%360-180;
 function propPose(it,k){if(k&&it.mv&&it.mv[k-1]){const q=it.mv[k-1];return {x:q.x,y:q.y,r:q.r!=null?q.r:(q.rot!=null?q.rot:(it.rot||0))};}return {x:it.x,y:it.y,r:it.rot||0};}
 function rideWorld(pp,rd){const a=rad(pp.r),c=Math.cos(a),n=Math.sin(a);return {x:pp.x+rd.x*c-rd.y*n,y:pp.y+rd.x*n+rd.y*c,r:pp.r+rd.r};}
 function rideLocal(pp,m){const a=rad(-pp.r),c=Math.cos(a),n=Math.sin(a),dx=m.x-pp.x,dy=m.y-pp.y;return {x:dx*c-dy*n,y:dx*n+dy*c,r:angD(pp.r,m.rot||0)};}
-function rideSync(sc){for(const it of sc.items){if(it.type!=='char')continue;for(const m of it.marks){const rd=m.ride;if(!rd)continue;const pr=sc.items.find(q=>q.id===rd.id);if(!pr||!BOX(pr.type)){delete m.ride;continue;}const pp=propPose(pr,rd.k||0),w=rideWorld(pp,rd);
+function rideSync(sc){for(const it of sc.items){if(it.type!=='char')continue;let gone=0;for(const m of it.marks){const rd=m.ride;if(!rd)continue;const pr=sc.items.find(q=>q.id===rd.id);if(!pr||!BOX(pr.type)){delete m.ride;continue;}
+  if(rd.f){const q=rd.k?(pr.mv||[])[rd.k-1]:null;if(!q){m._gone=1;gone++;continue;}if(q.st!=null){if(m.st!==q.st)m.st=q.st;}else if(m.st!=null)delete m.st;}
+  const pp=propPose(pr,rd.k||0),w=rideWorld(pp,rd);
   if(rd.px!==pp.x||rd.py!==pp.y||rd.pr!==pp.r){m.x=w.x;m.y=w.y;m.rot=Math.round(w.r*10)/10;}
   else if(Math.abs(w.x-m.x)>.01||Math.abs(w.y-m.y)>.01||Math.abs(angD(w.r,m.rot||0))>.05)Object.assign(rd,rideLocal(pp,m));
-  rd.px=pp.x;rd.py=pp.y;rd.pr=pp.r;}}}
+  rd.px=pp.x;rd.py=pp.y;rd.pr=pp.r;}
+  if(gone){const keep=it.marks.filter(m=>!m._gone);if(keep.length)it.marks=keep;else for(const m of it.marks){delete m._gone;delete m.ride;}}}}
+/* A character whose last position is in (or on) a prop goes with it when the prop moves on: one new position for the character
+   at each later position of the prop, in the same seat. fromK: only riders at that position of the prop; only: just this character. */
+function rideCarry(sc,pr,fromK,only){const out=[];if(!pr||!pr.mv||!pr.mv.length)return out;
+ for(const it of sc.items){if(it.type!=='char'||!it.marks||!it.marks.length||(only&&it!==only))continue;const st=posStarts(it),a=st[st.length-1],m=it.marks[a],rd=m&&m.ride;if(!rd||rd.id!==pr.id)continue;
+  const k0=rd.k||0;if((fromK!=null&&k0!==fromK)||k0>=pr.mv.length)continue;
+  const face=it.marks[it.marks.length-1],loc=rideLocal(propPose(pr,k0),{x:m.x,y:m.y,rot:face.rot||0});
+  for(let k=k0+1;k<=pr.mv.length;k++){const pp=propPose(pr,k),w=rideWorld(pp,loc),nm={x:w.x,y:w.y,rot:Math.round(w.r*10)/10,ride:{x:loc.x,y:loc.y,r:loc.r,id:pr.id,k,px:pp.x,py:pp.y,pr:pp.r,f:1}};if(pr.mv[k-1].st!=null)nm.st=pr.mv[k-1].st;it.marks.push(nm);}
+  out.push(String((charById(it.charId)||{}).name||'').toUpperCase()+' (now position '+posStarts(it).length+')');}
+ return out;}
 /* the prop (and which of its positions) a point sits inside, smallest first */
 function propUnder(sc,x,y,any){const hits=[];for(const pr of pageItems(sc)){if(!(pr.type==='prop'||pr.type==='set')||pr.kind==='mask'||pr.kind==='photopin')continue;if(!any&&!(VEH.has(pr.kind)||SEATS.has(pr.kind)))continue;
   const n=1+((pr.mv||[]).length);for(let k=0;k<n;k++){const pp=propPose(pr,k),l=rideLocal(pp,{x,y,rot:0});if(Math.abs(l.x)<=pr.w/2+2&&Math.abs(l.y)<=pr.h/2+2)hits.push({pr,k,a:pr.w*pr.h});}}
@@ -3107,6 +3122,7 @@ function rideAt(it,mk){const m=it.marks[runOf(it,mk)[0]];return m&&m.ride||null;
 function rideDrop(sc,it,mk){if(!it||it.type!=='char'||mk==null)return;const [a]=runOf(it,mk),m=it.marks[a],rd=m.ride,nm=String((charById(it.charId)||{}).name||'').toUpperCase();
  if(rd){const pr=sc.items.find(q=>q.id===rd.id);const l=pr&&rideLocal(propPose(pr,rd.k||0),m);if(pr&&Math.abs(l.x)<=pr.w/2+6&&Math.abs(l.y)<=pr.h/2+6)return;rideOff(it,mk);toast(`${nm} is off the ${pr?propName(pr):'prop'}.`);return;}
  const h=propUnder(sc,m.x,m.y,false);if(!h)return;rideOn(sc,it,mk,h.pr,h.k);
+ {const st=posStarts(it);if(st[st.length-1]===a){const rc=rideCarry(sc,h.pr,h.k,it);if(rc.length){toast(`${nm} is ${VEH.has(h.pr.kind)?'in':'on'} the ${propName(h.pr)} and goes with it: ${rc[0].replace(/^.*\(now /,'').replace(')','')}. Delete that position if ${nm} gets out first.`);return;}}}
  toast(`${nm} is ${VEH.has(h.pr.kind)?'in':'on'} the ${propName(h.pr)}. Moving or turning it carries ${nm}. Drag ${nm} out, or use the menu, to detach.`);}
 /* ---------- cameras that stay aimed at a character or a spot ---------- */
 function aimTarget(sc,a){if(a.id){const o=sc.items.find(q=>q.id===a.id);if(!o||!o.marks||!o.marks.length)return null;const m=o.marks[Math.min(a.mk||0,o.marks.length-1)];return {x:m.x,y:m.y};}return a.x!=null?{x:a.x,y:a.y}:null;}
@@ -4242,7 +4258,7 @@ function vvMax(A,B){const o=Object.assign({},A.vv||{}),b=B.vv||{};for(const d in
 let txTimer=null;
 function txFlush(){clearTimeout(txTimer);txTimer=null;detectChanges();saveLocal();schedulePush();updateStatus();}
 function txSaved(now){if(now){txFlush();return;}if(!txTimer){txTimer=setTimeout(txFlush,700);updateStatus();}}
-function flushNotes(){let f=false;try{if(scNoteT){clearTimeout(scNoteT);scNoteT=null;f=true;}}catch(e){}try{if(setNoteT){clearTimeout(setNoteT);setNoteT=null;f=true;}}catch(e){}if(f)commit({insp:false});}
+function flushNotes(){try{penCommit();}catch(e){}let f=false;try{if(scNoteT){clearTimeout(scNoteT);scNoteT=null;f=true;}}catch(e){}try{if(setNoteT){clearTimeout(setNoteT);setNoteT=null;f=true;}}catch(e){}if(f)commit({insp:false});}
 const notePend=()=>{try{return !!(txTimer||scNoteT||setNoteT);}catch(e){return false;}};
 function txEdit(sid,key,fn){const c=txGet(sid,key,true);fn(c);txBump(sid,key,c);txSaved();return c;}
 addEventListener('pagehide',()=>{flushNotes();if(txTimer)txFlush();});
@@ -5063,7 +5079,7 @@ function stepDur(sc,N){let d=.4;for(const it of animActors(sc)){const tl=timelin
 function animLayer(sc,N,frac){
  const T=frac*stepDur(sc,N);let paths='',bodies='',cams='';
  const ACT=animActors(sc),PO=new Map();for(const it of ACT){const tl=timeline(it,N);if(!tl||tl.idle)continue;PO.set(it.isProp?it.orig.id:it.id,{tl,p:poseAt(it,tl,T)});}
- for(const it of ACT){if(it.type!=='char')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.ride||Math.hypot(e.p.x-m.x,e.p.y-m.y)>.5)continue;const pr=sc.items.find(q=>q.id===m.ride.id);if(!pr)continue;const pe=PO.get(pr.id),pp=pe?pe.p:propPose(pr,m.ride.k||0),w=rideWorld({x:pp.x,y:pp.y,r:pp.r},m.ride);e.p=Object.assign({},e.p,{x:w.x,y:w.y,r:w.r});}
+ for(const it of ACT){if(it.type!=='char')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[e.tl.cur];if(!m||!m.ride||(!(m.ride.f&&PO.has(m.ride.id))&&Math.hypot(e.p.x-m.x,e.p.y-m.y)>.5))continue;const pr=sc.items.find(q=>q.id===m.ride.id);if(!pr)continue;const pe=PO.get(pr.id),pp=pe?pe.p:propPose(pr,m.ride.k||0),w=rideWorld({x:pp.x,y:pp.y,r:pp.r},m.ride);e.p=Object.assign({},e.p,{x:w.x,y:w.y,r:w.r});}
  for(const it of ACT){if(it.type!=='cam'||PO.has(it.id))continue;const cur=lastIdx(effSteps(it),N);if(cur<0)continue;const b=it.marks[verStart(it,cur)];if(!b.aim||!b.aim.id)continue;const te=PO.get(b.aim.id);if(!te||!te.tl.legs||!te.tl.legs.length)continue;const m=it.marks[cur];PO.set(it.id,{tl:{cur,legs:[],segs:[]},p:{x:m.x,y:m.y,r:m.rot||0,op:1}});}
  for(const it of ACT){if(it.type!=='cam')continue;const e=PO.get(it.id);if(!e)continue;const m=it.marks[verStart(it,e.tl.cur)];if(!m||!m.aim)continue;const te=m.aim.id&&PO.get(m.aim.id),tg=te?te.p:aimTarget(sc,m.aim);if(tg)e.p=Object.assign({},e.p,{r:Math.atan2(tg.y-e.p.y,tg.x-e.p.x)*180/Math.PI});}
  let props='';for(const it of ACT){const e=PO.get(it.isProp?it.orig.id:it.id);if(!e)continue;const tl=e.tl,p=e.p;
@@ -5086,7 +5102,8 @@ function assignLayer(sc,N){let h='';const k=view.k||1;
  for(const it of pageItems(sc))if(movesProp(it)){const R=Math.max(24,Math.min(it.w||40,it.h||40)/2+6);positions(it).forEach((q,i)=>{if(!posOn(it,i,sc.pageId))return;const st=posAt(it,i).st,on=st!=null&&+st===N;
    h+=`<g class="aspot${on?' on':''}" data-astep="1" data-id="${it.id}" data-mark="${i}" transform="translate(${q.x},${q.y})"><circle r="${R+3}" fill="transparent"/><circle class="ar" r="${R}" fill="none"/>${on?`<g transform="translate(${R*.72},${-R*.72}) scale(${Math.max(.8,1/k)})"><circle r="9" fill="#f5a623"/><text y="3.6" text-anchor="middle" style="font-size:11px;font-weight:800;fill:#1d1d1f">${N}</text></g>`:''}</g>`;});}
  return `<g class="assignL">${h}</g>`;}
-function assignTap(id,mk){const it=itemById(id),m=it&&(it.marks?it.marks[mk]:posAt(it,mk));if(!m)return;const N=anim.step;
+function assignTap(id,mk){const it=itemById(id),m0=it&&(it.marks?it.marks[mk]:posAt(it,mk));if(!m0)return;const N=anim.step;let m=m0;
+ if(it.marks&&m0.ride&&m0.ride.f){const pr=itemById(m0.ride.id);if(pr&&pr.mv&&pr.mv[m0.ride.k-1])m=pr.mv[m0.ride.k-1];}
  if(m.st!=null&&+m.st===N){delete m.st;toast(`Taken out of time ${N}.`);}else{m.st=N;toast(`In time ${N}.`);}
  anim.base=null;commit();renderAnimBar();}
 function drawAnim(){const s=scene();if(!anim.base)anim.base=animBase(s);$('#items').innerHTML=anim.base+animLayer(s,anim.step,anim.frac)+(anim.playing?'':assignLayer(s,anim.step));}
@@ -5368,14 +5385,21 @@ $('#bLasso').onclick=()=>{setLasso(!lassoArmed);if(lassoArmed){endTool();closePo
 /* ---------- pointer input (mouse, Pencil, fingers) ---------- */
 const pointers=new Map();let gesture=null,lastTap={id:null,t:0};
 svg.addEventListener('pointerdown',e=>{
- if(e.button>0)return;if(!pointers.size)downAgain=null;if(!pointers.size)firstDown={el:e.target.closest&&e.target.closest('[data-id]'),x:e.clientX,y:e.clientY,t:Date.now()};closePop();svg.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(e.button>0)return;
+ if(tool&&tool.t==='pen'){const now=Date.now(),g0=gesture;
+  if(e.pointerType==='pen'){penSeen=true;penAt=now;
+   if(pointers.size){if(g0&&g0.type==='pan'&&g0.moved){view.x=g0.vx;view.y=g0.vy;applyView();}else if(g0&&g0.type==='pinch'){view=Object.assign({},g0.v0);applyView();}
+    for(const id of pointers.keys())try{svg.releasePointerCapture(id);}catch(_){}pointers.clear();gesture=null;}}
+  else if(g0&&g0.type==='pen'&&(g0.byPen||g0.pts.length>3||now-g0.t0>140))return;   /* another touch while a stroke is under way */
+  else if(e.pointerType==='touch'&&penSeen&&now-penAt<900)return;}                 /* the hand settling between strokes */
+ if(!pointers.size)downAgain=null;if(!pointers.size)firstDown={el:e.target.closest&&e.target.closest('[data-id]'),x:e.clientX,y:e.clientY,t:Date.now()};closePop();svg.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(pointers.size===2){if(gesture&&gesture.moved&&gesture.type!=='pan'&&gesture.type!=='pinch')commit({insp:false});dragging=false;const [a,b]=[...pointers.values()];gesture={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},v0:Object.assign({},view),start:[a,b].map(p=>({x:p.x,y:p.y})),t0:firstDown?firstDown.t:Date.now(),far:0,tapEl:firstDown?firstDown.el:null};return;}
  if(pointers.size>2)return;
  if(setOn){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:true,setTap:(e.target.closest&&e.target.closest('[data-id]'))||null};return;}
  const w=toWorld(e.clientX,e.clientY);
  if(anim.step&&!anim.playing&&!tool){const t=e.target.closest('[data-astep]');if(t){pointers.delete(e.pointerId);gesture=null;assignTap(t.dataset.id,+t.dataset.mark);return;}gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,empty:true};return;}
  const hEl=e.target.closest('[data-handle]');
- if(tool&&tool.t==='pen'){if(e.pointerType==='pen')penSeen=true;if(!(e.pointerType==='touch'&&penSeen)){gesture={type:'pen',pts:[w],hx:e.clientX,hy:e.clientY};penArm(gesture);return;}}
+ if(tool&&tool.t==='pen'){if(e.pointerType==='pen')penSeen=true;if(!(e.pointerType==='touch'&&penSeen)){gesture={type:'pen',pts:[w],hx:e.clientX,hy:e.clientY,t0:Date.now(),byPen:e.pointerType==='pen',d:'M'+w.x.toFixed(1)+','+w.y.toFixed(1)};penArm(gesture);return;}}
  if(tool&&!(hEl&&hEl.dataset.handle.startsWith('cp:'))){gesture={type:'pan',sx:e.clientX,sy:e.clientY,vx:view.x,vy:view.y,moved:false,tool:true,w};return;}
  if(hEl){const hn=hEl.dataset.handle,now=Date.now();if(hn.startsWith('cp:')&&lastTap.id===hn&&now-lastTap.t<380){const [,i,j]=hn.split(':').map(Number),it=itemById(sel.id),b=it&&posAt(it,i);if(b&&b.cp){b.cp.splice(j,1);commit({insp:false});}lastTap={id:null,t:0};return;}lastTap={id:hn,t:now};gesture={type:'handle',h:hn,sx:e.clientX,sy:e.clientY,moved:false};if(hn==='p1'||hn==='p2'){const hw=sel&&itemById(sel.id);if(hw&&hw.type==='wall'&&unhook===hw.id)gesture.detach=true;else if(hw&&hw.type==='wall'&&wallJoint(scene(),hw,hn==='p1'?1:2).length)armHold(gesture);}return;}
  let el=e.target.closest('[data-id]');{const al=!tool&&!lassoArmed&&!(el&&el.dataset.lab)?attachedLabelAt(e.clientX,e.clientY):null;if(al&&(!msel||!e.shiftKey))el=al;}
@@ -5460,9 +5484,9 @@ svg.addEventListener('pointermove',e=>{
  if(!pointers.has(e.pointerId)||!gesture)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const g=gesture;
  if(g.type==='pen'){const off=Math.hypot(e.clientX-g.hx,e.clientY-g.hy);
   if(g.snap){if(off<26)return;g.snap=null;} /* keep drawing after a snap and it goes back to your own line */
-  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];for(const q of (evs.length?evs:[e])){const w=toWorld(q.clientX,q.clientY),l=g.pts[g.pts.length-1];if(!l||Math.hypot((w.x-l.x)*view.k,(w.y-l.y)*view.k)>=1.5)g.pts.push(w);}
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];if(g.byPen)penAt=Date.now();for(const q of (evs.length?evs:[e])){const w=toWorld(q.clientX,q.clientY),l=g.pts[g.pts.length-1];if(!l||Math.hypot((w.x-l.x)*view.k,(w.y-l.y)*view.k)>=1.5){g.pts.push(w);g.d+='L'+w.x.toFixed(1)+','+w.y.toFixed(1);}}
   if(off>7){g.hx=e.clientX;g.hy=e.clientY;penArm(g);}
-  $('#ui').innerHTML=uiMarkup();return;}
+  {const el=document.getElementById('penLive');if(el&&!g.snap)el.setAttribute('d',g.d);else $('#ui').innerHTML=uiMarkup();}return;}
  if(g.type==='pinch'){if(pointers.size<2)return;{const pts=[...pointers.values()];g.far=Math.max(g.far,...pts.map((q,i)=>g.start[i]?Math.hypot(q.x-g.start[i].x,q.y-g.start[i].y):0));}const [a,b]=[...pointers.values()],d=Math.hypot(a.x-b.x,a.y-b.y),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2},r=svg.getBoundingClientRect(),k=clamp(g.v0.k*d/g.d0,.04,8),wx=(g.m0.x-r.left-g.v0.x)/g.v0.k,wy=(g.m0.y-r.top-g.v0.y)/g.v0.k;view={k,x:m.x-r.left-wx*k,y:m.y-r.top-wy*k};applyView();$('#ui').innerHTML=uiMarkup();return;}
  if(g.type==='pan'){const dx=e.clientX-g.sx,dy=e.clientY-g.sy;if(!g.moved&&Math.hypot(dx,dy)<6)return;if(!g.moved&&g.labHint&&!labHinted){labHinted=true;toast(g.touch?'To move a label, press and hold it, then drag.':'To move a label, hold Shift and drag it.');}g.moved=true;view.x=g.vx+dx;view.y=g.vy+dy;applyView();return;}
  const w=toWorld(e.clientX,e.clientY);
@@ -5483,7 +5507,7 @@ function endPointer0(e){
  if(g.type==='pinch'){if(!pointers.size){gesture=null;if(g.far<14&&Date.now()-g.t0<450){view=Object.assign({},g.v0);applyView();menuFor(g.tapEl,g.m0.x,g.m0.y);}flushRemote();}return;}
  if(pointers.size)return;gesture=null;const wasDrag=dragging;dragging=false;
  if(g.setTap!==undefined){if(!g.moved)setTapPick(g.setTap);return;}
- if(g.type==='pen'){clearTimeout(g.tm);if(tool&&tool.t==='pen'){if(g.snap)penStroke(g.snap.pts.map(q=>({x:q[0],y:q[1]})),{own:true,closed:g.snap.closed});else penStroke(g.pts);}renderUI();return;}
+ if(g.type==='pen'){clearTimeout(g.tm);if(g.byPen)penAt=Date.now();if(tool&&tool.t==='pen'){if(g.snap)penStroke(g.snap.pts.map(q=>({x:q[0],y:q[1]})),{own:true,closed:g.snap.closed});else penStroke(g.pts);}renderUI();return;}
  if(g.type==='lasso'){if(g.pts.length>2)finishLasso(g.pts,e.clientX,e.clientY);else{setLasso(lassoArmed);renderUI();}flushRemote();return;}
  if(g.type==='mdrag'){if(g.moved)commit({insp:false});else multiPop(e.clientX,e.clientY);renderUI();flushRemote();return;}
  if(g.tool&&!g.moved&&tool){toolTap(g.w);flushRemote();return;}
