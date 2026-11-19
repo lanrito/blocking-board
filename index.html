@@ -333,6 +333,15 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
  #side{display:flex!important;position:fixed;right:0;top:50px;bottom:0;width:min(300px,88vw);transform:translateX(105%);transition:transform .2s;z-index:30;box-shadow:-10px 0 30px rgba(0,0,0,.18)}
  #app.side-open #side{transform:none}
 }
+/* the two toolbars measure themselves (fitBars) and step down: nothing overlaps, the least useful text goes first */
+#top>.brand,#top>.seg,#top>#status{flex:none}#sceneBtn{flex:0 1 auto;min-width:min(150px,22vw)}
+#top.t1 .brand{font-size:0;gap:0;padding:0}
+#top.t2 .seg button{padding:0 8px;font-size:13.5px}#top.t2 #sceneBtnT small{display:none}
+#top.t3 #status:not(.warn):not(.bad){font-size:0;gap:0}
+#bar>button,#bar>.sep,#bar>#pq{flex:none}#animBar{flex:0 1 auto;min-width:min(200px,40vw)}
+#bar.c1 .lbt:not(#pgLbl){display:none}#bar.c1 #pgLbl{max-width:150px;overflow:hidden;text-overflow:ellipsis}
+#bar.c2 .lbt{display:none}
+#bar.c3>button{padding:0 5px;min-width:38px}#bar.c3 .sep{margin:0 2px}#bar.c3 #animBar>button{min-width:36px}#bar.c3 #animBar{min-width:min(150px,36vw)}
 @media (prefers-reduced-motion:reduce){#side,#toast{transition:none}}
 </style>
 </head>
@@ -403,7 +412,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119004905';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119022316';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -694,7 +703,7 @@ function iconSVG(k){
 }
 
 /* ---------- model ---------- */
-function blankScene(num){const pg={id:uid(),name:'Page 1'};return {id:uid(),number:String(num),title:'',heading:'',synopsis:'',code:'',day:'',setups:[],items:[],pages:[pg],bgId:null,bg:null,pageId:pg.id};}
+function blankScene(num){const pg={id:uid(),name:'Page 1'};return {id:uid(),number:String(num),title:'',heading:'',synopsis:'',code:'',day:'',setups:[],items:[],pages:[pg],bgId:null,bg:null,pageId:pg.id,wv:1};}
 let P=null,images={},sel=null;
 const scene=()=>P.scenes.find(s=>s.id===P.sceneId)||P.scenes[0];
 function posStarts(it){if(it.type==='char')return it.marks.map((m,i)=>m.t?-1:i).filter(i=>i>=0);if(it.type==='cam')return it.marks.map((m,i)=>i);if(it.type==='prop'||it.type==='light')return [0,...(it.mv||[]).map((_,i)=>i+1)];return [0];}
@@ -775,8 +784,11 @@ function sceneFp(sc){const o=Object.assign({},sc);delete o.pageId;delete o.confl
 function ancOf(k){sync.anc=sync.anc||{};return sync.anc[k]||(sync.anc[k]=[]);}
 function ancAdd(k,list){const a=ancOf(k);for(const h of list)if(h&&a[a.length-1]!==h){const i=a.indexOf(h);if(i>=0)a.splice(i,1);a.push(h);}if(a.length>80)a.splice(0,a.length-80);}
 /* what to do with a version of a scene that arrives from another device */
+function pinSet(k,b){if(!b||!b.dev||b.dev===DEVICE)return;const p=sync.pin=sync.pin||{};(p[k]=p[k]||{})[b.dev]={f:sceneFp(b.scene),t:b.updatedAt||0};}
 function sceneDecide(k,b,local){if(!local)return 'take';const L=sceneFp(local),R=sceneFp(b.scene),known=ancOf(k);
  if(R===L)return 'same';
+ /* the very document already taken from that device, or an older save of this device's own (the cloud showing it again after refusing a newer one): not news */
+ {const p=sync.pin&&sync.pin[k]&&sync.pin[k][b.dev];if(p&&p.f===R&&p.t===(b.updatedAt||0))return 'old';if(b.dev===DEVICE&&(b.updatedAt||0)<(sync.stamps[k]||0))return 'old';}
  {const cf=sync.cf&&sync.cf[k];if(b.cf&&cf&&cf.key===b.cf&&cf.fp===L)return R<L?'take':'old';}
  /* a version this device has seen before: an old echo, unless the other device had moved past it and went back (undo, restore) */
  if(known.includes(R)){if(b.dev===DEVICE||!Array.isArray(b.anc))return 'old';const ri=known.indexOf(R);if(!b.anc.some(h=>h!==R&&known.indexOf(h)>ri)){if(b.dev&&!sync.dirty.includes(k)){markDirty(k);setTimeout(()=>schedulePush(600),0);}return 'old';}return b.anc.includes(L)?'take':'conflict';}
@@ -805,8 +817,9 @@ function sceneConflict(k,b,local){const other=clone(b.scene);delete other.confli
  for(const c of local.conflicts||[]){const id='cfo'+(c.at||0);if(!win.plans.some(p=>p.id===id))win.plans.push({id,name:'Older version · '+cfWhen(c.at),d:cfPlan(c.scene)});}
  for(const p of lose.plans||[])if(p&&p.id){const q=win.plans.find(z=>z.id===p.id);if(!q)win.plans.push(clone(p));else if(canonJ(q.d)!==canonJ(p.d)){const id=p.id+'~'+fpStr(canonJ(p.d));if(!win.plans.some(z=>z.id===id))win.plans.push(Object.assign(clone(p),{id,name:(p.name||'Plan')+' (older)'}));}}
  {const wb=win.beats||[];for(const x of lose.beats||[])if(x&&x.id&&!wb.some(y=>y.id===x.id)){const c=clone(x);if(c.n!=null&&wb.some(y=>y.n!=null&&+y.n===+c.n&&(y.pg||'p')===(c.pg||'p'))){delete c.n;delete c.pg;}wb.push(c);}if(wb.length)win.beats=wb;}
+ if(!!local.trashed!==!!other.trashed)delete win.trashed;
  for(const f of ['synopsis','snote']){if(!both.has(f))continue;const a=String(win[f]||'').trim(),c=String(lose[f]||'').trim();if(!c||a===c||a.includes(c))continue;win[f]=a?win[f]+'\n\n(Older version) '+lose[f]:lose[f];}
- ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);sync.stamps[k]=Math.max(Date.now(),lt+1,rt+1);markDirty(k);
+ ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);pinSet(k,b);sync.stamps[k]=Math.max(Date.now(),lt+1,rt+1);markDirty(k);
  const wf=sceneFp(stripScene(win));sync.cf=sync.cf||{};sync.cf[k]={key:[Lf,Rf].sort().join('|'),fp:wf};(sync.mine=sync.mine||{})[k]=wf;return win;}
 /* Scenes and text are saved in the small store while they fit, and in the large one (the same kind that holds images)
    once they outgrow it. Exactly one of the two holds them; 'blk.big' says the large store is the one to read. */
@@ -1043,14 +1056,14 @@ function redo(){if(!redoS.length)return;const e=redoS[redoS.length-1],tx=undoTx(
 
 /* ---------- sync (private to the signed-in person, through their Claude account) ---------- */
 let coll=null,online='off',pushT=null,pushing=false,syncErr='',pendingRemote=null,dlNS=null,warnedBig=false;
-let fbAuth=null,fbUser=null,fbPersist=false,fbUnsub=null,acct=null;
+let fbAuth=null,fbUser=null,fbPersist=false,fbUnsub=null,fbUnsubM=null,acct=null;
 function initFirebase(){
  if(!window.BB_FIREBASE||!window.firebase)return false;
  try{
   firebase.initializeApp(window.BB_FIREBASE);fbAuth=firebase.auth();const db=firebase.firestore();fbDb=db;
   db.enablePersistence({synchronizeTabs:true}).then(()=>{fbPersist=true;}).catch(()=>{});
   fbAuth.onAuthStateChanged(u=>{
-   fbUser=u;acct=u?u.uid:null;if(fbUnsub){fbUnsub();fbUnsub=null;}
+   fbUser=u;acct=u?u.uid:null;if(fbUnsub){fbUnsub();fbUnsub=null;}if(fbUnsubM){try{fbUnsubM();}catch(e){}fbUnsubM=null;}
    if(!u){coll=null;online='off';updateStatus();return;}
    coll=db.collection('users').doc(u.uid).collection('docs');if(fbDb&&fbDb.waitForPendingWrites){bootPend=true;fbDb.waitForPendingWrites().then(()=>{bootPend=false;updateStatus();},()=>{bootPend=false;updateStatus();});}online='connecting';syncErr='';updateStatus();
    const t=setTimeout(()=>{if(online==='connecting'){online='waiting';updateStatus();syncProbe();}},10000);
@@ -1064,6 +1077,9 @@ function initFirebase(){
    },err=>{if(!full&&err&&['invalid-argument','failed-precondition','unimplemented'].includes(err.code)){if(fbUnsub)try{fbUnsub();}catch(e){}fbUnsub=listen(true);return;}clearTimeout(t);online='error';syncErr=(err&&err.code)||'error';updateStatus();
     if(syncErr==='permission-denied')toast(`${u.email||'This account'} isn’t approved for sync yet. Your work is saved on this device.`);});};
    try{fbUnsub=listen(false);}catch(e){fbUnsub=listen(true);}
+   try{fbUnsubM=coll.doc('meta').onSnapshot({includeMetadataChanges:true},m=>{if(m.metadata.fromCache||online==='on'||online==='error')return;
+     clearTimeout(t);clearTimeout(probeT);online='on';if(['resource-exhausted','unavailable','deadline-exceeded'].includes(syncErr))syncErr='';
+     if(!m.metadata.hasPendingWrites&&!sync.dirty.length&&!unacked&&!bootPend)markSynced();updateStatus();schedulePush(400);},()=>{});}catch(e){}
   });
   return true;
  }catch(e){return false;}
@@ -1215,8 +1231,8 @@ function applyRemote(snap){
  if(join&&!snap.docs.length){const now=Date.now(),d=docs();for(const k in d){if(!sync.stamps[k])sync.stamps[k]=now;markDirty(k);}for(const k in images){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=now;markDirty('img-'+k);}sync.uid=acct;saveLocal();return;}
  const newer=(k,b)=>(b.updatedAt||0)>(sync.stamps[k]||0);
  const pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
- let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);if(sync.big)delete sync.big[k];ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);if(sync.mine)delete sync.mine[k];if(sync.cf)delete sync.cf[k];return sc;};
- const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);if(b.dev!==DEVICE){if(sync.mine)delete sync.mine[k];}const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
+ let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);if(sync.big)delete sync.big[k];ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);pinSet(k,b);if(sync.mine)delete sync.mine[k];if(sync.cf)delete sync.cf[k];return sc;};
+ const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);if(b.dev!==DEVICE){pinSet(k,b);if(sync.mine)delete sync.mine[k];}const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
  let metaBack=false;if(meta){const was=canonJ([P.characters,P.folders,P.productions,P.labels]);try{metaBack=metaMerge(meta);const lw=canonJ(P.locations||[]);P.locations=locMerge(P.locations,meta.locations);if(canonJ(P.locations)!==canonJ(meta.locations||[]))metaBack=true;if(canonJ(P.locations)!==lw)changed=true;}catch(e){console.error(e);}if(canonJ([P.characters,P.folders,P.productions,P.labels])!==was)changed=true;}
  if(meta&&(join||newer('meta',meta))){
   const order=meta.sceneOrder||[],byId={},next=[],placed=new Set(),TS=(P.tomb&&P.tomb.s)||{},RS=(meta.tomb&&meta.tomb.s)||{};for(const s of P.scenes)byId[s.id]=s;
@@ -1272,7 +1288,7 @@ async function push(){
   try{
    const ref=coll.doc(k),d=docs();let sent=null;
    if(k.startsWith('img-')){const iid=k.slice(4);if(images[iid])await writeDoc(ref,{data:images[iid],updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE},k);else if(!imgReady){again=true;continue;}} /* its bytes are still loading from this device's store: it stays in line */
-   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=ancOf(k).slice(-80);extra.fp=sceneFp(d[k].scene);extra.devName=DEVNAME;const cf=sync.cf&&sync.cf[k];if(cf&&cf.fp===extra.fp)extra.cf=cf.key;}await writeDoc(ref,fsBody(Object.assign(JSON.parse(sent),extra)),k);if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
+   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=[...new Set([...Object.values((sync.pin||{})[k]||{}).map(p=>p.f),...ancOf(k).slice(-80)])];extra.fp=sceneFp(d[k].scene);extra.devName=DEVNAME;const cf=sync.cf&&sync.cf[k];if(cf&&cf.fp===extra.fp)extra.cf=cf.key;}await writeDoc(ref,fsBody(Object.assign(JSON.parse(sent),extra)),k);if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
    else{const sid=k.startsWith('scene-')?k.slice(6):k.startsWith('txt-')?k.slice(4):null,TS=(P.tomb&&P.tomb.s)||{};
     if(!sid||TS[sid])await writeDoc(ref,null,k);}
    if(wfail.has(k)){retry=true;continue;} /* refused at once: it stays in line */
@@ -5227,7 +5243,7 @@ svg.addEventListener('pointermove',e=>{
  if(!pointers.has(e.pointerId)||!gesture)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const g=gesture;
  if(g.type==='pen'){const off=Math.hypot(e.clientX-g.hx,e.clientY-g.hy);
   if(g.snap){if(off<26)return;g.snap=null;} /* keep drawing after a snap and it goes back to your own line */
-  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];for(const q of (evs.length?evs:[e]))g.pts.push(toWorld(q.clientX,q.clientY));
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[];for(const q of (evs.length?evs:[e])){const w=toWorld(q.clientX,q.clientY),l=g.pts[g.pts.length-1];if(!l||Math.hypot((w.x-l.x)*view.k,(w.y-l.y)*view.k)>=1.5)g.pts.push(w);}
   if(off>7){g.hx=e.clientX;g.hy=e.clientY;penArm(g);}
   $('#ui').innerHTML=uiMarkup();return;}
  if(g.type==='pinch'){if(pointers.size<2)return;{const pts=[...pointers.values()];g.far=Math.max(g.far,...pts.map((q,i)=>g.start[i]?Math.hypot(q.x-g.start[i].x,q.y-g.start[i].y):0));}const [a,b]=[...pointers.values()],d=Math.hypot(a.x-b.x,a.y-b.y),m={x:(a.x+b.x)/2,y:(a.y+b.y)/2},r=svg.getBoundingClientRect(),k=clamp(g.v0.k*d/g.d0,.04,8),wx=(g.m0.x-r.left-g.v0.x)/g.v0.k,wy=(g.m0.y-r.top-g.v0.y)/g.v0.k;view={k,x:m.x-r.left-wx*k,y:m.y-r.top-wy*k};applyView();$('#ui').innerHTML=uiMarkup();return;}
@@ -5346,6 +5362,20 @@ function boot(){const small=lsGet(LS.p),big=!!lsGet(BIG);
   if(v){if(f)f.remove();start(v,sj||undefined);return;}
   if(small||!big){if(f)f.remove();start();return;}
   bootFail();}).catch(()=>{if(started)return;clearTimeout(t);if(small){start();return;}bootFail();});}
+/* ---------- toolbars that fit ---------- */
+let fitQ=0;
+function fitBars(){fitQ=0;const T=$('#top'),B=$('#bar'),A=$('#animBar');
+ if(T&&T.clientWidth){T.classList.remove('t1','t2','t3');const sb=$('#sceneBtn'),st=$('#sceneBtnT');
+  const over=()=>T.scrollWidth>T.clientWidth+1,cut=min=>{if(!sb||!st||st.scrollWidth<=st.clientWidth+1)return false;const w=sb.getBoundingClientRect().width;sb.style.flex='none';const nat=sb.getBoundingClientRect().width;sb.style.flex='';return w<Math.min(nat,min)-1;};
+  if(over()||cut(300)){T.classList.add('t1');if(over()||cut(330)){T.classList.add('t2');if(over())T.classList.add('t3');}}}
+ if(B&&B.clientWidth){B.classList.remove('c1','c2','c3');
+  const over=()=>B.scrollWidth>B.clientWidth+1||(A&&A.scrollWidth>A.clientWidth+1);
+  if(over()){B.classList.add('c1');if(over()){B.classList.add('c2');if(over())B.classList.add('c3');}}}}
+const fitSoon=()=>{if(!fitQ)fitQ=requestAnimationFrame(fitBars);};
+try{const ro=new ResizeObserver(fitSoon);ro.observe($('#top'));ro.observe($('#bar'));
+ const mo=new MutationObserver(fitSoon);mo.observe($('#top'),{childList:true,characterData:true,subtree:true});mo.observe($('#bar'),{childList:true,characterData:true,subtree:true});
+ new MutationObserver(fitSoon).observe($('#app'),{attributes:true,attributeFilter:['class']});
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitSoon);}catch(e){}
 /*boot*/boot();
 })();
 </script>
