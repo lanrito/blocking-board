@@ -433,6 +433,32 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 .nbL .nbLr input{width:18px;height:18px}
 .nbL .nbLa{display:flex;gap:8px;margin-top:8px}
 .nbL .nbLa input{flex:1;min-width:0;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:14px}
+
+/* dropdowns on the pages: the same card as the floor plan's menus */
+#drop{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.20),0 3px 10px rgba(0,0,0,.08);padding-bottom:5px}
+#drop h4{text-align:left;padding:12px 16px 10px;font-size:15px;border-bottom:1px solid var(--line);margin-bottom:4px}
+#drop button{min-height:44px;width:calc(100% - 12px);margin:0 6px;padding:0 10px;border:0;border-radius:9px;color:var(--ink);font-size:15.5px}
+#drop button:hover{background:var(--chip)}
+#drop .pkh{padding:10px 16px 3px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut)}
+#drop button.pk .pkt{flex:1;min-width:0}
+#drop button.pk small{color:var(--mut);font-size:12.5px;font-weight:600;margin-left:4px}
+#drop .rad{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #b6b5b0;box-sizing:border-box}
+#drop .rad.on{border:6px solid var(--accent)}
+#drop .chk{flex:none;margin-left:auto;width:22px;height:22px;border-radius:6px;border:2px solid #b6b5b0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;box-sizing:border-box}
+#drop .chk.on{background:var(--accent);border-color:var(--accent)}
+#drop .pkx{flex:none;font-style:normal;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:18px;line-height:1}
+#drop .pkx:hover{background:var(--line);color:var(--ink)}
+.pickdrop .pka{border-top:1px solid var(--line);margin-top:4px}
+.pickdrop .pka input{border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+#drop .pka button{width:auto;margin:0;padding:0 14px;background:var(--accent);color:#fff}
+.pkn{color:var(--mut)}
+.slpick.sl1{display:flex;align-items:center;gap:6px;border-color:transparent;background:transparent;padding:6px;font-size:16px;font-weight:inherit;cursor:pointer}
+.slpick.sl1 span{flex:1;min-width:0}
+.slpick.sl1::after{content:"";flex:none;width:7px;height:7px;border-right:1.8px solid #8a8b91;border-bottom:1.8px solid #8a8b91;transform:translateY(-2px) rotate(45deg);margin-right:3px}
+.slpick.sl1:hover,.slpick.sl1:focus-visible{border-color:#d6d5d0;background:#f6f5f1;outline:none}
+#insp .slpick.sl1{border-color:var(--line);background:var(--panel);padding:6px 10px;font-size:15px;min-height:38px}
+#insp .slpick.sl1{color:var(--ink);font-weight:500}
+#insp .slpick.sl1.none{color:#9a9ba1}
 </style>
 </head>
 <body>
@@ -502,7 +528,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119155056';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119164118';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -533,8 +559,14 @@ const TIMES=[5,10,15,20,25,30,35,40,45,50,55,60,75,90,105,120,150,180];
 /* shot list columns: [key, name on screen, name in the PDF, on unless turned off, always shown] */
 const SL_COLS=[['sb','Storyboard','STORYBOARD',1],['shot','Shot #','SHOT #',1],['ver','Version','VER',1],['nick','Nickname','NICKNAME',0],['size','Shot size','SHOT SIZE',1],['type','Shot type','SHOT TYPE',1],['angle','Shot angle','SHOT ANGLE',1],['move','Movement','MOVEMENT',1],
  ['lens','Lens','LENS',0],['gear','Gear','GEAR',0],['cast','Cast','CAST',0],['props','Props','PROPS',0],['desc','Description','DESCRIPTION',1],['time','Est. time','TIME',0],['flag','Flag','FLAG',0],['vfx','VFX','VFX',0],['sfx','SFX','SFX',0],['ss','Status','STATUS',0],['sn','Notes','NOTES',0]];
-function colCfg(s){const f=fById(rootOf(s));return clone((f&&f.cols)||(P.ui&&P.ui.cols)||{});}
-function colSave(s,c){const f=fById(rootOf(s));if(f)f.cols=c;else{P.ui.cols=c;saveLocal();}commit();}
+/* ---------- account-wide choices that follow every device: the layouts used outside project folders, and his own pull-down entries ----------
+   P.prefs[key]={v:the value (null once cleared), t:when it was set}; it travels with the account's shared record and, key by key, the newer one wins */
+const prefHas=k=>!!(P.prefs&&P.prefs[k]);
+function prefGet(k){const e=P.prefs&&P.prefs[k];return e&&e.v!=null?e.v:null;}
+/* saved and sent at once: these are not part of a scene, so the usual save-on-change would not notice them */
+function prefSet(k,v){P.prefs=P.prefs||{};P.prefs[k]={v:v==null?null:clone(v),t:Math.max(Date.now(),((P.prefs[k]||{}).t||0)+1)};try{metaSaved();}catch(e){console.error(e);}}
+function colCfg(s){const f=fById(rootOf(s));return clone((f&&f.cols)||(prefHas('cols')?prefGet('cols'):P.ui&&P.ui.cols)||{});}
+function colSave(s,c){const f=fById(rootOf(s));if(f)f.cols=c;else{prefSet('cols',c);delete P.ui.cols;}commit();}
 /* every column, in the project's order (new ones go at the end) */
 function colList(c){const all=[];SL_COLS.forEach(([k,l,p,d,fx],i)=>all.push({k,l,P:p,d:!!d,fx:!!fx,i}));(c.cc||[]).forEach((cc,j)=>all.push({k:'c:'+cc.id,l:cc.name,P:String(cc.name).toUpperCase(),cc,d:true,i:100+j}));
  const ord=c.order||[],ix=x=>{const q=ord.indexOf(x.k);return q>=0?q:1000+x.i;};return all.sort((a,b)=>ix(a)-ix(b));}
@@ -1146,7 +1178,7 @@ function load(big,bigSync){
  try{const s=lsGet(LS.img);if(s)images=JSON.parse(s)||{};}catch(e){images={};}
  try{const s=big?(bigSync||lsGet(LS.sync)):lsGet(LS.sync);if(s)sync=Object.assign({stamps:{},dirty:[]},JSON.parse(s));}catch(e){}
  if(!P||!Array.isArray(P.scenes)||!P.scenes.length){const s=blankScene(1);s.ph=1;P={characters:[],folders:[],scenes:[s],sceneId:s.id,ui:{}};sync={stamps:{},dirty:[]};}
- delete sync.base;P.ui=P.ui||{};P.characters=P.characters||[];P.folders=P.folders||[];P.labels=P.labels||{};P.text=P.text||{};for(const id in P.text)if(!P.scenes.some(s=>s.id===id))delete P.text[id];
+ delete sync.base;P.ui=P.ui||{};P.prefs=P.prefs&&typeof P.prefs==='object'?P.prefs:{};P.characters=P.characters||[];P.folders=P.folders||[];P.labels=P.labels||{};P.text=P.text||{};for(const id in P.text)if(!P.scenes.some(s=>s.id===id))delete P.text[id];
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;
 migrate();let castNow=[];try{castNow=castReconcile();}catch(e){}
  ensureLive();baseline();if(castNow.length){mergedNow.push(...castNow);delete lastJson.meta;}flushMerged();
@@ -1184,7 +1216,7 @@ let outdated=false;
 function showUpdate(msg){if(document.getElementById('updBar'))return;const d=document.createElement('div');d.id='updBar';d.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:900;background:#1c1c1e;color:#fff;padding:10px 14px;border-radius:12px;font:14px/1.4 -apple-system,system-ui,sans-serif;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.25)';
  d.innerHTML='<span></span><button style="font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:#2f6fde;color:#fff">Reload</button>';d.firstChild.textContent=msg;d.querySelector('button').onclick=()=>{try{flushNotes();if(typeof txFlush==='function')txFlush();saveLocal();}catch(e){}const t0=Date.now(),go=()=>{if((pIn>0||imgIn>0)&&Date.now()-t0<5000){setTimeout(go,150);return;}location.reload();};go();};document.body.appendChild(d);}
 if('serviceWorker' in navigator){let hadSW=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW)showUpdate('A new version of the app is ready.');hadSW=true;});}
-function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},locations:P.locations||[],tomb:P.tomb||{},imgs:[...new Set([...Object.keys(images),...(sync.imgK||[])])].sort(),sceneOrder:P.scenes.map(s=>s.id)}};if(window.BB_VERSION)d.meta.appV=window.BB_VERSION;for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
+function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},prefs:P.prefs||{},locations:P.locations||[],tomb:P.tomb||{},imgs:[...new Set([...Object.keys(images),...(sync.imgK||[])])].sort(),sceneOrder:P.scenes.map(s=>s.id)}};if(window.BB_VERSION)d.meta.appV=window.BB_VERSION;for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
 const markDirty=k=>{if(!sync.dirty.includes(k))sync.dirty.push(k);};
 /* ---------- shared lists (characters, folders, productions): each entry keeps its own change time; deletions leave a dated marker; devices merge entry by entry ---------- */
@@ -1220,6 +1252,7 @@ function metaMerge(meta){const T=P.tomb=P.tomb||{},R=meta.tomb||{},ls0=Object.as
    mine=!ra[id]?true:!la[id]?false:lt>rt?true:rt>lt?false:canonJ(la[id])>=canonJ(ra[id]);o[id]=mine?la[id]:ra[id];const v=mine?lv[id]:rv[id];if(v)ov[id]=v;}
   if(canonJ(o)!==canonJ(ra))back=true;T.sa=o;T.sv=ov;}
  if(meta.labels){const lb=clone(meta.labels);for(const x in P.labels||{}){const u=[...new Set([...(lb[x]||[]),...P.labels[x]])];if(u.length!==(lb[x]||[]).length)back=true;lb[x]=u;}P.labels=lb;}
+ {const L=P.prefs=P.prefs||{},R2=meta.prefs&&typeof meta.prefs==='object'?meta.prefs:{};for(const k of new Set([...Object.keys(L),...Object.keys(R2)])){const a=L[k],b=R2[k],at=a&&a.t||0,bt=b&&b.t||0;if(b&&(!a||bt>at||(bt===at&&canonJ(b)>canonJ(a))))L[k]=clone(b);else if(a&&(!b||at>bt||canonJ(a)!==canonJ(b)))back=true;}}
  return back;}
 function detectChanges(){try{metaStamp();}catch(e){console.error(e);}const d=docs(),now=Date.now();
  for(const k in d){const j=JSON.stringify(d[k]);if(j!==lastJson[k]){if(k.startsWith('scene-')&&lastJson[k]&&!sync.dirty.includes(k)){try{const a=ancOf(k);if(a.length)fhPut(k,a[a.length-1],JSON.parse(lastJson[k]).scene);}catch(e){}}
@@ -1533,7 +1566,7 @@ function applyRemote(snap){
  const pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
  let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);if(sync.big)delete sync.big[k];ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);pinSet(k,b);if(sync.mine)delete sync.mine[k];if(sync.cf)delete sync.cf[k];return sc;};
  const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);if(b.dev!==DEVICE){pinSet(k,b);if(sync.mine)delete sync.mine[k];}const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
- let metaBack=false;if(meta){const was=canonJ([P.characters,P.folders,P.productions,P.labels]);try{metaBack=metaMerge(meta);const lw=canonJ(P.locations||[]);P.locations=locMerge(P.locations,meta.locations);if(canonJ(P.locations)!==canonJ(meta.locations||[]))metaBack=true;if(canonJ(P.locations)!==lw)changed=true;}catch(e){console.error(e);}if(canonJ([P.characters,P.folders,P.productions,P.labels])!==was)changed=true;}
+ let metaBack=false;if(meta){const was=canonJ([P.characters,P.folders,P.productions,P.labels,P.prefs||{}]);try{metaBack=metaMerge(meta);const lw=canonJ(P.locations||[]);P.locations=locMerge(P.locations,meta.locations);if(canonJ(P.locations)!==canonJ(meta.locations||[]))metaBack=true;if(canonJ(P.locations)!==lw)changed=true;}catch(e){console.error(e);}if(canonJ([P.characters,P.folders,P.productions,P.labels,P.prefs||{}])!==was)changed=true;}
  if(meta&&(join||newer('meta',meta))){
   const order=meta.sceneOrder||[],byId={},next=[],placed=new Set(),TS=(P.tomb&&P.tomb.s)||{},RS=(meta.tomb&&meta.tomb.s)||{};for(const s of P.scenes)byId[s.id]=s;
   for(const id of order){const k='scene-'+id,b=sd[k];
@@ -2246,10 +2279,7 @@ function inspHTML(){
   <p class="mut" style="margin-top:10px">Name and color apply everywhere this character appears. Drag the round handle to turn them.</p>`;}
  if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?',color:'#888'},n=nVer(it),vi=verStart(it,sel.mark||0),m=it.marks[vi]||it.marks[0];
   return x+`<div class="ph"><i class="dot" style="background:${st.color}"></i>Shot ${esc(shotCode(s,it))}<span class="mut">· version ${verCode(s,verNum(it,vi))}${nVer(it)>1?' of '+nVer(it):''}</span></div>
-  <div class="vgrid"><label class="fld">Shot size${sizeSelect('data-f="v.size"',m.size||'')}</label>
-  <label class="fld">Shot type<input data-f="v.type" list="dl-type" value="${esc(m.type||'')}" autocomplete="off"></label>
-  <label class="fld">Shot angle<input data-f="v.angle" list="dl-angle" value="${esc(m.angle||'')}" autocomplete="off"></label>
-  <label class="fld">Movement<input data-f="v.move" list="dl-move" value="${esc(m.move||'')}" autocomplete="off"></label></div>
+  <div class="vgrid">${[['size','Shot size'],['type','Shot type'],['angle','Shot angle'],['move','Movement']].map(([fk,fl])=>`<div class="fld">${fl}${pick1(fk,`data-id="${it.id}" data-v="${vi}"`,m[fk]||'')}</div>`).join('')}</div>
   <label class="fld">Description<textarea data-f="v.desc" rows="3">${esc(m.desc||'')}</textarea></label>${inspExtra(s,it,vi,m)}
   <div class="lbl">Storyboard frame</div>${sbHTML(it.id,vi,m)}
   <div class="lbl">Versions <span class="mut">· a new version uses the same camera position</span></div>
@@ -2299,7 +2329,7 @@ function setPage(it,v,add){
 function inspExtra(s,it,vi,m){const k=`data-id="${it.id}" data-v="${vi}"`;let h='';
  for(const c of colsOn(s)){switch(c.k){
   case 'nick':h+=`<label class="fld">Nickname<input data-f="v.nick" value="${esc(m.nick||'')}" autocomplete="off"></label>`;break;
-  case 'lens':h+=`<label class="fld">Lens<input data-f="v.lens" list="dl-lens" value="${esc(m.lens||'')}" autocomplete="off"></label>`;break;
+  case 'lens':h+=`<div class="fld">Lens${pick1('lens',k,m.lens||'')}</div>`;break;
   case 'gear':case 'cast':case 'props':{const v=cellVal(s,{m},c.k);h+=`<div class="fld">${c.l}<button class="slpick${v?'':' none'}" data-pick="${c.k}" ${k}>${esc(v||'—')}</button></div>`;break;}
   case 'time':h+=`<label class="fld">Est. time<select data-f="v.time"><option value="">—</option>${TIMES.map(n=>`<option value="${n}"${+m.time===n?' selected':''}>${minTxt(n)}</option>`).join('')}</select></label>`;break;
   case 'ss':h+=`<label class="fld">Status<select data-f="v.ss">${SS.map(([v,l])=>`<option value="${v}"${(m.ss||'plan')===v?' selected':''}>${l}</option>`).join('')}</select></label>`;break;
@@ -2331,7 +2361,7 @@ function setField(f,v){
  renderCanvas();
 }
 const insp=$('#insp');
-insp.addEventListener('click',e=>{if(e.target.matches('input,select,textarea,label,.swc span'))return;const pk=e.target.closest('[data-pick]');if(pk){slPick(pk);return;}const b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b);});
+insp.addEventListener('click',e=>{if(e.target.matches('input,select,textarea,label,.swc span'))return;{const p1=e.target.closest('[data-pick1]');if(p1){slChoose(p1);return;}}const pk=e.target.closest('[data-pick]');if(pk){slPick(pk);return;}const b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b);});
 insp.addEventListener('input',e=>{const t=e.target;if(t.dataset.f)setField(t.dataset.f,t.type==='checkbox'?t.checked:t.value);});
 insp.addEventListener('change',e=>{const t=e.target;if(!t.dataset.f)return;
  if(t.type==='color'){commit();return;}commit({insp:false});if(t.dataset.f==='v.type'&&sel){const it=itemById(sel.id);if(it&&whoKind(t.value))typeAsk(scene(),it,sel.mark||0,()=>renderInsp());}});
@@ -4247,7 +4277,7 @@ const offCanvas=()=>mode==='list'||mode==='nb'||mode==='st';
 function setMode(m){const was=mode,wasOff=offCanvas(),doc=m==='nb'||m==='st';if(txTimer)txFlush();mode=m;closePop();closeDocPop();endTool();if(doc){sel=null;msel=null;inspOpen=false;}const a=$('#app');a.classList.toggle('mode-list',m==='list');a.classList.toggle('mode-split',m==='split');a.classList.toggle('mode-nb',m==='nb');a.classList.toggle('mode-st',m==='st');$('#mDia').classList.toggle('on',m==='diagram');$('#mList').classList.toggle('on',m==='list');$('#mNb').classList.toggle('on',m==='nb');$('#mSt').classList.toggle('on',m==='st');if(m==='split')a.style.setProperty('--lh',(P.ui.splitH||38)+'%');if(m==='list'||m==='split')renderList();if(doc)renderDocs(true);if(m!=='list'&&!doc)requestAnimationFrame(()=>{renderUI();renderInsp();if(wasOff||m==='split'||was==='split')fit();});P.ui.mode=m;saveLocal();}
 $('#mDia').onclick=()=>setMode('diagram');$('#mList').onclick=()=>setMode('list');$('#mNb').onclick=()=>setMode('nb');$('#mSt').onclick=()=>setMode('st');$('#bFull').onclick=e=>shotMenu(e.currentTarget);
 let listKey='';
-function refreshLists(){const used={type:new Set(),angle:new Set(),move:new Set()};for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks)for(const k in used)if(m[k]&&!(k==='type'&&m.on)&&!PRESET[k].includes(m[k].trim()))used[k].add(m[k].trim());const key=JSON.stringify([...used.type,'|',...used.angle,'|',...used.move]);if(key===listKey)return;listKey=key;for(const k in used)document.getElementById('dl-'+k).innerHTML=[...PRESET[k],...[...used[k]].sort()].map(v=>`<option value="${esc(v)}">`).join('');}
+function refreshLists(){const used={type:new Set(),angle:new Set(),move:new Set()};for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks)for(const k in used)if(m[k]&&!(k==='type'&&m.on)&&!PRESET[k].includes(m[k].trim()))used[k].add(m[k].trim());const key=JSON.stringify([...used.type,'|',...used.angle,'|',...used.move,'|',prefGet('lists')||0]);if(key===listKey)return;listKey=key;for(const k in used)document.getElementById('dl-'+k).innerHTML=[...PRESET[k],...new Set([...ownList(k),...[...used[k]].sort()])].map(v=>`<option value="${esc(v)}">`).join('');}
 function renderList(){
  const s=scene(),rows=rowsOf(s),lv=$('#listView');
  const lo=prodOpts(s),head=`<div class="lvh"><div style="flex:1"><div class="dvk">${esc(lo.listT||'')}<i>${esc(lo.listS||'')}</i></div><h2>${esc((s.number?s.number+'  ':'')+(s.title||'Untitled scene'))}</h2>${s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}${s.synopsis?`<p class="syn">${esc(s.synopsis)}</p>`:''}</div>${slSelMode?`<span class="slsc">${plural(slMulti.size,'shot')} picked</span><button class="sm pri" id="lvBulk"${slMulti.size?'':' disabled'}>Change…</button><button class="sm" id="lvSelDone">Done</button>`:'<button class="sm" id="lvSel" title="Pick several shots to change at once (⌘I)">Select</button>'}<button class="sm" id="lvMenu">Shot list ▾</button><button class="sm" id="lvInfo">Scene info</button></div>`;
@@ -4257,14 +4287,12 @@ function renderList(){
   /* with Shot # hidden, the row's grip (and the Select tick) sit in a slim column of their own */
   if(!cols.some(c=>c.k==='shot'))cols.unshift({k:'_h',l:''});
   const used={lens:new Set()},cxU={};for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){if(m.lens&&!LENSES.includes(m.lens))used.lens.add(m.lens);for(const id in m.cx||{}){(cxU[id]=cxU[id]||new Set()).add(m.cx[id]);}}
-  {const dl=document.getElementById('dl-lens');const h=[...LENSES,...[...used.lens].sort()].map(v=>`<option value="${esc(v)}">`).join('');if(dl&&dl.innerHTML!==h)dl.innerHTML=h;}
+  {const dl=document.getElementById('dl-lens');const h=[...LENSES,...new Set([...ownList('lens'),...[...used.lens].sort()])].map(v=>`<option value="${esc(v)}">`).join('');if(dl&&dl.innerHTML!==h)dl.innerHTML=h;}
   const cell=(c,r,k)=>{const m=r.m;switch(c.k){
    case 'sb':return sbHTML(r.it.id,r.vi,m);
    case 'shot':return `${slSelMode?`<input type="checkbox" class="slpk" data-pk="${r.it.id}|${r.vi}"${slMulti.has(r.it.id+'|'+r.vi)?' checked':''} aria-label="Pick this shot">`:''}<button class="shotno" data-act="goShot" ${k} title="Show on diagram"><i style="background:${r.st.color}"></i>${esc(shotCode(s,r.it))}</button><span class="grip" title="Drag to reorder">⠿</span>`;
    case 'ver':return `<div class="ver">${verCode(s,r.vn)}</div>`;
-   case 'size':return sizeSelect(`data-k="size" ${k}`,m.size||'');
-   case 'type':case 'angle':case 'move':return `<input data-k="${c.k}" ${k} list="dl-${c.k}" value="${esc(m[c.k]||'')}" autocomplete="off">`;
-   case 'lens':return `<input data-k="lens" ${k} list="dl-lens" value="${esc(m.lens||'')}" autocomplete="off" placeholder="—">`;
+   case 'size':case 'type':case 'angle':case 'move':case 'lens':return pick1(c.k,k,m[c.k]||'');
    case 'nick':return `<input data-k="nick" ${k} value="${esc(m.nick||'')}" autocomplete="off">`;
    case 'desc':return `<textarea data-k="desc" ${k}>${esc(m.desc||'')}</textarea>`;
    case 'sn':return `<textarea data-k="sn" ${k}>${esc(m.sn||'')}</textarea>`;
@@ -4285,6 +4313,7 @@ function renderList(){
 const lvEl=$('#listView');
 lvEl.addEventListener('click',e=>{if(e.target.matches('input,textarea,select'))return;
  {const tr=e.target.closest('tr[data-id]');if(tr&&(e.metaKey||e.ctrlKey||e.shiftKey)&&!e.target.closest('[data-pick],[data-tog]')){const key=tr.dataset.id+'|'+tr.dataset.v;if(slMulti.has(key))slMulti.delete(key);else slMulti.add(key);slSelMode=true;renderList();return;}}
+ {const p1=e.target.closest('[data-pick1]');if(p1){slChoose(p1);return;}}
  const pk=e.target.closest('[data-pick]');if(pk){slPick(pk);return;}
  const tg=e.target.closest('button[data-tog]');if(tg){const c=findCam(tg.dataset.id);if(c){const m=c.it.marks[+tg.dataset.v];if(m[tg.dataset.tog])delete m[tg.dataset.tog];else m[tg.dataset.tog]=true;commit();}return;}
  const b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b);});
@@ -4312,7 +4341,7 @@ function bulkGo(){const t=bulkTargets();if(!t.length){toast('Pick the shots firs
 function bulkDialog(s,T){const cols=colsOn(s),has=k=>cols.some(c=>c.k===k),st3={gear:{},cast:{},props:{}};
  const leave='<option value="">Leave as is</option>',clr='<option value="__x">Clear</option>';
  const f=[];
- if(has('size'))f.push(`<label class="fld">Shot size<select data-b="size">${leave}${clr}${SIZE_GROUPS.map(([g,l])=>`<optgroup label="${g}">${l.map(([n])=>`<option>${n}</option>`).join('')}</optgroup>`).join('')}</select></label>`);
+ if(has('size'))f.push(`<label class="fld">Shot size<select data-b="size">${leave}${clr}${fieldGroups('size','').map(([g,l])=>`<optgroup label="${esc(g)}">${l.map(n=>`<option>${esc(n)}</option>`).join('')}</optgroup>`).join('')}</select></label>`);
  for(const [k,l] of [['type','Shot type'],['angle','Shot angle'],['move','Movement'],['lens','Lens'],['nick','Nickname']])if(has(k))f.push(`<label class="fld">${l}<input data-b="${k}"${k==='nick'?'':` list="dl-${k}"`} placeholder="Leave as is" autocomplete="off"></label>`);
  if(has('time'))f.push(`<label class="fld">Est. time<select data-b="time">${leave}${clr}${TIMES.map(n=>`<option value="${n}">${minTxt(n)}</option>`).join('')}</select></label>`);
  if(has('ss'))f.push(`<label class="fld">Status<select data-b="ss">${leave}${SS.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></label>`);
@@ -4362,7 +4391,7 @@ function slPick(btn){const c=findCam(btn.dataset.id);if(!c)return;const s=c.s,m=
 /* which columns show in the shot list (and its PDF), for this project */
 function colDialog(){const s=scene(),cfg=colCfg(s);cfg.on=cfg.on||{};cfg.cc=cfg.cc||[];const isOn=(k,d)=>k in cfg.on?cfg.on[k]:!!d;
  const pname=rootOf(s)?(fById(rootOf(s))||{}).name:'';
- modal(`<h3>Shot list columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder.'} Tick what you want to see; nothing is fixed. Drag ⠿ to change the order, or drag a heading sideways in the shot list itself. The PDF shows the same columns, in the same order.</p><div class="colL" id="colL"></div><div class="btns"><button id="colNew">New custom column…</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
+ modal(`<h3>Shot list columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder, on this device and your others.'} Tick what you want to see; nothing is fixed. Drag ⠿ to change the order, or drag a heading sideways in the shot list itself. The PDF shows the same columns, in the same order.</p><div class="colL" id="colL"></div><div class="btns"><button id="colNew">New custom column…</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
   const L=card.querySelector('#colL'),draw=()=>{L.innerHTML=colList(cfg).map(x=>`<label class="colR${x.fx?' fx':''}" data-k="${esc(x.k)}"><span class="grip colG" title="Drag to reorder">⠿</span><input type="checkbox" data-c="${esc(x.k)}"${colIsOn(cfg,x)?' checked':''}${x.fx?' disabled':''}> ${esc(x.l)}${x.fx?' <small>always shown</small>':''}${x.cc?` <small>custom</small><button class="sm" data-rm="${esc(x.cc.id)}">Remove</button>`:''}</label>`).join('');};
   /* drag a row by its grip to change the column order */
   let dg=null;L.addEventListener('pointerdown',e=>{const g=e.target.closest('.colG');if(!g)return;e.preventDefault();const row=g.closest('.colR');dg={row,pid:e.pointerId};row.classList.add('dragging');try{g.setPointerCapture(e.pointerId);}catch(_){}});
@@ -4610,18 +4639,18 @@ const FMT_BAR='<div class="fmt"><button data-f="bold" title="Bold (⌘B)"><b>B</
    and labels; the layout is kept with the project (its top folder), the same way the shot list's columns are. */
 const NB_START={snap:['NATURAL BEHAVIORS'],img:['IMAGERY','TONE'],core:['SCENE NEEDS','ACTOR DIRECTION TIPS'],elev:['ACTOR BEHAVIOR'],pit:['ACTOR TRAPS']};
 function nbDefault(){return NB_COLS.map(([k,name])=>{const std=NB_PICK[k]||[];return {k,name,on:1,labels:[...std,...((P.labels||{})[k]||[]).filter(l=>!std.includes(l))],start:(NB_START[k]||[]).slice()};});}
-function nbRaw(s){const f=fById(rootOf(s)),c=(f&&f.nb)||(P.ui&&P.ui.nb)||null;return c&&Array.isArray(c.cols)?c:null;}
+function nbRaw(s){const f=fById(rootOf(s)),c=(f&&f.nb)||(prefHas('nb')?prefGet('nb'):P.ui&&P.ui.nb)||null;return c&&Array.isArray(c.cols)?c:null;}
 function nbCols(s){const c=nbRaw(s),D=nbDefault();if(!c)return D;
  const out=c.cols.filter(x=>x&&x.k).map(x=>({k:String(x.k),name:String(x.name||''),on:x.on?1:0,labels:(x.labels||[]).map(String),start:(x.start||[]).map(String)}));
  for(const d of D)if(!out.some(x=>x.k===d.k))out.push(d);return out;}
 /* the columns on the page: Questions follows its own tick in the toolbar */
 function nbShown(s){const q=!!P.ui.nbQ;return nbCols(s).filter(c=>c.k==='q'?q:c.on);}
-function nbSave(s,cols){const v=cols?{cols:clone(cols)}:null,f=fById(rootOf(s));if(f){if(v)f.nb=v;else delete f.nb;}else{if(v)P.ui.nb=v;else delete P.ui.nb;saveLocal();}commit();}
+function nbSave(s,cols){const v=cols?{cols:clone(cols)}:null,f=fById(rootOf(s));if(f){if(v)f.nb=v;else delete f.nb;}else{prefSet('nb',v);delete P.ui.nb;}commit();}
 /* what an untouched cell starts with: the column's starter labels, each with room under it */
 function nbTpl(c){if(c.k==='q')return RT_UL;const st=(c.start||[]).filter(t=>(c.labels||[]).includes(t));return (c.k==='syn'||c.k==='snap'||!st.length?RT_P:'')+st.map(t=>rtL(esc(t))+(PLAIN_AFTER.has(t)?RT_P:RT_UL)).join('');}
 function nbDialog(){const s=scene(),pname=rootOf(s)?(fById(rootOf(s))||{}).name:'';let cols=nbCols(s),open=null;
  const save=()=>{nbSave(s,cols);if(mode==='nb')renderDocs(true);};
- modal(`<h3>Breakdown columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder (kept on this device).'} Tick what you want to see, rename anything, drag ⠿ to change the order. Labels are the headings offered by “+ Label” in a column. Hiding or removing a column never deletes what was written in it.</p><div class="colL nbL" id="nbL"></div><div class="btns"><button id="nbNew">New column…</button><button id="nbReset">Back to the starting layout</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
+ modal(`<h3>Breakdown columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder, on this device and your others.'} Tick what you want to see, rename anything, drag ⠿ to change the order. Labels are the headings offered by “+ Label” in a column. Hiding or removing a column never deletes what was written in it.</p><div class="colL nbL" id="nbL"></div><div class="btns"><button id="nbNew">New column…</button><button id="nbReset">Back to the starting layout</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
   const L=card.querySelector('#nbL'),isCustom=k=>!NB_COLS.some(c=>c[0]===k);
   const draw=()=>{L.innerHTML=cols.map((c,i)=>{const on=c.k==='q'?!!P.ui.nbQ:!!c.on,ex=open===c.k;
     return `<div class="colR nbR" data-k="${esc(c.k)}"><span class="grip colG" title="Drag to reorder">⠿</span><input type="checkbox" data-on="${i}"${on?' checked':''} aria-label="Show this column"><input class="nbN" data-nm="${i}" value="${esc(c.name)}" placeholder="Column name" autocomplete="off">${c.k==='syn'||c.k==='q'?'':`<button class="sm" data-lb="${i}">Labels (${c.labels.length}) ${ex?'▴':'▾'}</button>`}${isCustom(c.k)?`<button class="sm" data-rm="${i}">Remove</button>`:''}</div>`
@@ -5209,7 +5238,7 @@ function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts(),mp=s.pages.le
    saveLocal();closeModal();exportPDF(v);};
  },'numcard');}
 async function exportPNG(){const s=scene();try{const c=await rasterize(sheetSVG(s,s.pageId),1650,1275,1.5);const blob=await new Promise(r=>c.toBlob(r,'image/png'));await save(fname(s)+(s.pages.length>1?' '+(s.pageId==='all'?'all pages':pageName(s,s.pageId)):'')+'.png',blob);}catch(e){toast('Image export failed.');}}
-async function backup(){const d=new Date().toISOString().slice(0,10);await save(`The Director’s Notebook backup ${d}.json`,JSON.stringify({app:'blocking-board',v:3,characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},text:P.text||{},locations:P.locations||[],scenes:P.scenes.map(stripScene),images}));}
+async function backup(){const d=new Date().toISOString().slice(0,10);await save(`The Director’s Notebook backup ${d}.json`,JSON.stringify({app:'blocking-board',v:3,characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},prefs:P.prefs||{},text:P.text||{},locations:P.locations||[],scenes:P.scenes.map(stripScene),images}));}
 $('#fJson').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f)return;
  try{const o=JSON.parse(await f.text());if(o.app!=='blocking-board'||!Array.isArray(o.scenes)||!o.scenes.length)throw 0;
@@ -5219,7 +5248,7 @@ $('#fJson').addEventListener('change',async e=>{
   {const test=clone(o.scenes);for(const sc of test){migrateScene(sc);if(!Array.isArray(sc.items)||!Array.isArray(sc.pages)||!sc.pages.length)throw 0;}} /* throws on a damaged file, before anything here changes; an older layout is converted when it is adopted */
   confirmBox('Restore this backup?',`It replaces everything here with ${o.scenes.length} scene${o.scenes.length>1?'s':''} from the file, and syncs that to your other devices. Scenes here that aren’t in the file go to Trash.`,'Replace',()=>{
    const keepIds=new Set(o.scenes.map(z=>z.id)),now=Date.now(),extra=P.scenes.filter(z=>!keepIds.has(z.id)).map(z=>{if(!z.trashed&&!z.tpl)z.trashed=now;return z;});
-   P.characters=o.characters||[];P.folders=o.folders||[];P.locations=o.locations||[];if(o.productions)P.productions=o.productions;if(o.labels)P.labels=o.labels;const tx0=clone(P.text||{}),u0=undoS.length,j0=cur,g0=rgen,mk=rvMark();P.scenes=[...o.scenes,...extra];txAdopt(o.text||{},extra.map(z=>z.id));migrate();P.sceneId=P.scenes[0].id;ensureLive();
+   P.characters=o.characters||[];P.folders=o.folders||[];P.locations=o.locations||[];if(o.productions)P.productions=o.productions;if(o.labels)P.labels=o.labels;if(o.prefs&&typeof o.prefs==='object')P.prefs=o.prefs;const tx0=clone(P.text||{}),u0=undoS.length,j0=cur,g0=rgen,mk=rvMark();P.scenes=[...o.scenes,...extra];txAdopt(o.text||{},extra.map(z=>z.id));migrate();P.sceneId=P.scenes[0].id;ensureLive();
    for(const k in (o.images||{})){if(!images[k]){images[k]=o.images[k];sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}}imgDirty=true;sel=null;rvBump(mk);commit();undoWithText(tx0,u0,j0,g0);txFlush();renderDocs(true);fit();
   });
  }catch(err){toast('That file isn’t a backup from The Director’s Notebook.');}
@@ -5494,6 +5523,34 @@ function typeAsk(s,it,i,after){const m=it&&it.marks&&it.marks[i];if(!m){if(after
    paint();if(!multi&&st.who.length)finish();});
   card.querySelector('#wSkip').onclick=()=>{closeModal();if(after)after();};
   const ok=card.querySelector('#wOk');if(ok)ok.onclick=()=>{if(!ok.disabled)finish();};paint();});}
+/* ---------- shot size, type, angle, movement, lens: the built-in choices, plus his own ----------
+   His own entries are kept with the account (so they follow every device) and can be taken out again; a value typed on a shot is also offered while any shot uses it */
+const FIELD_T={size:'Shot Size',type:'Shot Type',angle:'Shot Angle',move:'Movement',lens:'Lens'};
+const fieldBase=k=>k==='size'?Object.keys(ABBR):k==='lens'?LENSES:PRESET[k]||[];
+const sameV=(a,b)=>String(a).trim().toLowerCase()===String(b).trim().toLowerCase();
+function ownList(k){const L=prefGet('lists');return L&&Array.isArray(L[k])?L[k].filter(Boolean).map(String):[];}
+function ownAdd(k,v){v=String(v||'').trim();if(!v)return '';const hit=[...fieldBase(k),...ownList(k)].find(x=>sameV(x,v));if(hit)return hit;const L=Object.assign({},prefGet('lists')||{});L[k]=[...ownList(k),v];prefSet('lists',L);return v;}
+function ownDel(k,v){const L=Object.assign({},prefGet('lists')||{});L[k]=ownList(k).filter(x=>!sameV(x,v));if(!L[k].length)delete L[k];prefSet('lists',L);}
+function fieldUsed(k){const base=fieldBase(k),used=new Set();for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks||[]){if(k==='type'&&m.on)continue;const v=String(m[k]||'').trim();if(v&&!base.includes(v))used.add(v);}return [...used].sort();}
+/* [heading, values, his] in the order they are offered */
+function fieldGroups(k,cur){const own=ownList(k),yours=[...own,...fieldUsed(k).filter(v=>!own.some(x=>sameV(x,v)))];if(cur&&!fieldBase(k).includes(cur)&&!yours.includes(cur))yours.push(cur);
+ const G=k==='size'?SIZE_GROUPS.map(([g,l])=>[g,l.map(x=>x[0]),0]):[['',fieldBase(k).slice(),0]];if(yours.length)G.push(['Yours',yours,1]);return G;}
+function shotSet(it,vi,k,v){const m=it.marks[vi];if(!m)return;v=String(v||'').trim();if(v)m[k]=v;else delete m[k];if(k==='type')delete m.on;}
+/* the pull-down in the shot list and the side panel: every choice every time, whatever is set now */
+function slChoose(btn){const c=findCam(btn.dataset.id);if(!c)return;const s=c.s,vi=+btn.dataset.v,m=c.it.marks[vi],k=btn.dataset.pick1,T=FIELD_T[k];if(!m||!T)return;closeDrop();
+ const d=document.createElement('div');d.id='drop';d.className='pickdrop';document.body.appendChild(d);
+ const place=()=>{const b=document.querySelector(`[data-pick1="${k}"][data-id="${btn.dataset.id}"][data-v="${btn.dataset.v}"]`)||btn,r=b.getBoundingClientRect();d.style.top=Math.max(8,Math.min(innerHeight-d.offsetHeight-8,r.bottom+6))+'px';d.style.left=Math.max(8,Math.min(innerWidth-d.offsetWidth-8,r.left))+'px';};
+ const set=v=>{shotSet(c.it,vi,k,v);closeDrop();commit();if(k==='type'&&v&&whoKind(v))typeAsk(s,c.it,vi,()=>{if(mode==='list'||mode==='split')renderList();renderInsp();});};
+ const draw=()=>{const cur=String(m[k]||''),own=ownList(k);
+  const opt=(v,mine)=>`<button class="pk" data-v="${esc(v)}"><span class="pkt">${esc(v)}${k==='size'&&ABBR[v]?` <small>${ABBR[v]}</small>`:''}</span>${mine&&own.some(x=>sameV(x,v))?`<i class="pkx" data-x="${esc(v)}" role="button" title="Take this out of your list" aria-label="Take ${esc(v)} out of your list">×</i>`:''}<span class="rad${v===cur?' on':''}"></span></button>`;
+  d.innerHTML=`<h4>${T} · ${esc(shotCode(s,c.it))}</h4><div class="pkl"><button class="pk" data-v=""><span class="pkt">Not Set</span><span class="rad${cur?'':' on'}"></span></button>${fieldGroups(k,cur).map(([h,L,mine])=>(h?`<div class="pkh">${esc(h)}</div>`:'')+L.map(v=>opt(v,mine)).join('')).join('')}</div><div class="pka"><input placeholder="Add your own…" autocomplete="off" aria-label="Add your own ${T.toLowerCase()}"><button class="sm pri">Add</button></div>`;
+  const inp=d.querySelector('.pka input'),add=()=>{const v=inp.value.trim();if(!v)return;set(ownAdd(k,v));};
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();add();}});d.querySelector('.pka button').onclick=add;};
+ d.addEventListener('click',e=>{const x=e.target.closest('[data-x]');
+  if(x){e.stopPropagation();const v=x.dataset.x;ownDel(k,v);draw();place();if(fieldUsed(k).some(u=>sameV(u,v)))toast(`${v} is out of your list. It stays offered while a shot still uses it.`);return;}
+  const b=e.target.closest('.pk');if(b)set(b.dataset.v);});
+ draw();place();{const on=d.querySelector('.rad.on');if(on&&on.closest('.pk').scrollIntoView)on.closest('.pk').scrollIntoView({block:'nearest'});}setTimeout(()=>addEventListener('pointerdown',dropOut,true),0);}
+const pick1=(k,idv,v)=>`<button class="slpick sl1${v?'':' none'}" data-pick1="${k}" ${idv}><span>${esc(v||'—')}</span></button>`;
 function shotOptions(k){const used=new Set();for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){if(k==='type'&&m.on)continue;const v=String(m[k]||'').trim();if(v&&!PRESET[k].includes(v))used.add(v);}return [...PRESET[k],...[...used].sort()];}
 function shotPop(cx,cy){
  if(!sel||tool||offCanvas())return;const s=scene(),it=itemById(sel.id);if(!it||it.type!=='cam'){objPop(cx,cy);return;}
@@ -5524,11 +5581,11 @@ function shotPop(cx,cy){
 }
 function shotPick(k){const it=itemById(sel.id);if(!it)return;const m=it.marks[sel.mark||0],cur=String(m[k]||''),T=SHOT_F[k];
  const opt=v=>`<button data-v="${esc(v)}">${esc(v)}${k==='size'&&ABBR[v]?`<small class="pgonly">${ABBR[v]}</small>`:''}<span class="rad${v===cur?' on':''}"></span></button>`;
- const list=k==='size'?null:shotOptions(k),body=k==='size'?SIZE_GROUPS.map(([g,l])=>`<div class="hd">${g}</div>`+l.map(([nm])=>opt(nm)).join('')).join('')+(cur&&!(cur in ABBR)?'<div class="hd">Yours</div>'+opt(cur):''):list.map(opt).join('')+(cur&&!list.includes(cur)?opt(cur):'');
+ const body=fieldGroups(k,cur).map(([g,l])=>(g?`<div class="hd">${esc(g)}</div>`:'')+l.map(opt).join('')).join('');
  pop.innerHTML=`<h4><button class="back">‹ Back</button>${T}</h4><div class="ls" style="width:320px">${body}<div class="hd">Or</div><button data-v="__own">Type Your Own…</button><button data-v="">Not Set<span class="rad${cur?'':' on'}"></span></button></div>`;
  const at=popAt,back=()=>shotPop(at.x,at.y);pop.querySelector('.back').onclick=back;placePopAt(at.x,at.y);
  pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;const v=b.dataset.v;
-  if(v==='__own'){askText(T,'Your own '+T.toLowerCase(),cur||'',nv=>{m[k]=nv;if(k==='type')delete m.on;commit();back();});return;}
+  if(v==='__own'){askText(T,'Your own '+T.toLowerCase(),cur||'',nv=>{m[k]=ownAdd(k,nv)||nv;if(k==='type')delete m.on;commit();back();});return;}
   m[k]=v;if(k==='type'){delete m.on;commit();if(whoKind(v)){typeAsk(scene(),it,sel.mark||0,back);return;}}else commit();back();};
 }
 function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;const at=popAt,back=()=>shotPop(at.x,at.y),R=rowsOf(s).filter(r=>versions?r.it===it:r.vi===0);
