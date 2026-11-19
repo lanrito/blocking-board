@@ -417,6 +417,22 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 .crbox i{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% + .5px),transparent calc(66.666% + .5px)),linear-gradient(to bottom,transparent calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% - .5px),rgba(255,255,255,.55) calc(33.333% + .5px),transparent calc(33.333% + .5px),transparent calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% - .5px),rgba(255,255,255,.55) calc(66.666% + .5px),transparent calc(66.666% + .5px));mix-blend-mode:difference}
 .crz{display:flex;align-items:center;gap:12px;margin-top:14px;color:var(--mut);font-size:20px;line-height:1}
 .crz input{flex:1;min-width:0;accent-color:var(--accent)}
+
+table.sl thead th[data-ck]{cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+table.sl thead th.cdg{opacity:.45;cursor:grabbing}
+table.sl thead th.cdl{box-shadow:inset 4px 0 0 var(--accent)}
+table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
+
+.nbL .nbR{gap:8px;padding:8px 12px}
+.nbL .nbR .nbN{flex:1;min-width:0;width:auto;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:15px;font-weight:600}
+.nbL .nbR button{margin-left:0;white-space:nowrap}
+.nbL .nbLb{padding:8px 14px 12px 50px;border-bottom:1px solid var(--line);background:var(--chip)}
+.nbL .nbLr{display:flex;align-items:center;gap:12px;padding:5px 0;font-size:14px}
+.nbL .nbLr b{flex:1;min-width:0;font-weight:650;letter-spacing:.01em}
+.nbL .nbLr label{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13px;white-space:nowrap}
+.nbL .nbLr input{width:18px;height:18px}
+.nbL .nbLa{display:flex;gap:8px;margin-top:8px}
+.nbL .nbLa input{flex:1;min-width:0;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:14px}
 </style>
 </head>
 <body>
@@ -486,7 +502,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119152448';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119155056';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -515,8 +531,8 @@ const GEAR=['Crane','Dolly','Handheld','High Speed','Jib','Steadicam','Technocra
 const LENSES=['14mm','18mm','21mm','25mm','27mm','32mm','35mm','40mm','50mm','65mm','75mm','85mm','100mm','135mm','Zoom','Macro'];
 const TIMES=[5,10,15,20,25,30,35,40,45,50,55,60,75,90,105,120,150,180];
 /* shot list columns: [key, name on screen, name in the PDF, on unless turned off, always shown] */
-const SL_COLS=[['sb','Storyboard','STORYBOARD',1],['shot','Shot #','SHOT #',1,1],['ver','Version','VER',1],['nick','Nickname','NICKNAME',0],['size','Shot size','SHOT SIZE',1],['type','Shot type','SHOT TYPE',1],['angle','Shot angle','SHOT ANGLE',1],['move','Movement','MOVEMENT',1],
- ['lens','Lens','LENS',0],['gear','Gear','GEAR',0],['cast','Cast','CAST',0],['desc','Description','DESCRIPTION',1,1],['time','Est. time','TIME',0],['flag','Flag','FLAG',0],['vfx','VFX','VFX',0],['sfx','SFX','SFX',0],['ss','Status','STATUS',0],['sn','Notes','NOTES',0]];
+const SL_COLS=[['sb','Storyboard','STORYBOARD',1],['shot','Shot #','SHOT #',1],['ver','Version','VER',1],['nick','Nickname','NICKNAME',0],['size','Shot size','SHOT SIZE',1],['type','Shot type','SHOT TYPE',1],['angle','Shot angle','SHOT ANGLE',1],['move','Movement','MOVEMENT',1],
+ ['lens','Lens','LENS',0],['gear','Gear','GEAR',0],['cast','Cast','CAST',0],['props','Props','PROPS',0],['desc','Description','DESCRIPTION',1],['time','Est. time','TIME',0],['flag','Flag','FLAG',0],['vfx','VFX','VFX',0],['sfx','SFX','SFX',0],['ss','Status','STATUS',0],['sn','Notes','NOTES',0]];
 function colCfg(s){const f=fById(rootOf(s));return clone((f&&f.cols)||(P.ui&&P.ui.cols)||{});}
 function colSave(s,c){const f=fById(rootOf(s));if(f)f.cols=c;else{P.ui.cols=c;saveLocal();}commit();}
 /* every column, in the project's order (new ones go at the end) */
@@ -528,7 +544,11 @@ function sceneCastIds(s){const out=[],add=id=>{if(id&&!out.includes(id)&&charByI
 function shotCastIds(m){if(Array.isArray(m.cast))return m.cast.filter(id=>charById(id));if(m.on&&Array.isArray(m.on.who))return m.on.who.filter(id=>charById(id));return [];}
 const castNames=m=>shotCastIds(m).map(id=>nmT(charById(id).name)).join(', ');
 const minTxt=n=>!n?'':n<60?n+' min':Math.floor(n/60)+' h'+(n%60?' '+n%60+' min':'');
-function cellVal(s,r,k){const m=r.m;switch(k){case 'gear':return (m.gear||[]).join(', ');case 'cast':return castNames(m);case 'time':return minTxt(+m.time||0);case 'flag':return m.flag?'★':'';case 'vfx':return m.vfx?'VFX':'';case 'sfx':return m.sfx?'SFX':'';
+/* props to offer for a shot: labelled props on this scene's floor plan, and props already named on shots here or elsewhere in the project */
+function propOpts(s){const root=rootOf(s),out=[],add=v=>{v=String(v||'').trim();if(v&&!out.some(x=>x.toLowerCase()===v.toLowerCase()))out.push(v);};
+ const shots=sc=>{for(const it of sc.items)if(it.type==='cam')for(const q of it.marks||[])for(const v of q.props||[])add(v);};
+ shots(s);for(const it of s.items)if(it.type==='prop'&&it.label)add(it.label);for(const sc of P.scenes)if(sc!==s&&rootOf(sc)===root)shots(sc);return out;}
+function cellVal(s,r,k){const m=r.m;switch(k){case 'gear':return (m.gear||[]).join(', ');case 'props':return (m.props||[]).join(', ');case 'cast':return castNames(m);case 'time':return minTxt(+m.time||0);case 'flag':return m.flag?'★':'';case 'vfx':return m.vfx?'VFX':'';case 'sfx':return m.sfx?'SFX':'';
  case 'ss':return m.ss&&m.ss!=='plan'?((SS.find(x=>x[0]===m.ss)||[])[1]||''):'';default:if(k.startsWith('c:'))return String((m.cx||{})[k.slice(2)]||'');return String(m[k]||'');}}
 const vlabel=m=>[m.size?(ABBR[m.size]||m.size):'',m.type].filter(Boolean).join(' ').toUpperCase();
 function sizeSelect(attrs,val){const known=val in ABBR;return `<select ${attrs}><option value=""${val?'':' selected'}>—</option>${!val||known?'':`<option selected>${esc(val)}</option>`}${SIZE_GROUPS.map(([g,l])=>`<optgroup label="${g}">${l.map(([n])=>`<option${n===val?' selected':''}>${n}</option>`).join('')}</optgroup>`).join('')}</select>`;}
@@ -2280,7 +2300,7 @@ function inspExtra(s,it,vi,m){const k=`data-id="${it.id}" data-v="${vi}"`;let h=
  for(const c of colsOn(s)){switch(c.k){
   case 'nick':h+=`<label class="fld">Nickname<input data-f="v.nick" value="${esc(m.nick||'')}" autocomplete="off"></label>`;break;
   case 'lens':h+=`<label class="fld">Lens<input data-f="v.lens" list="dl-lens" value="${esc(m.lens||'')}" autocomplete="off"></label>`;break;
-  case 'gear':case 'cast':{const v=cellVal(s,{m},c.k);h+=`<div class="fld">${c.l}<button class="slpick${v?'':' none'}" data-pick="${c.k}" ${k}>${esc(v||'—')}</button></div>`;break;}
+  case 'gear':case 'cast':case 'props':{const v=cellVal(s,{m},c.k);h+=`<div class="fld">${c.l}<button class="slpick${v?'':' none'}" data-pick="${c.k}" ${k}>${esc(v||'—')}</button></div>`;break;}
   case 'time':h+=`<label class="fld">Est. time<select data-f="v.time"><option value="">—</option>${TIMES.map(n=>`<option value="${n}"${+m.time===n?' selected':''}>${minTxt(n)}</option>`).join('')}</select></label>`;break;
   case 'ss':h+=`<label class="fld">Status<select data-f="v.ss">${SS.map(([v,l])=>`<option value="${v}"${(m.ss||'plan')===v?' selected':''}>${l}</option>`).join('')}</select></label>`;break;
   case 'sn':h+=`<label class="fld">Notes<textarea data-f="v.sn" rows="2">${esc(m.sn||'')}</textarea></label>`;break;
@@ -3673,7 +3693,7 @@ let ovTab='sc';
 function ovQs(s){const x=txOf(s.id),c=x&&x.nb&&x.nb.q;if(!c||c.del||!c.h)return [];
  return rtPrune(rtParse(String(c.h).split(TX_MARK).join(''))).map(b=>rtBText(b).replace(/\s+/g,' ').trim()).filter(t=>t&&!/^[-–•*]+$/.test(t));}
 function ovStats(s){const x=txOf(s.id),full=c=>!!(c&&!c.del&&c.h&&rtText(rtPrune(rtParse(c.h))));
- const nbK=NB_COLS.map(c=>c[0]).filter(k=>k!=='q'),nb=nbK.filter(k=>full(x&&x.nb&&x.nb[k])||(k==='syn'&&!!String(s.synopsis||'').trim())).length;
+ const nbK=nbCols(s).filter(c=>c.on&&c.k!=='q').map(c=>c.k),nb=nbK.filter(k=>full(x&&x.nb&&x.nb[k])||(k==='syn'&&!!String(s.synopsis||'').trim())).length;
  const secs=stSecs(s),st=secs.filter(q=>q.h!=null&&!!rtText(rtPrune(rtParse(q.h)))).length;
  const chars=new Set(s.items.filter(i=>i.type==='char').map(i=>i.charId)).size,cams=s.items.filter(i=>i.type==='cam').length,set=s.items.filter(i=>!ACTOR(i.type)&&i.type!=='axis').length+(s.bgId?1:0);
  let R=[];try{R=rowsOf(s);}catch(e){}
@@ -4232,7 +4252,10 @@ function renderList(){
  const s=scene(),rows=rowsOf(s),lv=$('#listView');
  const lo=prodOpts(s),head=`<div class="lvh"><div style="flex:1"><div class="dvk">${esc(lo.listT||'')}<i>${esc(lo.listS||'')}</i></div><h2>${esc((s.number?s.number+'  ':'')+(s.title||'Untitled scene'))}</h2>${s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}${s.synopsis?`<p class="syn">${esc(s.synopsis)}</p>`:''}</div>${slSelMode?`<span class="slsc">${plural(slMulti.size,'shot')} picked</span><button class="sm pri" id="lvBulk"${slMulti.size?'':' disabled'}>Change…</button><button class="sm" id="lvSelDone">Done</button>`:'<button class="sm" id="lvSel" title="Pick several shots to change at once (⌘I)">Select</button>'}<button class="sm" id="lvMenu">Shot list ▾</button><button class="sm" id="lvInfo">Scene info</button></div>`;
  if(!rows.length){lv.innerHTML=head+'<div class="lv-empty">No shots yet. Add a camera on the diagram; each camera, and each version along its move, becomes a row here.</div>';}
- else{const cols=colsOn(s),CW={sb:166,shot:84,ver:64,nick:140,size:176,type:140,angle:130,move:150,lens:100,gear:160,cast:170,time:104,flag:56,vfx:56,sfx:56,ss:124,sn:200};
+ else if(!colsOn(s).length){lv.innerHTML=head+'<div class="lv-empty">No columns are showing. <button class="sm" id="lvCols">Choose columns…</button></div>';}
+ else{const cols=colsOn(s),CW={_h:44,sb:166,shot:84,ver:64,nick:140,size:176,type:140,angle:130,move:150,lens:100,gear:160,cast:170,props:170,time:104,flag:56,vfx:56,sfx:56,ss:124,sn:200};
+  /* with Shot # hidden, the row's grip (and the Select tick) sit in a slim column of their own */
+  if(!cols.some(c=>c.k==='shot'))cols.unshift({k:'_h',l:''});
   const used={lens:new Set()},cxU={};for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){if(m.lens&&!LENSES.includes(m.lens))used.lens.add(m.lens);for(const id in m.cx||{}){(cxU[id]=cxU[id]||new Set()).add(m.cx[id]);}}
   {const dl=document.getElementById('dl-lens');const h=[...LENSES,...[...used.lens].sort()].map(v=>`<option value="${esc(v)}">`).join('');if(dl&&dl.innerHTML!==h)dl.innerHTML=h;}
   const cell=(c,r,k)=>{const m=r.m;switch(c.k){
@@ -4245,7 +4268,8 @@ function renderList(){
    case 'nick':return `<input data-k="nick" ${k} value="${esc(m.nick||'')}" autocomplete="off">`;
    case 'desc':return `<textarea data-k="desc" ${k}>${esc(m.desc||'')}</textarea>`;
    case 'sn':return `<textarea data-k="sn" ${k}>${esc(m.sn||'')}</textarea>`;
-   case 'gear':case 'cast':{const v=cellVal(s,r,c.k);return `<button class="slpick${v?'':' none'}" data-pick="${c.k}" ${k}>${esc(v||'—')}</button>`;}
+   case '_h':return `${slSelMode?`<input type="checkbox" class="slpk" data-pk="${r.it.id}|${r.vi}"${slMulti.has(r.it.id+'|'+r.vi)?' checked':''} aria-label="Pick this shot">`:''}<span class="grip" title="Drag to reorder">⠿</span>`;
+   case 'gear':case 'cast':case 'props':{const v=cellVal(s,r,c.k);return `<button class="slpick${v?'':' none'}" data-pick="${c.k}" ${k}>${esc(v||'—')}</button>`;}
    case 'time':return `<select data-k="time" ${k}><option value="">—</option>${TIMES.map(n=>`<option value="${n}"${+m.time===n?' selected':''}>${minTxt(n)}</option>`).join('')}${m.time&&!TIMES.includes(+m.time)?`<option selected value="${+m.time}">${minTxt(+m.time)}</option>`:''}</select>`;
    case 'flag':return `<button class="slflag${m.flag?' on':''}" data-tog="flag" ${k} title="${m.flag?'Flagged':'Flag this shot'}">★</button>`;
    case 'vfx':case 'sfx':return `<input type="checkbox" class="slchk" data-tog="${c.k}" ${k}${m[c.k]?' checked':''} aria-label="${c.l}">`;
@@ -4253,9 +4277,9 @@ function renderList(){
    default:if(c.cc)return `<input data-cx="${c.cc.id}" ${k} list="dl-cx-${c.cc.id}" value="${esc((m.cx||{})[c.cc.id]||'')}" autocomplete="off">`;return '';}};
   const tot=cols.some(c=>c.k==='time')?rows.reduce((a,r)=>a+(+r.m.time||0),0):0;
   const minW=cols.reduce((a,c)=>a+(c.k==='desc'?300:(CW[c.k]||150)),0);lv.innerHTML=head+(tot?`<p class="sltot">Estimated time for these shots: <b>${minTxt(tot)}</b></p>`:'')+cols.filter(c=>c.cc).map(c=>`<datalist id="dl-cx-${c.cc.id}">${[...(cxU[c.cc.id]||[])].filter(Boolean).sort().map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`).join('')
-  +`<div class="slw" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="sl" style="min-width:${minW}px"><thead><tr>${cols.map(c=>`<th>${esc(c.l)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>{const k=`data-id="${r.it.id}" data-v="${r.vi}"`,on=sel&&sel.id===r.it.id&&(sel.mark||0)===r.vi;
+  +`<div class="slw" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="sl" style="min-width:${minW}px"><thead><tr>${cols.map(c=>c.k==='_h'?'<th></th>':`<th data-ck="${esc(c.k)}" title="Drag sideways to move this column">${esc(c.l)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>{const k=`data-id="${r.it.id}" data-v="${r.vi}"`,on=sel&&sel.id===r.it.id&&(sel.mark||0)===r.vi;
   return `<tr class="${r.first?'ss':''}${on?' on':''}${r.m.ss?' stat-'+r.m.ss:''}${slMulti.has(r.it.id+'|'+r.vi)?' pick':''}" data-id="${r.it.id}" data-v="${r.vi}">${cols.map(c=>`<td${c.k==='desc'?'':` style="width:${CW[c.k]||150}px"`}>${cell(c,r,k)}</td>`).join('')}</tr>`;}).join('')}</tbody></table></div>`;}
- $('#lvInfo').onclick=()=>sceneInfo();{const b=$('#lvMenu');if(b)b.onclick=()=>shotMenu(b);}
+ $('#lvInfo').onclick=()=>sceneInfo();{const b=$('#lvMenu');if(b)b.onclick=()=>shotMenu(b);}{const b=$('#lvCols');if(b)b.onclick=()=>colDialog();}
  {const a=$('#lvSel');if(a)a.onclick=()=>{slSelMode=true;renderList();};const d=$('#lvSelDone');if(d)d.onclick=()=>{slSelMode=false;slMulti.clear();renderList();};const g=$('#lvBulk');if(g)g.onclick=bulkGo;}
 }
 const lvEl=$('#listView');
@@ -4265,6 +4289,19 @@ lvEl.addEventListener('click',e=>{if(e.target.matches('input,textarea,select'))r
  const tg=e.target.closest('button[data-tog]');if(tg){const c=findCam(tg.dataset.id);if(c){const m=c.it.marks[+tg.dataset.v];if(m[tg.dataset.tog])delete m[tg.dataset.tog];else m[tg.dataset.tog]=true;commit();}return;}
  const b=e.target.closest('[data-act]');if(b)act(b.dataset.act,b);});
 let slMulti=new Set(),slSelMode=false;
+let colDg=null;
+lvEl.addEventListener('pointerdown',e=>{const th=e.target.closest('table.sl thead th[data-ck]');if(!th||e.button>0)return;colDg={k:th.dataset.ck,th,pid:e.pointerId,x:e.clientX,on:false,to:null};});
+addEventListener('pointermove',e=>{if(!colDg||e.pointerId!==colDg.pid)return;
+ if(!colDg.on){if(Math.abs(e.clientX-colDg.x)<8)return;colDg.on=true;colDg.th.classList.add('cdg');try{colDg.th.setPointerCapture(e.pointerId);}catch(_){}}
+ const ths=[...lvEl.querySelectorAll('table.sl thead th[data-ck]')];if(!ths.length)return;for(const t of ths)t.classList.remove('cdl','cdr');
+ let hit=null;for(const t of ths){const r=t.getBoundingClientRect();if(e.clientX>=r.left&&e.clientX<=r.right){hit={t,after:e.clientX>r.left+r.width/2};break;}}
+ if(!hit)hit=e.clientX<ths[0].getBoundingClientRect().left?{t:ths[0],after:false}:{t:ths[ths.length-1],after:true};
+ colDg.to=hit.t===colDg.th?null:{k:hit.t.dataset.ck,after:hit.after};if(colDg.to)hit.t.classList.add(hit.after?'cdr':'cdl');
+ const w=lvEl.querySelector('.slw');if(w){const r=w.getBoundingClientRect();if(e.clientX<r.left+36)w.scrollLeft-=14;else if(e.clientX>r.right-36)w.scrollLeft+=14;}});
+const colDgEnd=e=>{if(!colDg||e.pointerId!==colDg.pid)return;const d=colDg;colDg=null;lvEl.querySelectorAll('th.cdg,th.cdl,th.cdr').forEach(t=>t.classList.remove('cdg','cdl','cdr'));
+ if(!d.on||e.type==='pointercancel'||!d.to)return;const s=scene(),cfg=colCfg(s),L=colList(cfg).map(x=>x.k).filter(k=>k!==d.k),at=L.indexOf(d.to.k);if(at<0)return;
+ L.splice(at+(d.to.after?1:0),0,d.k);cfg.order=L;colSave(s,cfg);};
+addEventListener('pointerup',colDgEnd);addEventListener('pointercancel',colDgEnd);
 /* the shots a bulk edit applies to: picked in the Shot List, cameras selected on the floor plan, or the selected shot */
 function bulkTargets(){const s=scene(),rows=rowsOf(s);
  if((mode==='list'||mode==='split')&&slMulti.size)return rows.filter(r=>slMulti.has(r.it.id+'|'+r.vi));
@@ -4272,7 +4309,7 @@ function bulkTargets(){const s=scene(),rows=rowsOf(s);
  if(sel){const it=itemById(sel.id);if(it&&it.type==='cam')return rows.filter(r=>r.it===it&&r.vi===verStart(it,sel.mark||0));}
  return [];}
 function bulkGo(){const t=bulkTargets();if(!t.length){toast('Pick the shots first: in the Shot List tap Select, or select cameras on the floor plan.');return;}bulkDialog(scene(),t);}
-function bulkDialog(s,T){const cols=colsOn(s),has=k=>cols.some(c=>c.k===k),st3={gear:{},cast:{}};
+function bulkDialog(s,T){const cols=colsOn(s),has=k=>cols.some(c=>c.k===k),st3={gear:{},cast:{},props:{}};
  const leave='<option value="">Leave as is</option>',clr='<option value="__x">Clear</option>';
  const f=[];
  if(has('size'))f.push(`<label class="fld">Shot size<select data-b="size">${leave}${clr}${SIZE_GROUPS.map(([g,l])=>`<optgroup label="${g}">${l.map(([n])=>`<option>${n}</option>`).join('')}</optgroup>`).join('')}</select></label>`);
@@ -4281,12 +4318,13 @@ function bulkDialog(s,T){const cols=colsOn(s),has=k=>cols.some(c=>c.k===k),st3={
  if(has('ss'))f.push(`<label class="fld">Status<select data-b="ss">${leave}${SS.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></label>`);
  for(const k of ['flag','vfx','sfx'])if(has(k))f.push(`<label class="fld">${k==='flag'?'Flag':k.toUpperCase()}<select data-b="${k}">${leave}<option value="1">${k==='flag'?'Flagged':'Yes'}</option><option value="0">${k==='flag'?'Not flagged':'No'}</option></select></label>`);
  for(const c of cols)if(c.cc)f.push(`<label class="fld">${esc(c.cc.name)}<input data-b="cx:${esc(c.cc.id)}" list="dl-cx-${esc(c.cc.id)}" placeholder="Leave as is" autocomplete="off"></label>`);
- const chips=k=>{const o=k==='gear'?[...GEAR,...((P.labels||{}).gear||[]).filter(g=>!GEAR.includes(g))].map(v=>[v,v]):sceneCastIds(s).map(id=>[id,nmT(charById(id).name)]);
+ const chips=k=>{const o=k==='props'?propOpts(s).map(v=>[v,v]):k==='gear'?[...GEAR,...((P.labels||{}).gear||[]).filter(g=>!GEAR.includes(g))].map(v=>[v,v]):sceneCastIds(s).map(id=>[id,nmT(charById(id).name)]);
   return o.length?`<div class="b3">${o.map(([v,l])=>`<button class="b3c" data-b3="${k}" data-v="${esc(v)}">${esc(l)}</button>`).join('')}</div>`:'<p class="mut">None yet.</p>';};
  modal(`<h3>Change ${plural(T.length,'shot')}</h3><p class="mut">${esc(T.map(r=>rowCode(s,r)).join(', '))}. Only what you set here changes; everything else stays as it is.</p>
   ${f.length?`<div class="vgrid">${f.join('')}</div>`:''}
   ${has('gear')?`<div class="lbl">Gear <span class="mut">· tap once to add to every shot, twice to remove from every shot</span></div>${chips('gear')}`:''}
   ${has('cast')?`<div class="lbl">Cast <span class="mut">· tap once to add, twice to remove</span></div>${chips('cast')}`:''}
+  ${has('props')?`<div class="lbl">Props <span class="mut">· tap once to add, twice to remove</span></div>${chips('props')}`:''}
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="bkGo">Apply to ${plural(T.length,'shot')}</button></div>`,card=>{
   card.addEventListener('click',e=>{const b=e.target.closest('[data-b3]');if(!b)return;const k=b.dataset.b3,v=b.dataset.v,cur=st3[k][v]||0,nx=cur===0?1:cur===1?-1:0;if(nx)st3[k][v]=nx;else delete st3[k][v];b.classList.toggle('add',nx===1);b.classList.toggle('rem',nx===-1);});
   card.querySelector('#bkGo').onclick=()=>{const vals={};card.querySelectorAll('[data-b]').forEach(el=>{if(el.value!=='')vals[el.dataset.b]=el.value;});let n=0;
@@ -4296,20 +4334,21 @@ function bulkDialog(s,T){const cols=colsOn(s),has=k=>cols.some(c=>c.k===k),st3={
      if(k==='time'){if(v==='__x')delete m.time;else m.time=+v;}else if(k==='ss'){if(v==='plan')delete m.ss;else m.ss=v;}
      else if(k==='flag'||k==='vfx'||k==='sfx'){if(v==='1')m[k]=true;else delete m[k];}
      else if(v==='__x')delete m[k];else{m[k]=v;if(k==='type')delete m.on;}ch=true;}
-    for(const k of ['gear','cast']){const sel3=st3[k];if(!Object.keys(sel3).length)continue;let cur=k==='gear'?(m.gear||[]).slice():shotCastIds(m);
+    for(const k of ['gear','cast','props']){const sel3=st3[k];if(!Object.keys(sel3).length)continue;let cur=k==='gear'?(m.gear||[]).slice():k==='props'?(m.props||[]).slice():shotCastIds(m);
      for(const v in sel3){if(sel3[v]===1&&!cur.includes(v))cur.push(v);if(sel3[v]===-1)cur=cur.filter(x=>x!==v);}
-     if(k==='gear'){if(cur.length)m.gear=cur;else delete m.gear;}else m.cast=cur;ch=true;}
+     if(k==='gear'||k==='props'){if(cur.length)m[k]=cur;else delete m[k];}else m.cast=cur;ch=true;}
     if(ch)n++;}
    closeModal();if(n){commit();toast(`Changed ${plural(n,'shot')}.`);}};});}
 function shotsRefresh(){try{if(mode==='list'||mode==='split')renderList();}catch(e){}try{renderInsp();}catch(e){}}
 /* gear and cast: pick from a list, or add your own */
 function slPick(btn){const c=findCam(btn.dataset.id);if(!c)return;const s=c.s,m=c.it.marks[+btn.dataset.v],k=btn.dataset.pick;closeDrop();
- const opts=()=>k==='gear'?[...GEAR,...((P.labels||{}).gear||[]).filter(g=>!GEAR.includes(g)),...(m.gear||[]).filter(g=>!GEAR.includes(g)&&!((P.labels||{}).gear||[]).includes(g))].map(v=>[v,v]):sceneCastIds(s).map(id=>[id,nmT(charById(id).name)]);
- const cur=()=>k==='gear'?(m.gear||[]):shotCastIds(m);
+ const opts=()=>k==='props'?propOpts(s).map(v=>[v,v]):k==='gear'?[...GEAR,...((P.labels||{}).gear||[]).filter(g=>!GEAR.includes(g)),...(m.gear||[]).filter(g=>!GEAR.includes(g)&&!((P.labels||{}).gear||[]).includes(g))].map(v=>[v,v]):sceneCastIds(s).map(id=>[id,nmT(charById(id).name)]);
+ const cur=()=>k==='props'?(m.props||[]):k==='gear'?(m.gear||[]):shotCastIds(m);
  const d=document.createElement('div');d.id='drop';d.className='pickdrop';document.body.appendChild(d);
- const draw=()=>{const on=cur(),o=opts();d.innerHTML=`<h4>${k==='gear'?'Gear':'Cast'} · ${esc(shotCode(s,c.it))}</h4><div class="pkl">${o.length?o.map(([v,l])=>`<button class="pk" data-v="${esc(v)}">${esc(l)}<span class="chk${on.includes(v)?' on':''}">${on.includes(v)?'✓':''}</span></button>`).join(''):`<p class="pkn">${k==='cast'?'No cast for this scene yet. Add a name below, or import the script.':''}</p>`}</div><div class="pka"><input placeholder="${k==='gear'?'Add gear…':'Add a name…'}" autocomplete="off"><button class="sm pri">Add</button></div>`;
+ const draw=()=>{const on=cur(),o=opts();d.innerHTML=`<h4>${k==='props'?'Props':k==='gear'?'Gear':'Cast'} · ${esc(shotCode(s,c.it))}</h4><div class="pkl">${o.length?o.map(([v,l])=>`<button class="pk" data-v="${esc(v)}">${esc(l)}<span class="chk${on.includes(v)?' on':''}">${on.includes(v)?'✓':''}</span></button>`).join(''):`<p class="pkn">${k==='cast'?'No cast for this scene yet. Add a name below, or import the script.':k==='props'?'No props named yet. Add one below. Labelled props on the floor plan are offered here too.':''}</p>`}</div><div class="pka"><input placeholder="${k==='props'?'Add a prop…':k==='gear'?'Add gear…':'Add a name…'}" autocomplete="off"><button class="sm pri">Add</button></div>`;
   const inp=d.querySelector('.pka input'),add=()=>{const v=inp.value.trim();if(!v)return;
-   if(k==='gear'){P.labels=P.labels||{};const L=P.labels.gear=P.labels.gear||[];if(!GEAR.includes(v)&&!L.includes(v))L.push(v);m.gear=[...new Set([...(m.gear||[]),v])];}
+   if(k==='props'){const ex=propOpts(s).find(x=>x.toLowerCase()===v.toLowerCase())||v;m.props=[...new Set([...(m.props||[]),ex])];}
+   else if(k==='gear'){P.labels=P.labels||{};const L=P.labels.gear=P.labels.gear||[];if(!GEAR.includes(v)&&!L.includes(v))L.push(v);m.gear=[...new Set([...(m.gear||[]),v])];}
    else{const root=rootKey(s),up=v.toUpperCase();let ch=P.characters.find(x=>!x.tpl&&!x.extra&&(x.home||'')===root&&x.name.toUpperCase()===up);
     if(!ch){ch={id:uid(),name:up,color:distinctColor(rootColors(rootOf(s))),home:root};P.characters.push(ch);}
     s.cast=[...new Set([...(s.cast||[]),ch.id])];m.cast=[...new Set([...shotCastIds(m),ch.id])];}
@@ -4317,13 +4356,13 @@ function slPick(btn){const c=findCam(btn.dataset.id);if(!c)return;const s=c.s,m=
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();add();}});d.querySelector('.pka button').onclick=add;};
  const place=b=>{const r=b.getBoundingClientRect();d.style.top=Math.min(innerHeight-d.offsetHeight-8,r.bottom+6)+'px';d.style.left=Math.max(8,Math.min(innerWidth-d.offsetWidth-8,r.left))+'px';};
  d.addEventListener('click',e=>{const b=e.target.closest('.pk');if(!b)return;const v=b.dataset.v,on=cur();
-  if(k==='gear'){m.gear=on.includes(v)?on.filter(x=>x!==v):[...on,v];if(!m.gear.length)delete m.gear;}else m.cast=on.includes(v)?on.filter(x=>x!==v):[...on,v];
+  if(k==='props'){m.props=on.includes(v)?on.filter(x=>x!==v):[...on,v];if(!m.props.length)delete m.props;}else if(k==='gear'){m.gear=on.includes(v)?on.filter(x=>x!==v):[...on,v];if(!m.gear.length)delete m.gear;}else m.cast=on.includes(v)?on.filter(x=>x!==v):[...on,v];
   commit({list:false});shotsRefresh();draw();const b2=document.querySelector(`[data-pick="${k}"][data-id="${btn.dataset.id}"][data-v="${btn.dataset.v}"]`);if(b2)place(b2);});
  draw();place(btn);setTimeout(()=>addEventListener('pointerdown',dropOut,true),0);}
 /* which columns show in the shot list (and its PDF), for this project */
 function colDialog(){const s=scene(),cfg=colCfg(s);cfg.on=cfg.on||{};cfg.cc=cfg.cc||[];const isOn=(k,d)=>k in cfg.on?cfg.on[k]:!!d;
  const pname=rootOf(s)?(fById(rootOf(s))||{}).name:'';
- modal(`<h3>Shot list columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder.'} Drag ⠿ to change the order. The PDF shows the same columns, in the same order.</p><div class="colL" id="colL"></div><div class="btns"><button id="colNew">New custom column…</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
+ modal(`<h3>Shot list columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder.'} Tick what you want to see; nothing is fixed. Drag ⠿ to change the order, or drag a heading sideways in the shot list itself. The PDF shows the same columns, in the same order.</p><div class="colL" id="colL"></div><div class="btns"><button id="colNew">New custom column…</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
   const L=card.querySelector('#colL'),draw=()=>{L.innerHTML=colList(cfg).map(x=>`<label class="colR${x.fx?' fx':''}" data-k="${esc(x.k)}"><span class="grip colG" title="Drag to reorder">⠿</span><input type="checkbox" data-c="${esc(x.k)}"${colIsOn(cfg,x)?' checked':''}${x.fx?' disabled':''}> ${esc(x.l)}${x.fx?' <small>always shown</small>':''}${x.cc?` <small>custom</small><button class="sm" data-rm="${esc(x.cc.id)}">Remove</button>`:''}</label>`).join('');};
   /* drag a row by its grip to change the column order */
   let dg=null;L.addEventListener('pointerdown',e=>{const g=e.target.closest('.colG');if(!g)return;e.preventDefault();const row=g.closest('.colR');dg={row,pid:e.pointerId};row.classList.add('dragging');try{g.setPointerCapture(e.pointerId);}catch(_){}});
@@ -4554,11 +4593,11 @@ function rtInsertLabel(col,label,kind){
  cell.focus();caretEnd(target);rtStore(cell);
 }
 function labelMenu(btn,col){
- const s=scene(),std=NB_PICK[col]||[],mine=((P.labels||{})[col]||[]).filter(l=>!std.includes(l)),items=[];
+ const s=scene(),lay=nbRaw(s),colD=nbCols(s).find(c=>c.k===col)||{labels:[]},std=colD.labels,mine=[],items=[];
  if(col==='snap'||col==='core'){const names=sceneCast(s);if(names.length){items.push({hd:'Characters'});for(const n of names)items.push({label:n,fn:()=>rtInsertLabel(col,n,col==='core'?'li':'inline')});}}
  if(std.length||mine.length)items.push({hd:'Labels'});
  for(const l of [...std,...mine])items.push({label:l,fn:()=>rtInsertLabel(col,l,PLAIN_AFTER.has(l)?'p':'ul')});
- items.push({label:'New label…',fn:()=>askText('New label','Label','e.g. LIGHTING IDEAS',v=>{v=v.replace(/:+$/,'').toUpperCase();P.labels=P.labels||{};const L=P.labels[col]=P.labels[col]||[];if(!L.includes(v)&&!std.includes(v))L.push(v);metaSaved();renderDocs(true);rtInsertLabel(col,v,'ul');})});
+ items.push({label:'New label…',fn:()=>askText('New label','Label','e.g. LIGHTING IDEAS',v=>{v=v.replace(/:+$/,'').toUpperCase();if(lay){const cs=nbCols(s),c=cs.find(x=>x.k===col);if(c&&!c.labels.includes(v)){c.labels.push(v);nbSave(s,cs);}}else{P.labels=P.labels||{};const L=P.labels[col]=P.labels[col]||[];if(!L.includes(v)&&!std.includes(v))L.push(v);metaSaved();}renderDocs(true);rtInsertLabel(col,v,'ul');})});
  docPop(btn,items);
 }
 function docHead(s,kind){
@@ -4566,12 +4605,52 @@ function docHead(s,kind){
  return `<div class="dvh"><div class="dvt"><div class="dvk">${esc(T[0]||'')}<i>${esc(T[1]||'')}</i></div><h2>${esc((s.number?'Sc. '+s.number+'  ':'')+(s.title||s.heading||'Untitled scene'))}</h2>${s.title&&s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}</div><div class="dvb">${kind==='nb'?'<button class="sm" data-d="docx">Import from Word…</button>':''}<button class="sm" data-d="info">Scene info</button><button class="sm" data-d="pdf">Export PDF…</button></div></div>`;
 }
 const FMT_BAR='<div class="fmt"><button data-f="bold" title="Bold (⌘B)"><b>B</b></button><button data-f="insertUnorderedList" title="Bullets">• List</button><button data-f="insertOrderedList" title="Numbered list">1. List</button></div>';
+/* ---------- the breakdown's layout: which columns, in what order, called what, with which labels ----------
+   The seven columns and their labels above are where everyone starts. A project can rename, hide, reorder, add and remove columns
+   and labels; the layout is kept with the project (its top folder), the same way the shot list's columns are. */
+const NB_START={snap:['NATURAL BEHAVIORS'],img:['IMAGERY','TONE'],core:['SCENE NEEDS','ACTOR DIRECTION TIPS'],elev:['ACTOR BEHAVIOR'],pit:['ACTOR TRAPS']};
+function nbDefault(){return NB_COLS.map(([k,name])=>{const std=NB_PICK[k]||[];return {k,name,on:1,labels:[...std,...((P.labels||{})[k]||[]).filter(l=>!std.includes(l))],start:(NB_START[k]||[]).slice()};});}
+function nbRaw(s){const f=fById(rootOf(s)),c=(f&&f.nb)||(P.ui&&P.ui.nb)||null;return c&&Array.isArray(c.cols)?c:null;}
+function nbCols(s){const c=nbRaw(s),D=nbDefault();if(!c)return D;
+ const out=c.cols.filter(x=>x&&x.k).map(x=>({k:String(x.k),name:String(x.name||''),on:x.on?1:0,labels:(x.labels||[]).map(String),start:(x.start||[]).map(String)}));
+ for(const d of D)if(!out.some(x=>x.k===d.k))out.push(d);return out;}
+/* the columns on the page: Questions follows its own tick in the toolbar */
+function nbShown(s){const q=!!P.ui.nbQ;return nbCols(s).filter(c=>c.k==='q'?q:c.on);}
+function nbSave(s,cols){const v=cols?{cols:clone(cols)}:null,f=fById(rootOf(s));if(f){if(v)f.nb=v;else delete f.nb;}else{if(v)P.ui.nb=v;else delete P.ui.nb;saveLocal();}commit();}
+/* what an untouched cell starts with: the column's starter labels, each with room under it */
+function nbTpl(c){if(c.k==='q')return RT_UL;const st=(c.start||[]).filter(t=>(c.labels||[]).includes(t));return (c.k==='syn'||c.k==='snap'||!st.length?RT_P:'')+st.map(t=>rtL(esc(t))+(PLAIN_AFTER.has(t)?RT_P:RT_UL)).join('');}
+function nbDialog(){const s=scene(),pname=rootOf(s)?(fById(rootOf(s))||{}).name:'';let cols=nbCols(s),open=null;
+ const save=()=>{nbSave(s,cols);if(mode==='nb')renderDocs(true);};
+ modal(`<h3>Breakdown columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder (kept on this device).'} Tick what you want to see, rename anything, drag ⠿ to change the order. Labels are the headings offered by “+ Label” in a column. Hiding or removing a column never deletes what was written in it.</p><div class="colL nbL" id="nbL"></div><div class="btns"><button id="nbNew">New column…</button><button id="nbReset">Back to the starting layout</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
+  const L=card.querySelector('#nbL'),isCustom=k=>!NB_COLS.some(c=>c[0]===k);
+  const draw=()=>{L.innerHTML=cols.map((c,i)=>{const on=c.k==='q'?!!P.ui.nbQ:!!c.on,ex=open===c.k;
+    return `<div class="colR nbR" data-k="${esc(c.k)}"><span class="grip colG" title="Drag to reorder">⠿</span><input type="checkbox" data-on="${i}"${on?' checked':''} aria-label="Show this column"><input class="nbN" data-nm="${i}" value="${esc(c.name)}" placeholder="Column name" autocomplete="off">${c.k==='syn'||c.k==='q'?'':`<button class="sm" data-lb="${i}">Labels (${c.labels.length}) ${ex?'▴':'▾'}</button>`}${isCustom(c.k)?`<button class="sm" data-rm="${i}">Remove</button>`:''}</div>`
+     +(ex?`<div class="nbLb" data-k="${esc(c.k)}">${c.labels.length?c.labels.map((t,j)=>`<div class="nbLr"><b>${esc(t)}</b><label title="Put this label in the column of every new scene"><input type="checkbox" data-st="${i}:${j}"${c.start.includes(t)?' checked':''}> starts in new scenes</label><button class="sm" data-lx="${i}:${j}" aria-label="Remove label ${esc(t)}">Remove</button></div>`).join(''):'<p class="mut" style="margin:4px 0 8px">No labels yet.</p>'}<div class="nbLa"><input data-la="${i}" placeholder="Add a label, e.g. LIGHTING IDEAS" autocomplete="off"><button class="sm pri" data-lg="${i}">Add</button></div></div>`:'');}).join('');};
+  draw();
+  let dg=null;L.addEventListener('pointerdown',e=>{const g=e.target.closest('.colG');if(!g)return;e.preventDefault();if(open){open=null;draw();}const row=L.querySelector(`.nbR[data-k="${CSS.escape(g.closest('.nbR').dataset.k)}"]`);dg={row,pid:e.pointerId};row.classList.add('dragging');try{row.setPointerCapture(e.pointerId);}catch(_){}});
+  L.addEventListener('pointermove',e=>{if(!dg||e.pointerId!==dg.pid)return;const el=document.elementFromPoint(e.clientX,e.clientY),t=el&&el.closest&&el.closest('.nbR');if(!t||t===dg.row||!L.contains(t))return;const r=t.getBoundingClientRect();if(e.clientY<r.top+r.height/2)L.insertBefore(dg.row,t);else L.insertBefore(dg.row,t.nextSibling);const lr=L.getBoundingClientRect();if(e.clientY<lr.top+24)L.scrollTop-=12;else if(e.clientY>lr.bottom-24)L.scrollTop+=12;});
+  const dgEnd=e=>{if(!dg||e.pointerId!==dg.pid)return;dg.row.classList.remove('dragging');dg=null;if(e.type==='pointercancel'){draw();return;}const ord=[...L.querySelectorAll('.nbR')].map(r=>r.dataset.k);cols.sort((a,b)=>ord.indexOf(a.k)-ord.indexOf(b.k));draw();save();};
+  L.addEventListener('pointerup',dgEnd);L.addEventListener('pointercancel',dgEnd);
+  const addLabel=i=>{const inp=L.querySelector(`[data-la="${i}"]`),v=(inp&&inp.value||'').trim().replace(/:+$/,'').toUpperCase();if(!v)return;const c=cols[i];if(!c.labels.includes(v))c.labels.push(v);draw();save();const n=L.querySelector(`[data-la="${i}"]`);if(n)n.focus();};
+  L.addEventListener('change',e=>{const d=e.target.dataset;
+   if(d.on!=null){const c=cols[+d.on];if(c.k==='q'){P.ui.nbQ=e.target.checked;saveLocal();if(mode==='nb')renderDocs(true);}else{c.on=e.target.checked?1:0;save();}}
+   else if(d.nm!=null){const c=cols[+d.nm],v=e.target.value.trim();if(!v){e.target.value=c.name;return;}c.name=v;save();}
+   else if(d.st!=null){const [i,j]=d.st.split(':').map(Number),c=cols[i],t=c.labels[j];c.start=c.labels.filter(x=>x===t?e.target.checked:c.start.includes(x));save();}});
+  L.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target.dataset.la!=null){e.preventDefault();addLabel(+e.target.dataset.la);}else if(e.target.dataset.nm!=null){e.preventDefault();e.target.blur();}});
+  L.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+   if(d.lb!=null){const k=cols[+d.lb].k;open=open===k?null:k;draw();}
+   else if(d.lg!=null)addLabel(+d.lg);
+   else if(d.lx!=null){const [i,j]=d.lx.split(':').map(Number),c=cols[i],t=c.labels[j];c.labels.splice(j,1);c.start=c.start.filter(x=>x!==t);draw();save();}
+   else if(d.rm!=null){const c=cols[+d.rm];cols=cols.filter(x=>x!==c);if(open===c.k)open=null;draw();save();toast(`${c.name||'Column'} removed. What was written in it is still with its scenes, though no longer shown.`);}});
+  card.querySelector('#nbNew').onclick=()=>{const c={k:'u'+uid(),name:'New Column',on:1,labels:[],start:[]};cols.push(c);draw();save();const n=L.querySelector(`.nbR[data-k="${c.k}"] .nbN`);if(n){n.focus();n.select();n.scrollIntoView({block:'nearest'});}};
+  card.querySelector('#nbReset').onclick=()=>{nbSave(s,null);cols=nbCols(s);open=null;draw();if(mode==='nb')renderDocs(true);toast('Back to the starting columns and labels. Nothing that was written was removed.');};
+ },'cfcard');}
 function renderNb(v){
- const s=scene(),x=txOf(s.id),st=storiesFor(s),cur=storyOf(s),q=!!P.ui.nbQ,cols=NB_COLS.filter(([k])=>k!=='q'||q),tint=cur?shade(cur.color,.86):'#fff';
- const live=k=>{const c=x&&x.nb&&x.nb[k];return c&&c.h!=null&&!c.del?c.h:null;},cellH=k=>{const h=live(k);if(h!=null)return h;if(k==='syn'&&s.synopsis)return `<p>${esc(s.synopsis)}</p>`;return NB_TPL[k];};
+ const s=scene(),x=txOf(s.id),st=storiesFor(s),cur=storyOf(s),q=!!P.ui.nbQ,cols=nbShown(s),tint=cur?shade(cur.color,.86):'#fff';
+ const live=k=>{const c=x&&x.nb&&x.nb[k];return c&&c.h!=null&&!c.del?c.h:null;},cellH=k=>{const h=live(k);if(h!=null)return h;if(k==='syn'&&s.synopsis)return `<p>${esc(s.synopsis)}</p>`;return nbTpl(cols.find(c=>c.k===k)||{k});};
  const hasQ=!q&&live('q')&&rtText(rtParse(live('q')));
- v.innerHTML=docHead(s,'nb')+`<div class="dvtools">${FMT_BAR}<span class="stl">Story</span>${st.map(t=>`<button class="stc${cur&&cur.id===t.id?' on':''}" data-story="${esc(t.id)}" title="Double-click (or press and hold) to rename"><i style="background:${esc(t.color)}"></i>${esc(t.name||t.id)}</button>`).join('')}<button class="stc sted" data-stedit="1" title="Name the stories">Edit…</button><label class="dvq"><input type="checkbox" id="nbQ"${q?' checked':''}> Questions column${hasQ?' (has notes)':''}</label></div>
- <div class="nbwrap" style="--n:${cols.length}"><div class="nbgrid">${cols.map(([k,n])=>`<section class="nbc" style="background:${tint}"><header><b>${esc(n)}</b>${k==='syn'||k==='q'?'':`<button data-lab="${k}">+ Label</button>`}</header><div class="rt" contenteditable="true" spellcheck="true" data-cell="nb.${k}">${cellH(k)}</div></section>`).join('')}</div></div>`;
+ v.innerHTML=docHead(s,'nb')+`<div class="dvtools">${FMT_BAR}<span class="stl">Story</span>${st.map(t=>`<button class="stc${cur&&cur.id===t.id?' on':''}" data-story="${esc(t.id)}" title="Double-click (or press and hold) to rename"><i style="background:${esc(t.color)}"></i>${esc(t.name||t.id)}</button>`).join('')}<button class="stc sted" data-stedit="1" title="Name the stories">Edit…</button><button class="stc sted nbcb" data-nbcols="1" title="Choose, rename, reorder and add columns and their labels">Columns…</button><label class="dvq"><input type="checkbox" id="nbQ"${q?' checked':''}> Questions column${hasQ?' (has notes)':''}</label></div>
+ <div class="nbwrap" style="--n:${cols.length}">${cols.length?`<div class="nbgrid">${cols.map(({k,name:n})=>`<section class="nbc" style="background:${tint}"><header><b>${esc(n)}</b>${k==='syn'||k==='q'?'':`<button data-lab="${esc(k)}">+ Label</button>`}</header><div class="rt" contenteditable="true" spellcheck="true" data-cell="nb.${esc(k)}">${cellH(k)}</div></section>`).join('')}</div>`:'<div class="lv-empty">No columns are showing. Use Columns… above to choose what to show.</div>'}</div>`;
 }
 function renderSt(v){
  const s=scene(),secs=stSecs(s),cuts=cutsFor(s);
@@ -4624,7 +4703,8 @@ function storyRename(id){const s=scene(),L=storiesFor(s),t=L.find(x=>x.id===id);
   card.querySelector('#ok').onclick=go;i.addEventListener('keydown',e=>{if(e.key==='Enter')go();});i.focus();i.select();},'numcard');}
 function docClick(e){
  if(stSwallow){stSwallow=false;if(e.target.closest('[data-story]'))return;}
- const t=e.target,b=t.closest('[data-f],[data-lab],[data-story],[data-stedit],[data-d],[data-sm],[data-cutm],[data-cutadd],#stAdd');if(!b)return;const d=b.dataset;
+ const t=e.target,b=t.closest('[data-f],[data-lab],[data-story],[data-stedit],[data-nbcols],[data-d],[data-sm],[data-cutm],[data-cutadd],#stAdd');if(!b)return;const d=b.dataset;
+  if(d.nbcols){nbDialog();return;}
   if(d.stedit){storiesDialog(scene());return;}
  if(d.f)rtCmd(d.f);
  else if(d.lab)labelMenu(b,d.lab);
@@ -4709,9 +4789,9 @@ async function pdfTextPages(doc,s,o,np){
  const ink=()=>doc.setTextColor(28,28,30);
  if(o.nb){
   const x=txOf(s.id),cell=key=>{const c=x&&x.nb&&x.nb[key];const own=c&&!c.del&&c.h?rtPrune(rtParse(c.h)):[];if(key==='syn'&&!own.length&&String(s.synopsis||'').trim())return rtPrune(rtParse(`<p>${esc(s.synopsis)}</p>`));return own;};
-  const cols=NB_COLS.map(([key,name])=>({key,name,bl:cell(key)})).filter(c=>c.key!=='q'||(o.q&&c.bl.length));
+  const cols=nbCols(s).filter(c=>c.k==='q'||c.on).map(({k:key,name})=>({key,name,bl:cell(key)})).filter(c=>c.key!=='q'||(o.q&&c.bl.length));
   if(cols.some(c=>c.bl.length)){
-   const WT={syn:.92,snap:.92,img:1.04,core:1.14,elev:1.1,pit:1,q:.9},tw=W-2*M,sum=cols.reduce((a,c)=>a+WT[c.key],0),pad=4.5,st=storyOf(s),tint=st?shade(st.color,.84):null;let cx=M;for(const c of cols){c.x=cx;c.w=tw*WT[c.key]/sum;cx+=c.w;}
+   const WT={syn:.92,snap:.92,img:1.04,core:1.14,elev:1.1,pit:1,q:.9},tw=W-2*M,sum=cols.reduce((a,c)=>a+(WT[c.key]||1),0),pad=4.5,st=storyOf(s),tint=st?shade(st.color,.84):null;let cx=M;for(const c of cols){c.x=cx;c.w=tw*(WT[c.key]||1)/sum;cx+=c.w;}
    const top=(await strip('nb')).h+7;
    const lay=fs=>{const hh=fs*2.1,cap=bot-top-hh-pad*2;let mx=0;for(const c of cols){c.L=rtLayout(K,c.bl,c.w-pad*2,fs);let y=0;c.L.forEach((l,i)=>{y+=l.h+(i?l.gap:0);});mx=Math.max(mx,y);}return {fs,hh,cap,mx};};
    let G=null;for(let fs=port?9.5:10;fs>=6.5;fs-=.25){G=lay(fs);if(G.mx<=G.cap)break;}
@@ -4960,11 +5040,11 @@ function boardPagesSVG(s,o){o=o||{};const port=!!o.port,W=port?1275:1650,H=port?
  return out;}
 function listKit(s,o,W){
  const port=!!o.port,M=48,TW=W-2*M,on=colsOn(s),sb=o.sb!==false&&on.some(c=>c.k==='sb');
- const WL={sb:276,shot:92,ver:62,nick:140,size:150,type:150,angle:140,move:140,lens:90,gear:150,cast:160,time:84,flag:66,vfx:62,sfx:62,ss:100,sn:180},WP={sb:204,shot:80,ver:54,nick:116,size:128,type:128,angle:118,move:118,lens:78,gear:126,cast:136,time:74,flag:58,vfx:54,sfx:54,ss:86,sn:150};
- const base=Object.assign({},port?WP:WL),list=on.filter(c=>c.k!=='sb'||sb),wOf=c=>base[c.k]||(port?116:140),core=new Set(['sb','shot','ver','time','flag','vfx','sfx','lens']),minD=port?240:320;
+ const WL={sb:276,shot:92,ver:62,nick:140,size:150,type:150,angle:140,move:140,lens:90,gear:150,cast:160,props:160,time:84,flag:66,vfx:62,sfx:62,ss:100,sn:180},WP={sb:204,shot:80,ver:54,nick:116,size:128,type:128,angle:118,move:118,lens:78,gear:126,cast:136,props:136,time:74,flag:58,vfx:54,sfx:54,ss:86,sn:150};
+ const base=Object.assign({},port?WP:WL),list=on.filter(c=>c.k!=='sb'||sb),wOf=c=>base[c.k]||(port?116:140),core=new Set(['sb','shot','ver','time','flag','vfx','sfx','lens']),hasD=list.some(c=>c.k==='desc'),minD=hasD?(port?240:320):0;
  let fixed=0,scal=0;for(const c of list){if(c.k==='desc')continue;if(core.has(c.k))fixed+=wOf(c);else scal+=wOf(c);}
  let f0=scal?(TW-minD-fixed)/scal:1;const sbw0=base.sb;if(sb&&f0<.8){base.sb=Math.round(sbw0*.8);fixed-=sbw0-base.sb;f0=(TW-minD-fixed)/scal;}
- const crowd=f0<.8,CH=crowd?8.4:10.4,LHt=crowd?20:24,f=scal?Math.max(.35,Math.min(1,f0/(crowd?.81:1))):1,ws=list.map(c=>c.k==='desc'?0:Math.round(core.has(c.k)?wOf(c):wOf(c)*f)),used=ws.reduce((a,b)=>a+b,0);
+ const crowd=f0<.8,CH=crowd?8.4:10.4,LHt=crowd?20:24,f=scal?Math.max(.35,hasD?Math.min(1,f0/(crowd?.81:1)):f0):1,ws=list.map(c=>c.k==='desc'?0:Math.round(core.has(c.k)?wOf(c):wOf(c)*f)),used=ws.reduce((a,b)=>a+b,0);
  const cols=[];let cx=0;list.forEach((c,i)=>{const w=c.k==='desc'?Math.max(140,TW-used):ws[i];cols.push([c.P,cx,w,c.k]);cx+=w;});
  const C=k=>cols.findIndex(c=>c[3]===k),fit=w=>Math.max(4,Math.floor((w-20)/CH)),IW=Math.min(o.dense?(port?150:176):(port?184:256),(sb?cols[C('sb')][2]:300)-20),IH=Math.round(IW*9/16);
  const tk=cols.map(c=>c[3]).filter(k=>!['sb','shot','ver'].includes(k)),cell=(k,str,lines)=>{const n=fit(cols[C(k)][2]),out=[];for(const l of wrapText(str,n))for(let p=0;p<l.length;p+=n)out.push(l.slice(p,p+n));return out.slice(0,lines);};
@@ -4972,8 +5052,8 @@ function listKit(s,o,W){
   const n=Math.max(1,...Object.values(t).map(a=>a.length)),nf=sbN(r),more=shotFrames(r.it,r.vi).length>SBMAX?26:0;return {r,t,h:Math.max(sb?nf*IH+(nf-1)*8+(o.dense?18:24)+more:(o.dense?50:58),22+n*LHt+(o.dense?8:14))};});
  const txt=(k,y,arr)=>arr.map((l,j)=>`<text x="${M+cols[C(k)][1]+10}" y="${y+30+j*LHt}" class="x-lt"${crowd?' style="font-size:15.5px"':''}>${esc(l)}</text>`).join('');
  const head=y=>`<rect x="${M}" y="${y}" width="${TW}" height="42" fill="#2b3445"/>`+cols.map(c=>{const t=String(c[0]),fs=Math.max(9,Math.min(14,(c[2]-18)/(t.length*.74)));return `<text x="${M+c[1]+10}" y="${y+27}" class="x-th"${fs<14?` style="font-size:${fs.toFixed(1)}px"`:''}>${esc(t)}</text>`;}).join('');
- const row=({r,t,h:RH},y)=>{let h='';if(sb)h+=sbStackSVG(r,M+10,y+(o.dense?9:12),IW,IH);
-  const sx=M+cols[C('shot')][1];h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text>`;
+ const row=({r,t,h:RH},y)=>{let h='';if(sb)h+=sbStackSVG(r,M+cols[C('sb')][1]+10,y+(o.dense?9:12),IW,IH);
+  if(C('shot')>=0){const sx=M+cols[C('shot')][1];h+=`<rect x="${sx+10}" y="${y+15}" width="16" height="16" rx="3" fill="${r.st.color}"/><text x="${sx+32}" y="${y+30}" class="x-ls">${esc(shotCode(s,r.it))}</text>`;}
   if(C('ver')>=0)h+=`<text x="${M+cols[C('ver')][1]+10}" y="${y+30}" class="x-ls">${verCode(s,r.vn)}</text>`;
   for(const k of tk)h+=txt(k,y,t[k]);
   return h+`<line x1="${M}" x2="${W-M}" y1="${y+RH}" y2="${y+RH}" stroke="#d6d6d1"/>`;};
