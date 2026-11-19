@@ -1,8 +1,8 @@
-// The Director’s Notebook offline cache. Version 20261118222038
-const V='bb-20261118222038';
+// The Director’s Notebook offline cache. Version 20261119004905
+const V='bb-20261119004905';
 const SHELL=["./", "index.html", "manifest.webmanifest", "vendor/firebase-app-compat.js", "vendor/firebase-auth-compat.js", "vendor/firebase-firestore-compat.js", "vendor/jspdf.umd.min.js", "vendor/pdf.min.js", "vendor/pdf.worker.min.js", "icons/dn-192.png", "icons/dn-512.png", "icons/dn-touch.png"];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('bb-')&&k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==location.origin)return;
   if(r.mode==='navigate'){
@@ -11,8 +11,9 @@ self.addEventListener('fetch',e=>{
       const c=await caches.open(V);
       const net=fetch(r,{cache:'no-store'}).then(res=>{if(res&&res.ok)c.put('./',res.clone());return res;});
       const timeout=new Promise(res=>setTimeout(res,4000));
-      try{const res=await Promise.race([net,timeout]);if(res)return res;}catch(err){}
-      return (await c.match('./'))||net;
+      let res=null;try{res=await Promise.race([net,timeout]);if(res&&res.ok)return res;}catch(err){}
+      // a server error or no answer: the saved copy, if there is one
+      return (await c.match('./'))||res||net;
     })());
     return;
   }

@@ -403,7 +403,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261118222038';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119004905';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -435,7 +435,7 @@ const TIMES=[5,10,15,20,25,30,35,40,45,50,55,60,75,90,105,120,150,180];
 const SL_COLS=[['sb','Storyboard','STORYBOARD',1],['shot','Shot #','SHOT #',1,1],['ver','Version','VER',1],['nick','Nickname','NICKNAME',0],['size','Shot size','SHOT SIZE',1],['type','Shot type','SHOT TYPE',1],['angle','Shot angle','SHOT ANGLE',1],['move','Movement','MOVEMENT',1],
  ['lens','Lens','LENS',0],['gear','Gear','GEAR',0],['cast','Cast','CAST',0],['desc','Description','DESCRIPTION',1,1],['time','Est. time','TIME',0],['flag','Flag','FLAG',0],['vfx','VFX','VFX',0],['sfx','SFX','SFX',0],['ss','Status','STATUS',0],['sn','Notes','NOTES',0]];
 function colCfg(s){const f=fById(rootOf(s));return clone((f&&f.cols)||(P.ui&&P.ui.cols)||{});}
-function colSave(s,c){const f=fById(rootOf(s));if(f)f.cols=c;else P.ui.cols=c;commit();}
+function colSave(s,c){const f=fById(rootOf(s));if(f)f.cols=c;else{P.ui.cols=c;saveLocal();}commit();}
 /* every column, in the project's order (new ones go at the end) */
 function colList(c){const all=[];SL_COLS.forEach(([k,l,p,d,fx],i)=>all.push({k,l,P:p,d:!!d,fx:!!fx,i}));(c.cc||[]).forEach((cc,j)=>all.push({k:'c:'+cc.id,l:cc.name,P:String(cc.name).toUpperCase(),cc,d:true,i:100+j}));
  const ord=c.order||[],ix=x=>{const q=ord.indexOf(x.k);return q>=0?q:1000+x.i;};return all.sort((a,b)=>ix(a)-ix(b));}
@@ -773,27 +773,39 @@ function fpStr(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCo
 function canonJ(v){if(v===null||typeof v!=='object')return JSON.stringify(v===undefined?null:v);if(Array.isArray(v))return '['+v.map(canonJ).join(',')+']';return '{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+canonJ(v[k])).join(',')+'}';}
 function sceneFp(sc){const o=Object.assign({},sc);delete o.pageId;delete o.conflicts;delete o.mcp;return fpStr(canonJ(o));}
 function ancOf(k){sync.anc=sync.anc||{};return sync.anc[k]||(sync.anc[k]=[]);}
-function ancAdd(k,list){const a=ancOf(k);for(const h of list)if(h&&a[a.length-1]!==h){const i=a.indexOf(h);if(i>=0)a.splice(i,1);a.push(h);}if(a.length>40)a.splice(0,a.length-40);}
+function ancAdd(k,list){const a=ancOf(k);for(const h of list)if(h&&a[a.length-1]!==h){const i=a.indexOf(h);if(i>=0)a.splice(i,1);a.push(h);}if(a.length>80)a.splice(0,a.length-80);}
 /* what to do with a version of a scene that arrives from another device */
 function sceneDecide(k,b,local){if(!local)return 'take';const L=sceneFp(local),R=sceneFp(b.scene),known=ancOf(k);
  if(R===L)return 'same';
  {const cf=sync.cf&&sync.cf[k];if(b.cf&&cf&&cf.key===b.cf&&cf.fp===L)return R<L?'take':'old';}
  /* a version this device has seen before: an old echo, unless the other device had moved past it and went back (undo, restore) */
- if(known.includes(R)){if(b.dev===DEVICE||!Array.isArray(b.anc))return 'old';const ri=known.indexOf(R);if(!b.anc.some(h=>h!==R&&known.indexOf(h)>ri))return 'old';return b.anc.includes(L)?'take':'conflict';}
+ if(known.includes(R)){if(b.dev===DEVICE||!Array.isArray(b.anc))return 'old';const ri=known.indexOf(R);if(!b.anc.some(h=>h!==R&&known.indexOf(h)>ri)){if(b.dev&&!sync.dirty.includes(k)){markDirty(k);setTimeout(()=>schedulePush(600),0);}return 'old';}return b.anc.includes(L)?'take':'conflict';}
  if(Array.isArray(b.anc)&&b.anc.includes(L))return 'take';
  if(Array.isArray(b.anc)){const mine=sync.mine&&sync.mine[k];return mine&&!b.anc.includes(mine)?'conflict':'take';}
  if(!known.length||known[known.length-1]===L)return 'take';
  return 'conflict';}
+/* the short fields of a scene as they were when both devices last agreed, so a clash can tell who changed what */
+const SF=['title','heading','number','synopsis','snote','folder','code','day'];
+const sfH=v=>fpStr(JSON.stringify(v==null?'':v));
+/* remember those fields for a version this device held (by fingerprint); a few versions per scene are enough */
+function fhPut(k,fp,sc){if(!fp||!sc)return;const all=sync.fh=sync.fh||{},m=all[k]=all[k]||{};if(m[fp])return;m[fp]=SF.map(f=>sfH(sc[f])).join(',');const ks=Object.keys(m);if(ks.length>6)delete m[ks[0]];}
+/* the last version both devices had, as far as their histories show, and its fields */
+function fhBase(k,b){const known=ancOf(k),ra=Array.isArray(b.anc)?b.anc:[],m=(sync.fh||{})[k]||{};for(let i=known.length-1;i>=0;i--)if(ra.includes(known[i])){const v=m[known[i]];if(!v)return null;const a=v.split(','),o={};SF.forEach((f,j)=>o[f]=a[j]);return o;}return null;}
 function cfPlan(sc){const d=planTake(stripScene(sc));if(d.pages&&d.pages.length)d.pageId=d.pages[0].id;return d;}
 function cfWhen(t){const d=new Date(t||0);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});}
 function sceneConflict(k,b,local){const other=clone(b.scene);delete other.conflicts;const lt=sync.stamps[k]||0,rt=b.updatedAt||0,Lf=sceneFp(local),Rf=sceneFp(b.scene),remote=rt>lt||(rt===lt&&Rf<Lf);
  const win=clone(remote?other:local),lose=remote?local:other,who=remote?DEVNAME:(b.devName||'other device'),when=remote?lt:rt;delete win.conflicts;win.id=local.id;
  const pid='cf'+(remote?Lf:Rf);win.plans=win.plans||[];
- if(!win.plans.some(p=>p.id===pid))win.plans.push({id:pid,name:`Older version · ${who} · ${cfWhen(when)}`,d:cfPlan(lose)});
+ /* a field changed on one side only is kept from that side; changed on both, the newer side's stays and the other is noted */
+ const BS=fhBase(k,b),was=[],both=new Set();
+ for(const f of SF){const l=local[f],o=other[f],hl=sfH(l),ho=sfH(o);if(hl===ho)continue;const ul=!!BS&&hl===BS[f],uo=!!BS&&ho===BS[f],pick=uo&&!ul?l:ul&&!uo?o:undefined;
+  if(uo!==ul){if(pick==null||pick==='')delete win[f];else win[f]=clone(pick);if((f==='title'||f==='heading'||f==='synopsis')&&win[f]===undefined)win[f]='';}
+  else{both.add(f);const lv=lose[f];if((f==='title'||f==='heading'||f==='number')&&typeof lv==='string'&&lv.trim())was.push(lv.trim());}}
+ if(!win.plans.some(p=>p.id===pid))win.plans.push({id:pid,name:`Older version · ${who} · ${cfWhen(when)}`+(was.length?` · was “${trunc(was[0],40)}”`:''),d:cfPlan(lose)});
  for(const c of local.conflicts||[]){const id='cfo'+(c.at||0);if(!win.plans.some(p=>p.id===id))win.plans.push({id,name:'Older version · '+cfWhen(c.at),d:cfPlan(c.scene)});}
- for(const p of lose.plans||[])if(p&&p.id&&!win.plans.some(q=>q.id===p.id))win.plans.push(clone(p));
+ for(const p of lose.plans||[])if(p&&p.id){const q=win.plans.find(z=>z.id===p.id);if(!q)win.plans.push(clone(p));else if(canonJ(q.d)!==canonJ(p.d)){const id=p.id+'~'+fpStr(canonJ(p.d));if(!win.plans.some(z=>z.id===id))win.plans.push(Object.assign(clone(p),{id,name:(p.name||'Plan')+' (older)'}));}}
  {const wb=win.beats||[];for(const x of lose.beats||[])if(x&&x.id&&!wb.some(y=>y.id===x.id)){const c=clone(x);if(c.n!=null&&wb.some(y=>y.n!=null&&+y.n===+c.n&&(y.pg||'p')===(c.pg||'p'))){delete c.n;delete c.pg;}wb.push(c);}if(wb.length)win.beats=wb;}
- for(const f of ['synopsis','snote']){const a=String(win[f]||'').trim(),c=String(lose[f]||'').trim();if(!c||a===c||a.includes(c))continue;win[f]=a?win[f]+'\n\n(Older version) '+lose[f]:lose[f];}
+ for(const f of ['synopsis','snote']){if(!both.has(f))continue;const a=String(win[f]||'').trim(),c=String(lose[f]||'').trim();if(!c||a===c||a.includes(c))continue;win[f]=a?win[f]+'\n\n(Older version) '+lose[f]:lose[f];}
  ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);sync.stamps[k]=Math.max(Date.now(),lt+1,rt+1);markDirty(k);
  const wf=sceneFp(stripScene(win));sync.cf=sync.cf||{};sync.cf[k]={key:[Lf,Rf].sort().join('|'),fp:wf};(sync.mine=sync.mine||{})[k]=wf;return win;}
 /* Scenes and text are saved in the small store while they fit, and in the large one (the same kind that holds images)
@@ -803,18 +815,26 @@ const kvOpen=()=>kvP||(kvP=new Promise(res=>{try{const r=indexedDB.open('blockin
 const kvGet=k=>kvOpen().then(d=>d?new Promise(res=>{try{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result==null?null:q.result);q.onerror=()=>res(null);}catch(e){res(null);}}):null);
 const kvPut=(k,v)=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
 const kvDel=k=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
+const kvPutMany=o=>kvOpen().then(d=>d?new Promise(res=>{try{const tx=d.transaction('kv','readwrite'),st=tx.objectStore('kv');for(const k in o)st.put(o[k],k);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);tx.onabort=()=>res(false);}catch(e){res(false);}}):false);
+let lsTight=false;
+/* The project and its sync record are one pair. Small store: both written together, or neither counts. Large store: both in one transaction. */
 function saveP(j,sj){
- if(j.length<=LS_MAX&&lsSet(LS.p,j)){pSeq++;pFail=false;if(sj!==undefined&&!lsSet(LS.sync,sj))pFail=true;if(pBig||pIn||lsGet(BIG)){pBig=false;try{localStorage.removeItem(BIG);}catch(e){}kvDel('p');}return true;}
+ if(!lsTight&&j.length<=LS_MAX&&lsSet(LS.p,j)){
+  if(sj===undefined||lsSet(LS.sync,sj)){pSeq++;pFail=false;if(pBig||pIn||lsGet(BIG)){pBig=false;try{localStorage.removeItem(BIG);}catch(e){}kvDel('p');kvDel('s');}return true;}
+  lsTight=true; /* the project fit but its sync record did not: keep both in the large store from now on */
+ }
  const seq=++pSeq;pIn++;updateStatus();
- kvPut('p',j).then(r=>{pIn--;if(r&&sj!==undefined&&seq>pDone){pDone=seq;lsSet(LS.sync,sj);}if(seq!==pSeq){updateStatus();return;} /* a newer save has taken over */
-  if(r){lsSet(BIG,'1');try{localStorage.removeItem(LS.p);}catch(e){}pBig=true;}
+ kvPutMany(sj!==undefined?{p:j,s:sj}:{p:j}).then(r=>{pIn--;if(seq!==pSeq){updateStatus();return;} /* a newer save has taken over */
+  if(r){let b=lsSet(BIG,'1');try{localStorage.removeItem(LS.p);localStorage.removeItem(LS.sync);}catch(e){}if(!b)b=lsSet(BIG,'1');pBig=true;r=b;}
   pFail=!r;localOk=!pFail&&!imgFail;updateStatus();}).catch(()=>{pIn--;pFail=true;localOk=false;updateStatus();});
  return !pFail;
 }
-function load(big){
- pBig=!!big;{const s=big||lsGet(LS.p);try{if(s)P=JSON.parse(s);}catch(e){P=null;if(s){try{kvPut('pbad',s);}catch(x){}setTimeout(()=>toast('Your saved project couldn’t be read, so the app started fresh. A copy was kept aside. If you sync, your scenes come back from the cloud.'),1500);}}}
+function load(big,bigSync){
+ pBig=!!big;{const s=big||lsGet(LS.p);try{if(s)P=JSON.parse(s);}catch(e){P=null;}
+  /* saved data that can't be used is put aside, never just written over */
+  if(s&&(!P||!Array.isArray(P.scenes)||!P.scenes.length)){P=null;const say=ok=>setTimeout(()=>toast(ok?'Your saved project couldn’t be read, so the app started fresh. A copy was kept aside. If you sync, your scenes come back from the cloud.':'Your saved project couldn’t be read, so the app started fresh. If you sync, your scenes come back from the cloud.'),1500);try{kvPut('pbad',s).then(say,()=>say(false));}catch(x){say(false);}}}
  try{const s=lsGet(LS.img);if(s)images=JSON.parse(s)||{};}catch(e){images={};}
- try{const s=lsGet(LS.sync);if(s)sync=Object.assign({stamps:{},dirty:[]},JSON.parse(s));}catch(e){}
+ try{const s=big?(bigSync||lsGet(LS.sync)):lsGet(LS.sync);if(s)sync=Object.assign({stamps:{},dirty:[]},JSON.parse(s));}catch(e){}
  if(!P||!Array.isArray(P.scenes)||!P.scenes.length){const s=blankScene(1);s.ph=1;P={characters:[],folders:[],scenes:[s],sceneId:s.id,ui:{}};sync={stamps:{},dirty:[]};}
  delete sync.base;P.ui=P.ui||{};P.characters=P.characters||[];P.folders=P.folders||[];P.labels=P.labels||{};P.text=P.text||{};for(const id in P.text)if(!P.scenes.some(s=>s.id===id))delete P.text[id];
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;
@@ -828,18 +848,31 @@ migrate();let castNow=[];try{castNow=castReconcile();}catch(e){}
   for(const sc of P.scenes)if(nest(sc)){const k='scene-'+sc.id;sync.stamps[k]=Math.max(sync.stamps[k]||0,now);if(!sync.dirty.includes(k))sync.dirty.push(k);}
   if(nest(P.locations||[])){sync.stamps.meta=Math.max(sync.stamps.meta||0,now);if(!sync.dirty.includes('meta'))sync.dirty.push('meta');}}
  if(!sync.naFix){sync.naFix=1;setTimeout(()=>{try{saveLocal();}catch(e){}},0);}
+ if((P.ui.g||0)>(sync.g||0)&&sync.stamps&&Object.keys(sync.stamps).length){sync.g=P.ui.g;const d=docs();for(const k in d)if(!sync.dirty.includes(k))sync.dirty.push(k);}
+ /* after an update, tell the other device which build this is, so an older copy there stops sending */
+ if(window.BB_VERSION&&sync.appV!==window.BB_VERSION){sync.appV=window.BB_VERSION;if(sync.stamps&&Object.keys(sync.stamps).length&&!sync.dirty.includes('meta'))sync.dirty.push('meta');}
 }
 function sceneLast(id){let t=Math.max(sync.stamps['scene-'+id]||0,sync.stamps['txt-'+id]||0);try{const c=txCells((P.text||{})[id]||{});for(const key in c)t=Math.max(t,c[key].t||0);}catch(e){}return t;}
 /* the other device deleted this scene: true if that deletion is newer than anything done to it here. If not, the scene stays and is sent again, newer than the deletion */
+function phClean(s){const r=blankScene(1);for(const f of ['title','heading','number','synopsis','snote','code','day','bgId','folder','scout','loc','trashed','tpl'])if(JSON.stringify(s[f]==null?'':s[f])!==JSON.stringify(r[f]==null?'':r[f]))return false;
+ return !(s.items||[]).length&&!(s.setups||[]).length&&!(s.plans||[]).length&&!(s.cast||[]).length&&(s.pages||[]).length<=1;}
 function delSeen(id,b){const T=P.tomb||{},del=(T.s||{})[id];if(!del||del<(b.updatedAt||0))return false;const sa=(T.sa||{})[id];return !Array.isArray(sa)||sa.includes(sceneFp(b.scene));}
 function txLast(id){let t=0;try{const c=txCells((P.text||{})[id]||{});for(const key in c)t=Math.max(t,c[key].t||0);}catch(e){}return t;}
-function delWins(id,del){if(!del)return false;const sa=((P.tomb||{}).sa||{})[id];
- if(Array.isArray(sa)){const sc=P.scenes.find(x=>x.id===id);if(sc&&sa.includes(sceneFp(stripScene(sc)))&&txLast(id)<=del)return true;}
- else if(del>=sceneLast(id))return true;const k='scene-'+id,t=Math.max(sync.stamps[k]||0,del+1);if(sync.stamps[k]!==t){sync.stamps[k]=t;markDirty(k);if(txDoc(id))markDirty('txt-'+id);}return false;}
+/* true if this device holds writing for the scene that the deleting device had not seen (by version, not by clock) */
+function txUnseen(id,sv,del){const c=txCells((P.text||{})[id]||{});
+ for(const key in c){const L=c[key];if(!L||(L.t||0)<=1)continue;if(!sv){if((L.t||0)>del)return true;continue;}
+  const S=sv[key];if(!S)return true;if(L.vv){const v=S[1]||{};for(const d in L.vv)if((v[d]||0)<L.vv[d])return true;}else if((S[0]||0)<(L.t||0))return true;}
+ return false;}
+function delWins(id,del){if(!del)return false;const T=P.tomb||{},sa=(T.sa||{})[id],sc=P.scenes.find(x=>x.id===id),inSa=!!sc&&Array.isArray(sa)&&sa.includes(sceneFp(stripScene(sc)));
+ if(Array.isArray(sa)){if(inSa&&!txUnseen(id,(T.sv||{})[id],del))return true;}
+ else if(del>=sceneLast(id))return true;
+ /* it stays: mark it as a new version so the deleting device takes it back, and send it with its writing */
+ if(inSa)sc.rv=(sc.rv||0)+1;
+ const k='scene-'+id,t=Math.max(sync.stamps[k]||0,del+1);if(inSa||sync.stamps[k]!==t){sync.stamps[k]=t;markDirty(k);if(txDoc(id)){sync.stamps['txt-'+id]=Math.max(sync.stamps['txt-'+id]||0,del+1);markDirty('txt-'+id);}}return false;}
 const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
 let outdated=false;
 function showUpdate(msg){if(document.getElementById('updBar'))return;const d=document.createElement('div');d.id='updBar';d.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:900;background:#1c1c1e;color:#fff;padding:10px 14px;border-radius:12px;font:14px/1.4 -apple-system,system-ui,sans-serif;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.25)';
- d.innerHTML='<span></span><button style="font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:#2f6fde;color:#fff">Reload</button>';d.firstChild.textContent=msg;d.querySelector('button').onclick=()=>{try{saveLocal();if(typeof txFlush==='function')txFlush();}catch(e){}location.reload();};document.body.appendChild(d);}
+ d.innerHTML='<span></span><button style="font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:#2f6fde;color:#fff">Reload</button>';d.firstChild.textContent=msg;d.querySelector('button').onclick=()=>{try{flushNotes();if(typeof txFlush==='function')txFlush();saveLocal();}catch(e){}const t0=Date.now(),go=()=>{if((pIn>0||imgIn>0)&&Date.now()-t0<5000){setTimeout(go,150);return;}location.reload();};go();};document.body.appendChild(d);}
 if('serviceWorker' in navigator){let hadSW=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW)showUpdate('A new version of the app is ready.');hadSW=true;});}
 function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},locations:P.locations||[],tomb:P.tomb||{},imgs:[...new Set([...Object.keys(images),...(sync.imgK||[])])].sort(),sceneOrder:P.scenes.map(s=>s.id)}};if(window.BB_VERSION)d.meta.appV=window.BB_VERSION;for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
@@ -851,10 +884,12 @@ function sceneStamp(){const now=Date.now(),T=P.tomb=P.tomb||{},ts=T.s=T.s||{},sa
  if(!sync.sIds){sync.sIds=ids;return;}const cur=new Set(ids),prev=new Set(sync.sIds);
  for(const id of sync.sIds)if(!cur.has(id)){const k='scene-'+id;ts[id]=Math.max(now,(sync.stamps[k]||0)+1,(ts[id]||0)+1);
   /* the versions of this scene this device knew when it was deleted: the other device deletes only one of these */
-  const seen=ancOf(k).slice(-12);try{const j=lastJson[k];if(j){const f=sceneFp(JSON.parse(j).scene);if(!seen.includes(f))seen.push(f);}}catch(e){}sa[id]=seen;}
+  const seen=ancOf(k).slice(-30);try{const j=lastJson[k];if(j){const f=sceneFp(JSON.parse(j).scene);if(!seen.includes(f))seen.push(f);}}catch(e){}sa[id]=seen;
+  /* and the writing it knew, cell by cell */
+  {const v={};try{const tj=lastJson['txt-'+id];if(tj){const c=txCells(JSON.parse(tj));for(const key in c)if(c[key]&&(c[key].t||0)>1)v[key]=[c[key].t||0,c[key].vv||null];}}catch(e){}(T.sv=T.sv||{})[id]=v;}}
  /* a scene that comes back here (undo, restore) clears its marker and gets a new version, so the other device takes it; one that was here all along keeps a marker the other device set */
  for(const id of ids)if(ts[id]&&!prev.has(id)){delete ts[id];delete sa[id];const z=P.scenes.find(x=>x.id===id);if(z)z.rv=(z.rv||0)+1;}
- for(const id in sa)if(!ts[id])delete sa[id];sync.sIds=ids;}
+ for(const id in sa)if(!ts[id])delete sa[id];if(T.sv)for(const id in T.sv)if(!ts[id])delete T.sv[id];sync.sIds=ids;}
 function metaStamp(){try{sceneStamp();}catch(e){}const now=Date.now(),first=!sync.metaH;sync.metaH=sync.metaH||{};sync.metaT=sync.metaT||{};const H=sync.metaH,LT=sync.metaT,T=P.tomb=P.tomb||{};
  for(const [k,key] of MLISTS){const L=P[key]||[],seen=new Set(),tk=T[k]=T[k]||{};
   for(const e of L){if(!e||!e.id)continue;const id=k+':'+e.id,h=entryFp(e);seen.add(id);
@@ -865,19 +900,23 @@ function mergeEntries(A,B,tomb){const by=new Map();for(const e of [...(A||[]),..
  const order=[];const add=e=>{if(e&&e.id&&!order.includes(e.id))order.push(e.id);};(B||[]).forEach(add);(A||[]).forEach(add);
  return order.map(id=>by.get(id)).filter(e=>!(tomb[e.id]&&tomb[e.id]>=(e._t||0))).map(clone);}
 /* returns true if the merged lists hold something the incoming copy lacks, so this device should send it back up */
-function metaMerge(meta){const T=P.tomb=P.tomb||{},R=meta.tomb||{};let back=false;
+function metaMerge(meta){const T=P.tomb=P.tomb||{},R=meta.tomb||{},ls0=Object.assign({},T.s||{});let back=false;
  for(const k of ['c','f','p','s']){const a=T[k]||{},b=R[k]||{},m=Object.assign({},b);for(const id in a)m[id]=Math.max(a[id],m[id]||0);T[k]=m;if(Object.keys(m).length!==Object.keys(b).length||Object.keys(a).some(id=>a[id]>(b[id]||0)))back=true;}
  for(const [k,key] of MLISTS){if(!meta[key]&&k!=='c')continue;const before=canonJ(meta[key]||[]),out=mergeEntries(P[key],meta[key],T[k]);P[key]=out;if(canonJ(out)!==before)back=true;
   for(const e of out){(sync.metaH=sync.metaH||{})[k+':'+e.id]=entryFp(e);if(e._t){sync.metaT=sync.metaT||{};sync.metaT[k+':'+e.id]=Math.max(sync.metaT[k+':'+e.id]||0,e._t);}}
   for(const id of Object.keys(sync.metaH||{}))if(id.startsWith(k+':')&&!out.some(e=>k+':'+e.id===id))delete sync.metaH[id];}
- {const ra=(R.sa)||{},la=T.sa||{},rs=R.s||{},ls=T.s||{},o={};for(const id of new Set([...Object.keys(ra),...Object.keys(la)])){if(!T.s[id])continue;const lt=ls[id]||0,rt=rs[id]||0;o[id]=!la[id]?ra[id]:!ra[id]?la[id]:lt>rt?la[id]:rt>lt?ra[id]:(canonJ(la[id])>=canonJ(ra[id])?la[id]:ra[id]);}if(canonJ(o)!==canonJ(ra))back=true;T.sa=o;}
+ /* each deletion marker keeps the list that was made with it: the newer marker's own list, never one side's time with the other's list */
+ {const ra=R.sa||{},la=T.sa||{},rv=R.sv||{},lv=T.sv||{},rs=R.s||{},o={},ov={};for(const id of new Set([...Object.keys(ra),...Object.keys(la)])){if(!T.s[id])continue;const lt=ls0[id]||0,rt=rs[id]||0,
+   mine=!ra[id]?true:!la[id]?false:lt>rt?true:rt>lt?false:canonJ(la[id])>=canonJ(ra[id]);o[id]=mine?la[id]:ra[id];const v=mine?lv[id]:rv[id];if(v)ov[id]=v;}
+  if(canonJ(o)!==canonJ(ra))back=true;T.sa=o;T.sv=ov;}
  if(meta.labels){const lb=clone(meta.labels);for(const x in P.labels||{}){const u=[...new Set([...(lb[x]||[]),...P.labels[x]])];if(u.length!==(lb[x]||[]).length)back=true;lb[x]=u;}P.labels=lb;}
  return back;}
 function detectChanges(){try{metaStamp();}catch(e){console.error(e);}const d=docs(),now=Date.now();
- for(const k in d){const j=JSON.stringify(d[k]);if(j!==lastJson[k]){lastJson[k]=j;sync.stamps[k]=now;markDirty(k);if(k.startsWith('scene-'))(sync.mine=sync.mine||{})[k]=sceneFp(d[k].scene);}}
- for(const k of Object.keys(lastJson))if(!(k in d)){delete lastJson[k];sync.stamps[k]=now;markDirty(k);}}
+ for(const k in d){const j=JSON.stringify(d[k]);if(j!==lastJson[k]){if(k.startsWith('scene-')&&lastJson[k]&&!sync.dirty.includes(k)){try{const a=ancOf(k);if(a.length)fhPut(k,a[a.length-1],JSON.parse(lastJson[k]).scene);}catch(e){}}
+   lastJson[k]=j;sync.stamps[k]=Math.max(now,(sync.stamps[k]||0)+1);if(sync.big)delete sync.big[k];markDirty(k);if(k.startsWith('scene-'))(sync.mine=sync.mine||{})[k]=sceneFp(d[k].scene);}}
+ for(const k of Object.keys(lastJson))if(!(k in d)){delete lastJson[k];sync.stamps[k]=Math.max(now,(sync.stamps[k]||0)+1);if(sync.big)delete sync.big[k];markDirty(k);}}
 function saveLocal(){
- const ok=saveP(JSON.stringify(P),JSON.stringify(sync));
+ sync.g=(sync.g||0)+1;P.ui.g=sync.g;const ok=saveP(JSON.stringify(P),JSON.stringify(sync));
  let ok2=true;if(imgDirty){if(idb){const batch={},keys=[];for(const k in images)if(!imgSaved.has(k)&&!imgPend.has(k)){batch[k]=images[k];keys.push(k);imgPend.add(k);}imgDirty=false;
   if(keys.length){imgIn++;const done=r=>{imgIn--;for(const k of keys)imgPend.delete(k);if(r){for(const k of keys)imgSaved.add(k);imgFail=false;}else{imgFail=true;imgDirty=true;}localOk=!pFail&&!imgFail;updateStatus();};idbPut(batch).then(done).catch(()=>done(false));}}else{ok2=lsSet(LS.img,JSON.stringify(images));if(ok2)imgDirty=false;}}
  localOk=ok&&ok2&&!imgFail;updateStatus();
@@ -905,14 +944,18 @@ async function saveVersionNow(){if(!idb){toast('Saved versions aren’t availabl
   if(await snapPut(Date.now(),{data:cur0,text:tx0,scenes:n,shots,name}))toast(`Saved “${name}”. It’s kept until you delete it (Menu › Earlier versions).`);else toast('Couldn’t save that version on this device.');});}
 /* ---------- Ready for Set: is everything for this project on this device, and has it all reached the cloud? ---------- */
 function sceneImgs(x){const out=new Set(),add=(items,bg)=>{if(bg)out.add(bg);for(const it of items||[]){if(it.img)out.add(it.img);if(it.type==='cam')for(const m of it.marks||[]){if(m.sb)out.add(m.sb);for(const q of m.sbs||[])out.add(q);}}};add(x.items,x.bgId);for(const p of x.plans||[])if(p&&p.d)add(p.d.items,p.d.bgId);return out;}
-function readyDialog(){const s=scene(),r=rootKey(s),scs=liveScenes().filter(x=>rootKey(x)===r&&!x.scout),scouts=liveScenes().filter(x=>rootKey(x)===r&&x.scout),need=new Set();
+function readyDialog(){try{flushNotes();if(txTimer)txFlush();}catch(e){}const s=scene(),r=rootKey(s),scs=liveScenes().filter(x=>rootKey(x)===r&&!x.scout),scouts=liveScenes().filter(x=>rootKey(x)===r&&x.scout),need=new Set();
  for(const x of [...scs,...scouts])for(const id of sceneImgs(x))need.add(id);for(const L of locList())if(!L.del&&(L.home||'')===r&&L.bgId)need.add(L.bgId);for(const pr of P.productions||[])if(pr.logo)need.add(pr.logo);
  const miss=[...need].filter(id=>!images[id]),shots=scs.reduce((a,x)=>a+rowsOf(x).length,0),pname=(sFolder(s)&&rootOf(s)?(P.folders.find(f=>f.id===rootOf(s))||{}).name:'')||'this project';
  const ios=/iPad|iPhone/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent)),home=window.matchMedia&&matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,swOk='serviceWorker' in navigator&&!!navigator.serviceWorker.controller;
  const row=(ok,txt,extra)=>`<div class="rdy ${ok===true?'ok':ok===false?'bad':'info'}"><i>${ok===true?'✓':ok===false?'!':'i'}</i><div>${txt}${extra||''}</div></div>`;
- let h=row(true,`<b>${plural(scs.length,'scene')}</b> in ${esc(pname)} are on this device, with ${plural(shots,'shot')}${scouts.length?` and ${plural(scouts.length,'location scout')}`:''}.`);
+ const unsaved=idb?[...need].filter(id=>images[id]&&!imgSaved.has(id)).length:0,bigL=Object.keys(sync.big||{}).map(k=>{if(k.startsWith('img-'))return 'an image';const z=P.scenes.find(x=>x.id===k.replace(/^(scene|txt)-/,''));return z?(k.startsWith('txt-')?'the writing for ':'')+'scene '+(z.number||'')+(z.title?' '+z.title:''):k==='meta'?'the shared lists and locations':'a deleted item';});
+ let h=!localOk?row(false,'<b>This device isn’t saving right now.</b> Use Menu › Back up everything, then free up space or reload the app.'):pIn>0||imgIn>0?row(false,'Still saving to this device. Give it a moment, then check again.'):row(true,`<b>${plural(scs.length,'scene')}</b> in ${esc(pname)} are on this device, with ${plural(shots,'shot')}${scouts.length?` and ${plural(scouts.length,'location scout')}`:''}.`);
+ if(unsaved)h+=row(false,`<b>${plural(unsaved,'image')}</b> ${unsaved===1?'is':'are'} still being saved to this device. Check again in a moment.`);
  h+=miss.length?row(false,`<b>${plural(miss.length,'image')}</b> (storyboard frames, plans or photos) haven’t downloaded to this device yet.`,coll?'<div><button class="sm" id="rdImg">Download them now</button></div>':''):row(true,need.size?`All <b>${plural(need.size,'image')}</b> are on this device.`:'No images to download.');
  if(!coll)h+=row(null,'Not signed in to sync: this device only has what was made here.');
+ else if(bigL.length)h+=row(false,`<b>Too large to sync:</b> ${esc([...new Set(bigL)].join(', '))}. ${bigL.length===1?'It is':'They are'} saved on this device only. A very long sketch is the usual cause: split it into two scenes or erase part of it, and it will sync.`);
+ else if(syncErr)h+=row(false,'The cloud refused the last sync. Your work is saved on this device; tap the status at the top for your account.');
  else if(sync.dirty.length||unacked||bootPend)h+=row(false,`<b>${plural(Math.max(1,sync.dirty.length+unacked),'change')}</b> made here haven’t reached the cloud yet${navigator.onLine?'.':'. Connect to the internet before you leave so the other device gets them.'}`,navigator.onLine?'<div><button class="sm" id="rdSync">Sync now</button></div>':'');
  else h+=row(true,`Everything made here has reached the cloud (last confirmed ${whenTxt(lastSync)}).`);
  if(location.protocol!=='file:')h+=swOk?row(true,'The app opens without internet.'):row(false,'The app isn’t ready to open offline yet. Reload it once while you’re online, then check again.');
@@ -928,17 +971,17 @@ async function versionsDialog(){
  modal(`<h3>Earlier versions</h3><p class="mut">A copy is kept every five minutes while you work (about the last six hours), plus one a day for 30 days. Versions you save by name are kept until you delete them. Restoring one replaces what’s here now; you can undo it. These copies live on this device; for a copy you can keep anywhere, use Back up everything.</p><div class="menu">${all.length?all.map((x,i)=>`<button data-t="${x.t}"><b>${x.v.name?esc(x.v.name)+' · ':''}${fmt(x.t)}${i===0?' · latest':''}</b><small>${x.v.scenes} scene${x.v.scenes===1?'':'s'}, ${x.v.shots} shot${x.v.shots===1?'':'s'}${x.v.name?' · kept':''}</small></button>`).join(''):'<p class="mut">No earlier versions yet.</p>'}</div><div class="btns end"><button id="vSave">Save a version now…</button><button data-x>Close</button></div>`,card=>{
   card.querySelector('#vSave').onclick=()=>{closeModal();saveVersionNow();};
   card.querySelector('.menu').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const x=all.find(y=>String(y.t)===b.dataset.t);if(!x)return;
-   confirmBox('Restore this version?',`Everything goes back to how it was at ${fmt(x.t)}, on your other device too. Scenes made since then go to Trash, not away. You can undo this.`,'Restore',()=>{const o=JSON.parse(x.v.data);P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;{const keepIds=new Set(o.s.map(z=>z.id)),now=Date.now();for(const z of P.scenes)if(!keepIds.has(z.id)){if(!z.trashed&&!z.tpl)z.trashed=now;o.s.push(z);}}P.scenes=o.s.map(sc=>{migrateScene(sc);return sc;});const tx0=x.v.text?clone(P.text||{}):null,u0=undoS.length;if(x.v.text)txAdopt(JSON.parse(x.v.text));if(!P.scenes.some(sc=>sc.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();sel=null;inspOpen=false;commit();if(tx0&&undoS.length>u0)undoS[undoS.length-1].tx=tx0;txFlush();renderDocs(true);fit();toast('Version restored.');});});
+   confirmBox('Restore this version?',`Everything goes back to how it was at ${fmt(x.t)}, on your other device too. Scenes made since then go to Trash, not away. You can undo this.`,'Restore',()=>{const o=JSON.parse(x.v.data),mk=rvMark();P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;const extraIds=[];{const keepIds=new Set(o.s.map(z=>z.id)),now=Date.now();for(const z of P.scenes)if(!keepIds.has(z.id)){if(!z.trashed&&!z.tpl)z.trashed=now;o.s.push(z);extraIds.push(z.id);}}P.scenes=o.s.map(sc=>{migrateScene(sc);return sc;});const tx0=x.v.text?clone(P.text||{}):null,u0=undoS.length,j0=cur,g0=rgen;if(x.v.text)txAdopt(JSON.parse(x.v.text),extraIds);if(!P.scenes.some(sc=>sc.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();sel=null;inspOpen=false;rvBump(mk);commit();undoWithText(tx0,u0,j0,g0);txFlush();renderDocs(true);fit();toast('Version restored.');});});
  });
 }
 setInterval(takeSnap,5*60*1000);
 async function initImages(){
- idb=await idbOpen();if(!idb)return;
+ setTimeout(()=>{imgReady=true;},20000);idb=await idbOpen();if(!idb){imgReady=true;return;}
  const all=await idbAll();for(const k in all){imgSaved.add(k);if(!images[k])images[k]=all[k];}
  const legacy={};for(const k in images)if(!imgSaved.has(k))legacy[k]=images[k];
  if(Object.keys(legacy).length){if(await idbPut(legacy)){for(const k in legacy)imgSaved.add(k);try{localStorage.removeItem(LS.img);}catch(e){}}}
  else{try{localStorage.removeItem(LS.img);}catch(e){}}
- bgKey='';render();setTimeout(takeSnap,4000);
+ imgReady=true;bgKey='';render();setTimeout(takeSnap,4000);
 }
 function addImage(data){const id=uid();images[id]=data;imgDirty=true;sync.stamps['img-'+id]=Date.now();markDirty('img-'+id);return id;}
 
@@ -951,10 +994,11 @@ function snapDiff(a,b){if(a==null||a===b)return null;let A,B;try{A=JSON.parse(a)
  const idx=L=>{const m={};for(const e of L||[])if(e&&e.id)m[e.id]=JSON.stringify(e);return m;};
  for(const k of ['c','f','l','s']){const ma=idx(A[k]),mb=idx(B[k]);for(const id in mb)if(ma[id]!==mb[id]){const nb=JSON.parse(mb[id]);
    if(k==='s'&&ma[id]){const oa=JSON.parse(ma[id]),f={};for(const key of new Set([...Object.keys(oa),...Object.keys(nb)])){const x=JSON.stringify(oa[key]),y=JSON.stringify(nb[key]);if(x===y)continue;
-     if(key==='items'&&Array.isArray(oa.items)&&Array.isArray(nb.items)){const ia=idx(oa.items),ib=idx(nb.items),set={},del=[];for(const i in ib)if(ia[i]!==ib[i])set[i]=JSON.parse(ib[i]);for(const i in ia)if(!(i in ib))del.push(i);f.items={__it:1,set,del,order:nb.items.map(e=>e.id)};}
+     if(key==='items'&&Array.isArray(oa.items)&&Array.isArray(nb.items)){const ia=idx(oa.items),ib=idx(nb.items),set={},del=[];for(const i in ib)if(ia[i]!==ib[i]){const nv=JSON.parse(ib[i]);if(ia[i]){const ov=JSON.parse(ia[i]),kk={};for(const q of new Set([...Object.keys(ov),...Object.keys(nv)]))if(JSON.stringify(ov[q])!==JSON.stringify(nv[q]))kk[q]=q in nv?nv[q]:{__del:1};set[i]={__k:kk};}else set[i]=nv;}for(const i in ia)if(!(i in ib))del.push(i);f.items={__it:1,set,del,order:nb.items.map(e=>e.id)};}
      else f[key]=key in nb?nb[key]:{__del:1};}
     p[k][id]={__f:f,__full:nb};}
    else p[k][id]=nb;n++;}for(const id in ma)if(!(id in mb)){p[k][id]=null;n++;}}
+ {const oa=(A.s||[]).map(x=>x.id),ob=p.order;if(JSON.stringify(oa.filter(id=>ob.includes(id)))!==JSON.stringify(ob.filter(id=>oa.includes(id)))){p.ord=1;n++;}}
  return n?p:null;}
 function patchSnap(j,from){if(from>=rgen)return j;const o=JSON.parse(j);
  for(const r of rpat){if(r.g<=from)continue;const p=r.p;
@@ -962,10 +1006,11 @@ function patchSnap(j,from){if(from>=rgen)return j;const o=JSON.parse(j);
   for(const id in p.s){const i=o.s.findIndex(x=>x.id===id),v=p.s[id];if(v===null){if(i>=0)o.s.splice(i,1);continue;}
    if(i>=0){if(v.__f){const z=o.s[i];for(const key in v.__f){const c=v.__f[key];
       if(c&&c.__it){const it=Array.isArray(z.items)?z.items:(z.items=[]);for(const d of c.del){const q=it.findIndex(e=>e&&e.id===d);if(q>=0)it.splice(q,1);}
-       for(const sid in c.set){const q=it.findIndex(e=>e&&e.id===sid);if(q>=0){it[q]=c.set[sid];continue;}const at=c.order.indexOf(sid);let ins=it.length;for(let w=at+1;w>0&&w<c.order.length;w++){const zz=it.findIndex(e=>e&&e.id===c.order[w]);if(zz>=0){ins=zz;break;}}it.splice(ins,0,c.set[sid]);}}
+       for(const sid in c.set){const q=it.findIndex(e=>e&&e.id===sid),sv=c.set[sid];if(sv&&sv.__k){if(q>=0)for(const key in sv.__k){const w=sv.__k[key];if(w&&w.__del)delete it[q][key];else it[q][key]=w;}continue;}if(q>=0){it[q]=sv;continue;}const at=c.order.indexOf(sid);let ins=it.length;for(let w=at+1;w>0&&w<c.order.length;w++){const zz=it.findIndex(e=>e&&e.id===c.order[w]);if(zz>=0){ins=zz;break;}}it.splice(ins,0,c.set[sid]);}}
       else if(c&&c.__del)delete z[key];else z[key]=c;}}
     else o.s[i]=v;continue;}
-   const full=v.__f?v.__full:v;const at=p.order.indexOf(id);let ins=o.s.length;for(let q=at+1;q>0&&q<p.order.length;q++){const z=o.s.findIndex(x=>x.id===p.order[q]);if(z>=0){ins=z;break;}}o.s.splice(ins,0,full);}}
+   const full=v.__f?v.__full:v;const at=p.order.indexOf(id);let ins=o.s.length;for(let q=at+1;q>0&&q<p.order.length;q++){const z=o.s.findIndex(x=>x.id===p.order[q]);if(z>=0){ins=z;break;}}o.s.splice(ins,0,full);}
+  if(p.ord){const inO=o.s.filter(x=>p.order.includes(x.id)).sort((a,b)=>p.order.indexOf(a.id)-p.order.indexOf(b.id));let q=0;o.s=o.s.map(x=>p.order.includes(x.id)?inO[q++]:x);}}
  return JSON.stringify(o);}
 function remoteRebase(pre,post){const p=snapDiff(pre,post);if(!p)return;rgen++;rpat.push({g:rgen,p});
  const lo=Math.min(rgen,...undoS.map(e=>e.g),...redoS.map(e=>e.g));rpat=rpat.filter(r=>r.g>lo);}
@@ -981,12 +1026,16 @@ function commit(opt){
  if(s!==cur){if(cur!==null){undoS.push({j:cur,g:rgen});if(undoS.length>200)undoS.shift();}redoS=[];cur=s;detectChanges();saveLocal();schedulePush();}
  render(opt);
 }
+function rvMark(){const rv={},clean=new Set();for(const s of P.scenes){rv[s.id]=s.rv||0;const k='scene-'+s.id;if(sync.stamps[k]&&!sync.dirty.includes(k))clean.add(s.id);}return {rv,clean};}
+function rvBump(mk){detectChanges();for(const s of P.scenes)if(mk.clean.has(s.id)&&sync.dirty.includes('scene-'+s.id))s.rv=Math.max(s.rv||0,mk.rv[s.id]||0)+1;}
 function restore(snap){
- const o=JSON.parse(snap),pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
-  P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;P.scenes=o.s.map(s=>{s.pageId=pids[s.id]==='all'||s.pages.some(p=>p.id===pids[s.id])?pids[s.id]:s.pages[0].id;return s;});
+ const o=JSON.parse(snap),pids={},mk=rvMark();for(const s of P.scenes)pids[s.id]=s.pageId;
+  P.characters=o.c;if(o.f)P.folders=o.f;if(o.l){const have=new Set(o.l.map(L=>L.id)),now=Date.now();for(const L of P.locations||[])if(L&&L.id&&!have.has(L.id)){const c=clone(L);if(!c.del){c.del=Math.max(now,(c.at||0)+1);c.at=c.del;}o.l.push(c);}P.locations=o.l;}P.scenes=o.s.map(s=>{s.pageId=pids[s.id]==='all'||s.pages.some(p=>p.id===pids[s.id])?pids[s.id]:s.pages[0].id;return s;});
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();
- cur=snap;sel=null;msel=null;detectChanges();cur=snapshot();saveLocal();schedulePush();render();
+ cur=snap;sel=null;msel=null;rvBump(mk);detectChanges();cur=snapshot();saveLocal();schedulePush();render();
 }
+/* give the undo step for a restore the writing as it was before, even when only writing changed */
+function undoWithText(tx0,u0,j0,g0){if(!tx0)return;if(undoS.length>u0)undoS[undoS.length-1].tx=tx0;else if(JSON.stringify(tx0)!==JSON.stringify(P.text||{})){undoS.push({j:j0,g:g0,tx:tx0});redoS=[];updateStatus();}}
 function undoTx(e,into){const n={j:cur,g:rgen};if(e.tx)n.tx=clone(P.text||{});into.push(n);return e.tx;}
 function undoTxApply(tx){if(!tx)return;try{txAdopt(tx);txFlush();renderDocs(true);}catch(x){console.error(x);}}
 function undo(){if(!undoS.length)return;const e=undoS[undoS.length-1],tx=undoTx(e,redoS);undoS.pop();restore(patchSnap(e.j,e.g));undoTxApply(tx);}
@@ -1053,14 +1102,20 @@ function syncWhy(){if(!navigator.onLine)return 'This device has no internet conn
  if(online==='stuck')return 'The sync service is answering, but the live connection got stuck. The app is reconnecting by itself; if this stays for more than a minute or two, reload the page. Everything is saved on this device meanwhile.';
  if(online==='waiting')return 'The internet is on, but the sync service isn’t answering from this network. Try another network (or turn off a VPN or content blocker). Everything is saved on this device and sent once it connects.';return '';}
 function tooBig(c){return c==='invalid-argument'||c==='invalid_argument';}
-function bigToast(k){if(warnedBig)return;warnedBig=true;toast(k&&k.startsWith('img-')?'An image is too large to sync. It is still saved on this device.':'Part of this project could not sync. It is still saved on this device.');}
+function bigToast(k){if(warnedBig)return;warnedBig=true;toast(k&&k.startsWith('img-')?'An image is too large to sync. It is still saved on this device.':'Part of this project is too large to sync. It is still saved on this device. Ready for Set shows which part.');}
 function encFS(o,f){if(Array.isArray(o))return o.map(x=>{if(Array.isArray(x)){f.n=1;return {__a:encFS(x,f)};}return encFS(x,f);});if(o&&typeof o==='object'){const r={};for(const k in o)r[k]=encFS(o[k],f);return r;}return o;}
 function decFS(o){if(Array.isArray(o))return o.map(decFS);if(o&&typeof o==='object'){const ks=Object.keys(o);if(ks.length===1&&ks[0]==='__a'&&Array.isArray(o.__a))return decFS(o.__a);const r={};for(const k of ks)r[k]=decFS(o[k]);return r;}return o;}
 function fsBody(o){const f={},e=encFS(o,f);if(f.n)e.na=1;return f.n?e:o;}
 let unacked=0,bootPend=false;
+const wfail=new Set();
+const bigN=()=>sync.big?Object.keys(sync.big).length:0;
+/* a document the cloud will never take as it is (too large): out of the queue, on a list the status and Ready for Set show, until it is changed */
+function bigMark(k){if(!k)return;(sync.big=sync.big||{})[k]=1;sync.dirty=sync.dirty.filter(x=>x!==k);bigToast(k);}
 function writeDoc(ref,data,k){const w=data?ref.set(data):ref.delete();if(!fbPersist)return w;
- unacked++;w.then(()=>{unacked--;updateStatus();},()=>{unacked--;});w.catch(e=>{const c=(e&&e.code)||'error';syncErr=c;if(tooBig(c))bigToast(k);else if(k)setTimeout(()=>{markDirty(k);try{saveLocal();}catch(x){}clearTimeout(wfT);wfT=setTimeout(()=>schedulePush(0),15000);updateStatus();},0);updateStatus();});return Promise.resolve();}
-let wfT=null;
+ unacked++;w.then(()=>{unacked--;updateStatus();},e=>{unacked--;const c=(e&&e.code)||'error';
+  if(tooBig(c))bigMark(k);else if(k){syncErr=c;wfail.add(k);markDirty(k);setTimeout(()=>wfail.delete(k),0);clearTimeout(wfT);wfT=setTimeout(()=>schedulePush(0),15000);}
+  try{saveLocal();}catch(x){}updateStatus();});return Promise.resolve();}
+let wfT=null,imgReady=false;
 function authMsg(e){const c=(e&&e.code)||'';return ({'auth/invalid-credential':'That email and password don’t match. First time here? Tap Create account.','auth/wrong-password':'That email and password don’t match.','auth/missing-password':'Type a password first.','auth/user-not-found':'No account with that email yet. Tap Create account.','auth/email-already-in-use':'There’s already an account with that email. Tap Sign in.','auth/weak-password':'Use at least 6 characters for the password.','auth/invalid-email':'That email address doesn’t look right.','auth/network-request-failed':'No connection. Sign in when you’re online; your work stays saved here.','auth/operation-not-allowed':'Email sign-in isn’t switched on in Firebase yet.','auth/too-many-requests':'Too many tries. Wait a minute and try again.'})[c]||'Something went wrong. Please try again.';}
 function accountDialog(){
  if(!fbAuth)return;
@@ -1152,16 +1207,16 @@ async function initSync(){
 }
 function applyRemote(snap){
  try{detectChanges();}catch(e){}const preSnap=cur;
- let changed=false,meta=null;const sd={},td={},seen=new Set();
+ let changed=false,meta=null;const sd={},td={},seen=new Set(),goneNow=[];
  const join=!!acct&&sync.uid!==acct&&!(snap.metadata&&snap.metadata.fromCache);
- for(const d of snap.docs){let b=d.data();if(!b)continue;if(b.na){b=decFS(b);delete b.na;}const k=d.id;seen.add(k);
+ for(const d of snap.docs){let b=d.data();if(!b)continue;const k=d.id;if(!k.startsWith('img-')){b=decFS(b);delete b.na;}seen.add(k);
   if(k.startsWith('img-')){const iid=k.slice(4);if(!images[iid]&&b.data){images[iid]=b.data;imgDirty=true;changed=true;}}
   else if(k==='meta')meta=b;else if(k.startsWith('scene-'))sd[k]=b;else if(k.startsWith('txt-'))td[k]=b;}
  if(join&&!snap.docs.length){const now=Date.now(),d=docs();for(const k in d){if(!sync.stamps[k])sync.stamps[k]=now;markDirty(k);}for(const k in images){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=now;markDirty('img-'+k);}sync.uid=acct;saveLocal();return;}
  const newer=(k,b)=>(b.updatedAt||0)>(sync.stamps[k]||0);
  const pids={};for(const s of P.scenes)pids[s.id]=s.pageId;
- let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);if(sync.mine)delete sync.mine[k];if(sync.cf)delete sync.cf[k];return sc;};
- const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);if(sync.mine)delete sync.mine[k];const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
+ let nConf=0;const take=(k,b)=>{const sc=clone(b.scene);migrateScene(sc);if(mergedNow.length)setTimeout(flushMerged,50);const pv=pids[sc.id];sc.pageId=pv==='all'||sc.pages.some(p=>p.id===pv)?pv:sc.pages[0].id;sync.stamps[k]=b.updatedAt;sync.dirty=sync.dirty.filter(x=>x!==k);if(sync.big)delete sync.big[k];ancAdd(k,[...(b.anc||[]),sceneFp(b.scene)]);if(sync.mine)delete sync.mine[k];if(sync.cf)delete sync.cf[k];return sc;};
+ const arrive=(k,b,local)=>{const d=sceneDecide(k,b,local);if(d==='take')return take(k,b);if(d==='conflict'){nConf++;const c=sceneConflict(k,b,local);c.pageId=local.pageId;return c;}if(d==='same'){ancAdd(k,[sceneFp(b.scene)]);if(b.dev!==DEVICE){if(sync.mine)delete sync.mine[k];}const oc=JSON.stringify(b.scene.conflicts||[]);if(oc!==JSON.stringify(local.conflicts||[])){const c=clone(local);if(b.scene.conflicts&&b.scene.conflicts.length)c.conflicts=clone(b.scene.conflicts);else delete c.conflicts;sync.stamps[k]=b.updatedAt||sync.stamps[k];return c;}}return local;};
  let metaBack=false;if(meta){const was=canonJ([P.characters,P.folders,P.productions,P.labels]);try{metaBack=metaMerge(meta);const lw=canonJ(P.locations||[]);P.locations=locMerge(P.locations,meta.locations);if(canonJ(P.locations)!==canonJ(meta.locations||[]))metaBack=true;if(canonJ(P.locations)!==lw)changed=true;}catch(e){console.error(e);}if(canonJ([P.characters,P.folders,P.productions,P.labels])!==was)changed=true;}
  if(meta&&(join||newer('meta',meta))){
   const order=meta.sceneOrder||[],byId={},next=[],placed=new Set(),TS=(P.tomb&&P.tomb.s)||{},RS=(meta.tomb&&meta.tomb.s)||{};for(const s of P.scenes)byId[s.id]=s;
@@ -1169,7 +1224,7 @@ function applyRemote(snap){
    if(byId[id]){next.push(b&&b.scene?arrive(k,b,byId[id]):byId[id]);placed.add(id);}
    else if(b&&b.scene&&!delSeen(id,b)){next.push(take(k,b));placed.add(id);if(TS[id])delete TS[id];}}
   /* scenes here that the other device's list doesn't have yet stay, in their place, unless it deleted them after their last change here */
-  P.scenes.forEach((s,i)=>{if(placed.has(s.id))return;const k='scene-'+s.id;if(s.ph&&order.length&&!s.items.length&&!(s.setups||[]).length&&!s.title&&!String(s.synopsis||'').trim()&&!txDoc(s.id))return;if(delWins(s.id,RS[s.id]))return;
+  P.scenes.forEach((s,i)=>{if(placed.has(s.id))return;const k='scene-'+s.id;if(s.ph&&order.length&&phClean(s)&&!txDoc(s.id))return;if(delWins(s.id,RS[s.id])){goneNow.push(s.id);return;}
    let at=0;for(let j=i-1;j>=0;j--){const q=next.findIndex(x=>x.id===P.scenes[j].id);if(q>=0){at=q+1;break;}}next.splice(at,0,s);placed.add(s.id);
    if(join||!sync.stamps[k]){sync.stamps[k]=Date.now();markDirty(k);}metaBack=true;});
   if(next.length||!P.scenes.length)P.scenes=next.length?next:P.scenes;
@@ -1183,7 +1238,7 @@ function applyRemote(snap){
  if(join){const rim=new Set((meta&&meta.imgs)||[]);for(const k in images)if(!seen.has('img-'+k)&&!rim.has(k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
  {const TS=(P.tomb&&P.tomb.s)||{};for(const k in sd){const b=sd[k];if(!b||!b.scene||!k.startsWith('scene-'))continue;const id=k.slice(6);if(P.scenes.some(x=>x.id===id))continue;if(delSeen(id,b))continue;if(TS[id])delete TS[id];
   {const ord=(meta&&meta.sceneOrder)||[],ai=ord.indexOf(id);let at=P.scenes.length;if(ai>=0)for(let q=ai+1;q<ord.length;q++){const z=P.scenes.findIndex(x=>x.id===ord[q]);if(z>=0){at=z;break;}}P.scenes.splice(at,0,take(k,b));}changed=true;}}
- if(meta){const RS=(meta.tomb&&meta.tomb.s)||{},keep=P.scenes.filter(s=>!delWins(s.id,RS[s.id]));if(keep.length&&keep.length!==P.scenes.length){P.scenes=keep;changed=true;}}
+ if(meta){const RS=(meta.tomb&&meta.tomb.s)||{},out=[],keep=P.scenes.filter(s=>{if(delWins(s.id,RS[s.id])){out.push(s.id);return false;}return true;});if(keep.length&&keep.length!==P.scenes.length){P.scenes=keep;goneNow.push(...out);changed=true;}}
  for(const k in sd){const b=sd[k];if(!b.scene)continue;const i=P.scenes.findIndex(s=>'scene-'+s.id===k);if(i<0)continue;const was=P.scenes[i],nx=arrive(k,b,was);if(nx!==was){P.scenes[i]=nx;changed=true;}}
  if(nConf)setTimeout(()=>{toast(nConf===1?'A scene was changed on both devices. The newer version is in place; the older one is saved as a Blocking Plan (Pages menu).':nConf+' scenes were changed on both devices. The newer version of each is in place; the older ones are saved as Blocking Plans (Pages menu).');saveLocal();schedulePush(500);},30);
  let tch=0,tconf=0;for(const k in td){const r=mergeTxt(k,td[k]);if(r){tch+=r.ch;tconf+=r.conf;}}
@@ -1195,6 +1250,8 @@ function applyRemote(snap){
  if(!changed){if(tch){saveLocal();docSync();updateStatus();}return;}
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();
  let locCh=false;try{locCh=locSyncAll(null);}catch(e){}
+ /* scenes the other device deleted: they go from here, but only the device that deleted them removes the cloud copies */
+ for(const id of goneNow){if(P.scenes.some(x=>x.id===id))continue;if(P.text)delete P.text[id];delete lastJson['txt-'+id];delete lastJson['scene-'+id];sync.dirty=sync.dirty.filter(q=>q!=='txt-'+id&&q!=='scene-'+id);}
  {const keepTx={};for(const k in lastJson)if(k.startsWith('txt-'))keepTx[k]=lastJson[k];baseline();Object.assign(lastJson,keepTx);}cur=snapshot();try{remoteRebase(preSnap,cur);}catch(e){console.error(e);undoS=[];redoS=[];}
  try{locStamp(true);}catch(e){}sync.sIds=P.scenes.map(x=>x.id);
  if(locCh){detectChanges();schedulePush(500);}
@@ -1209,25 +1266,27 @@ async function push(){
  if(gesture&&pushDefer<8){pushDefer++;schedulePush(600);return;}pushDefer=0;
  detectChanges(); /* anything typed or moved since the last save is counted before sending */
  if(!sync.dirty.length){updateStatus();return;}
- pushing=true;let retry=false,again=false,at=null;
- try{
-  for(const k of sync.dirty.slice()){ /* one pass over what is waiting; never loops on itself */
-   if(!sync.dirty.includes(k))continue;at=k;
+ pushing=true;let retry=false,again=false,err='';
+ for(const k of sync.dirty.slice()){ /* one pass over what is waiting; never loops on itself. Each document succeeds or fails on its own */
+  if(!sync.dirty.includes(k))continue;
+  try{
    const ref=coll.doc(k),d=docs();let sent=null;
-   if(k.startsWith('img-')){const iid=k.slice(4);if(images[iid])await writeDoc(ref,{data:images[iid],updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE},k);}
-   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=ancOf(k).slice(-40);extra.fp=sceneFp(d[k].scene);extra.devName=DEVNAME;const cf=sync.cf&&sync.cf[k];if(cf&&cf.fp===extra.fp)extra.cf=cf.key;}await writeDoc(ref,fsBody(Object.assign(JSON.parse(sent),extra)),k);if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
+   if(k.startsWith('img-')){const iid=k.slice(4);if(images[iid])await writeDoc(ref,{data:images[iid],updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE},k);else if(!imgReady){again=true;continue;}} /* its bytes are still loading from this device's store: it stays in line */
+   else if(d[k]){sent=JSON.stringify(d[k]);const extra={updatedAt:sync.stamps[k]||Date.now(),dev:DEVICE};if(k.startsWith('scene-')){extra.anc=ancOf(k).slice(-80);extra.fp=sceneFp(d[k].scene);extra.devName=DEVNAME;const cf=sync.cf&&sync.cf[k];if(cf&&cf.fp===extra.fp)extra.cf=cf.key;}await writeDoc(ref,fsBody(Object.assign(JSON.parse(sent),extra)),k);if(k.startsWith('scene-'))ancAdd(k,[extra.fp]);}
    else{const sid=k.startsWith('scene-')?k.slice(6):k.startsWith('txt-')?k.slice(4):null,TS=(P.tomb&&P.tomb.s)||{};
-    if(!sid||TS[sid]||(k.startsWith('txt-')&&P.scenes.some(x=>x.id===sid)))await writeDoc(ref,null,k);}
+    if(!sid||TS[sid])await writeDoc(ref,null,k);}
+   if(wfail.has(k)){retry=true;continue;} /* refused at once: it stays in line */
+   if(sync.big&&sync.big[k])continue;
    if(sent!==null&&lastJson[k]!==sent){again=true;continue;}
    if(sent===null&&!k.startsWith('img-')&&docs()[k]){again=true;continue;} /* changed while it was being sent: stays in line for the next pass */
    sync.dirty=sync.dirty.filter(x=>x!==k);
+  }catch(e){
+   const c=(e&&e.code)||'error';
+   if(tooBig(c))bigMark(k);
+   else{retry=true;err=c;if(c!=='permission-denied'&&c!=='failed-precondition'&&c!=='not-found')break;} /* no connection: stop this pass; a problem with one document: go on to the next */
   }
-  syncErr='';
- }catch(e){
-  const c=(e&&e.code)||'error';syncErr=c;
-  if(tooBig(c)){sync.dirty=sync.dirty.filter(x=>x!==at);bigToast(at);}
-  else retry=true;
  }
+ if(!wfail.size)syncErr=err;
  pushing=false;saveLocal();updateStatus();
  if(retry)setTimeout(()=>schedulePush(0),15000);else if(sync.dirty.length)schedulePush(again?900:300);else confirmSynced();
 }
@@ -1236,16 +1295,16 @@ let lastSync=+(lsGet('blk.lastSync')||0);
 function markSynced(){lastSync=Date.now();try{localStorage.setItem('blk.lastSync',String(lastSync));}catch(e){}updateStatus();}
 function whenTxt(t){if(!t)return 'never';const d=new Date(t),now=new Date(),same=d.toDateString()===now.toDateString(),y=new Date(now-864e5).toDateString()===d.toDateString();
  return (same?'today':y?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'}))+' at '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});}
-function confirmSynced(){if(sync.dirty.length||outdated)return;if(fbDb&&fbDb.waitForPendingWrites){fbDb.waitForPendingWrites().then(()=>{if(!sync.dirty.length)markSynced();}).catch(()=>{});}else if(coll)markSynced();}
+function confirmSynced(){if(sync.dirty.length||outdated||bigN())return;if(fbDb&&fbDb.waitForPendingWrites){fbDb.waitForPendingWrites().then(()=>{if(!sync.dirty.length&&!bigN()&&!syncErr)markSynced();}).catch(()=>{});}else if(coll)markSynced();}
 function syncNow(){if(!coll){toast(fbAuth?'Sign in first (Menu › Sign in to sync).':'Sync isn’t set up in this copy of the app.');return;}
  if(!navigator.onLine){toast('No internet connection. Everything is saved on this device and will sync when you’re back online.');return;}
  toast('Syncing…');const go=()=>{detectChanges();saveLocal();schedulePush(0);try{const m=docs().meta;if(m&&coll){for(const id of m.imgs)if(!images[id])imgTry[id]=0;imgPull();}}catch(e){}
-  const t0=Date.now(),wait=()=>{if(!sync.dirty.length&&!pushing){if(fbDb&&fbDb.waitForPendingWrites)fbDb.waitForPendingWrites().then(()=>{markSynced();toast('Sent. Everything made here is in the cloud; your other device gets it the next time it’s online.');}).catch(()=>toast('Couldn’t reach the cloud. Your work is saved here; try again in a moment.'));else{markSynced();toast('Synced.');}}else if(Date.now()-t0<20000)setTimeout(wait,500);else toast('Still sending. It will finish in the background.');};setTimeout(wait,400);};
+  const t0=Date.now(),wait=()=>{if(!sync.dirty.length&&!pushing){if(fbDb&&fbDb.waitForPendingWrites)fbDb.waitForPendingWrites().then(()=>{if(sync.dirty.length||syncErr){toast('Not everything could be sent yet. Your work is saved here; it will keep trying.');return;}if(bigN()){toast('Sent, except what is too large to sync. Ready for Set shows which part.');return;}markSynced();toast('Sent. Everything made here is in the cloud; your other device gets it the next time it’s online.');}).catch(()=>toast('Couldn’t reach the cloud. Your work is saved here; try again in a moment.'));else{markSynced();toast('Synced.');}}else if(Date.now()-t0<20000)setTimeout(wait,500);else toast('Still sending. It will finish in the background.');};setTimeout(wait,400);};
  if(fbDb&&fbDb.disableNetwork){fbDb.disableNetwork().then(()=>fbDb.enableNetwork()).then(go,go);}else go();}
 function updateStatus(){
  const el=$('#status');let t,c='';
  if(!localOk){t='Not saving here. Back up from the menu';c='bad';}
- else if(pIn>0||imgIn>0){t='Saving…';}
+ else if(pIn>0||imgIn>0||notePend()){t='Saving…';}
  else if(fbAuth&&!fbUser){t='Sign in to sync';c='warn';}
  else if(!coll)t=location.protocol==='file:'?'Saved on this computer':'Saved on this device';
  else if(online==='connecting')t='Connecting…';
@@ -1257,6 +1316,7 @@ function updateStatus(){
  else if(online==='error'||syncErr){t='Sync paused · saved here';c='warn';}
  else if(outdated){t='Update the app · saved here';c='warn';}
  else if(sync.dirty.length||unacked||bootPend)t='Syncing…';
+ else if(bigN()){t='Part too large to sync · saved here';c='warn';}
  else{t='Synced';c='ok';}
  el.textContent=t;el.className=c;el.title=t+(coll?' · last confirmed by the cloud '+whenTxt(lastSync):'');
  $('#bUndo').disabled=!undoS.length;$('#bRedo').disabled=!redoS.length;
@@ -1268,9 +1328,9 @@ $('#setPanel').addEventListener('click',e=>{const s=scene();
  const v=e.target.closest('[data-sv]');if(v){const k=v.dataset.sv;if(k==='ready'){readyDialog();return;}if(k==='prev')setGo(-1);else if(k==='next')setGo(1);else if(k==='play'){play();renderSet();}else if(k==='psc'||k==='nsc'){const sib=setSibs(s),i=sib.indexOf(s)+(k==='nsc'?1:-1);if(sib[i]){openScene(sib[i].id);const r=rowsOf(scene())[0];sel=r?{id:r.it.id,mark:r.vi}:null;render();}}return;}
  const q=e.target.closest('[data-ss]');if(q){const r=setRow(s);if(!r)return;if(q.dataset.ss==='plan')delete r.m.ss;else r.m.ss=q.dataset.ss;commit();return;}
  const w=e.target.closest('[data-sr]');if(w){const [id,vi]=w.dataset.sr.split('|');sel={id,mark:+vi};const it=itemById(id);if(it&&!vis(it,s)){s.pageId=(it.pgs&&it.pgs[0])||'all';saveLocal();render();}else{renderUI();renderSet();}}});
-$('#setPanel').addEventListener('input',e=>{if(e.target.id!=='setNote')return;const r=setRow(scene());if(!r)return;const v=e.target.value;if(v)r.m.sn=v;else delete r.m.sn;clearTimeout(setNoteT);setNoteT=setTimeout(()=>commit({insp:false}),700);});
+$('#setPanel').addEventListener('input',e=>{if(e.target.id!=='setNote')return;const r=setRow(scene());if(!r)return;const v=e.target.value;if(v)r.m.sn=v;else delete r.m.sn;clearTimeout(setNoteT);setNoteT=setTimeout(()=>{setNoteT=null;commit({insp:false});},700);updateStatus();});
 $('#setPanel').addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('setSt')){if(e.target.open)P.ui.setSt=1;else delete P.ui.setSt;saveLocal();}},true);
-$('#setPanel').addEventListener('focusout',e=>{if(e.target.id==='setNote'){clearTimeout(setNoteT);commit({insp:false});setTimeout(renderSet,0);}});
+$('#setPanel').addEventListener('focusout',e=>{if(e.target.id==='setNote'){clearTimeout(setNoteT);setNoteT=null;commit({insp:false});setTimeout(renderSet,0);}});
 $('#stView').addEventListener('click',e=>{const b=e.target.closest('[data-bk]');if(!b)return;const s=scene(),k=b.dataset.bk,B=s.beats||(s.beats=[]),bt=B.find(x=>x.id===b.dataset.b);
  if(k==='add'){const nb={id:uid(),t:''};B.push(nb);commit();renderDocs(true);focusBeat(nb.id);}
  else if(k==='cov')covDialog();
@@ -1295,8 +1355,8 @@ $('#scoutPanel').addEventListener('change',async e=>{const s=scene();
   const sid=s.id;try{const {data}=await shrinkImage(f,1600,380000),id=addImage(data),c=jitter(),o={id:uid(),type:'prop',kind:'photopin',img:id,cap:'',x:c.x,y:c.y,w:40,h:40,rot:-90,label:'',pgs:null,locked:false};const s2=P.scenes.find(x=>x.id===sid);if(!s2){toast('That scout was deleted while the photo was loading.');return;}s2.items.push(o);sel={id:o.id,mark:null};commit();toast('Photo added. Drag the pin to where you stood and turn it the way the camera faced.');}
   catch(err){toast('That photo could not be read. Try a JPEG or PNG.');}}
  else if(e.target.id==='scName'){const v=e.target.value.trim();if(!v)return;s.title=v;const L=scoutLoc(s);if(L){L.name=v.toUpperCase();L.at=Math.max(Date.now(),(L.at||0)+1);}commit();}});
-$('#scoutPanel').addEventListener('input',e=>{if(e.target.id!=='scNote')return;const s=scene(),v=e.target.value;if(v)s.snote=v;else delete s.snote;clearTimeout(scNoteT);scNoteT=setTimeout(()=>commit({insp:false}),700);});
-$('#scoutPanel').addEventListener('focusout',e=>{if(e.target.id==='scNote'||e.target.id==='scName'){clearTimeout(scNoteT);commit({insp:false});setTimeout(renderScout,0);}});
+$('#scoutPanel').addEventListener('input',e=>{if(e.target.id!=='scNote')return;const s=scene(),v=e.target.value;if(v)s.snote=v;else delete s.snote;clearTimeout(scNoteT);scNoteT=setTimeout(()=>{scNoteT=null;commit({insp:false});},700);updateStatus();});
+$('#scoutPanel').addEventListener('focusout',e=>{if(e.target.id==='scNote'||e.target.id==='scName'){clearTimeout(scNoteT);scNoteT=null;commit({insp:false});setTimeout(renderScout,0);}});
 addEventListener('online',()=>{syncErr='';schedulePush(0);updateStatus();});
 addEventListener('offline',updateStatus);
 
@@ -2357,7 +2417,7 @@ function applyColor(v){const s=scene(),it=itemById(sel&&sel.id);if(!it)return;
  commit();objPop(popAt.x,popAt.y);}
 function sbDelete(it,i,k){const m=it.marks[i];if(!m)return;
  if(k){m.sbs.splice(k-1,1);if(!m.sbs.length)delete m.sbs;sbxTidy(m);}
- else{const al=(m.sbs||[]).slice(),ex=[...al.filter(x=>images[x]),...al.filter(x=>!images[x])];for(const key in FK)if(key!=='a'&&key!=='w')delete m[FK[key]];if(ex.length){m.sb=ex.shift();const e=(m.sbx||{})[m.sb]||{};if(e.a)m.sba=e.a;else delete m.sba;if(e.w)m.sbw=e.w;else delete m.sbw;for(const key in FK)if(key!=='a'&&key!=='w'&&e[key])m[FK[key]]=e[key];if(ex.length)m.sbs=ex;else delete m.sbs;sbxTidy(m);}else{delete m.sb;delete m.sbs;delete m.sbx;delete m.sba;delete m.sbw;}}
+ else{const ex=(m.sbs||[]).slice();for(const key in FK)if(key!=='a'&&key!=='w')delete m[FK[key]];if(ex.length){m.sb=ex.shift();const e=(m.sbx||{})[m.sb]||{};if(e.a)m.sba=e.a;else delete m.sba;if(e.w)m.sbw=e.w;else delete m.sbw;for(const key in FK)if(key!=='a'&&key!=='w'&&e[key])m[FK[key]]=e[key];if(ex.length)m.sbs=ex;else delete m.sbs;sbxTidy(m);}else{delete m.sb;delete m.sbs;delete m.sbx;delete m.sba;delete m.sbw;}}
  sel={id:it.id,mark:i};closePop();commit();toast('Frame removed.');}
 function sbPop(cx,cy){const s=scene(),it=sel&&itemById(sel.id),i=sel&&sel.mark||0,k=sel&&sel.fk||0,m=it&&it.marks&&it.marks[i];if(!m||!images[fImg(m,k)])return;popAt={x:cx,y:cy};
  const B=(o,l,ic)=>`<button data-o="${o}">${ic||''}${l}</button>`,ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`,sec=(t,b)=>`<div class="hd">${t}</div>${b}`;
@@ -2743,7 +2803,7 @@ function locSyncAll(cs){const Ls=locList();let changed=false;locPushed=0;
    const lv=it.lv||0;
    if(lv>m._v){put({id:m.id,_v:lv},it);changed=true;continue;}
    if(lv<m._v){const keep={id:it.id,pgs:it.pgs,locked:it.locked};for(const k of Object.keys(it))delete it[k];Object.assign(it,locFromMaster(m,keep));if(keep.locked===undefined)delete it.locked;changed=true;continue;}
-   if(locFp(it)!==locFp(m)){if(one||!here){if(one)locDetach(x,it);else put({id:m.id,_v:Math.max(now,m._v+1)},it),it.lv=M.get(m.id)._v;}else{const n=put({id:m.id,_v:Math.max(now,m._v+1)},it);it.lv=n._v;locPushed++;}changed=true;}
+   if(locFp(it)!==locFp(m)){if(one||!here){if(one)locDetach(x,it);else{const keep={id:it.id,pgs:it.pgs,locked:it.locked};for(const k of Object.keys(it))delete it[k];Object.assign(it,locFromMaster(m,keep));if(keep.locked===undefined)delete it.locked;}}else{const n=put({id:m.id,_v:Math.max(now,m._v+1)},it);it.lv=n._v;locPushed++;}changed=true;}
   }
   for(const lid of x.locIds.slice())if(!have.has(lid)){x.locIds=x.locIds.filter(q=>q!==lid);changed=true;
    if(M.has(lid)){if(here&&!one){const gv=Math.max(now,(M.get(lid)._v||0)+1);L.items=L.items.filter(q=>q.id!==lid);M.delete(lid);L.gone[lid]=gv;locPushed++;}else x.locOut=[...new Set([...x.locOut,lid])];}}
@@ -2767,28 +2827,31 @@ function locStamp(rec){const first=!sync.locH;sync.locH=sync.locH||{};sync.locV=
    else if(bump&&H[ik]!==undefined&&H[ik]!==f&&(m._v||0)<=(V[ik]||0))m._v=Math.max(now,(V[ik]||0)+1);
    if(gt&&(m._v||0)>gt){delete L.gone[m.id];delete G[g];}
    H[ik]=f;V[ik]=Math.max(V[ik]||0,m._v||0);}}}
-function locMerge(A,B){A=A||[];B=B||[];const out=[];const ids=[...new Set([...B,...A].map(L=>L.id))];
+function locMerge(A,B){A=A||[];B=B||[];const out=[];const ia=A.map(L=>L.id),ib=B.map(L=>L.id),ids=[...new Set(canonJ(ia)>=canonJ(ib)?[...ia,...ib]:[...ib,...ia])];
  for(const id of ids){const a=A.find(L=>L.id===id),b=B.find(L=>L.id===id);if(!a||!b){out.push(clone(a||b));continue;}
-  const n=clone((a.at||0)>(b.at||0)||((a.at||0)===(b.at||0)&&canonJ([a.name,a.home])>=canonJ([b.name,b.home]))?a:b);n.gone=Object.assign({},a.gone||{},b.gone||{});const its=new Map();
-  for(const m of [...(b.items||[]),...(a.items||[])]){const o=its.get(m.id);if(!o||(m._v||0)>(o._v||0)||((m._v||0)===(o._v||0)&&canonJ(m)>canonJ(o)))its.set(m.id,clone(m));}
+  const ka=canonJ([a.name,a.home,(a.items||[]).map(m=>m.id)]),kb=canonJ([b.name,b.home,(b.items||[]).map(m=>m.id)]),aFirst=(a.at||0)>(b.at||0)||((a.at||0)===(b.at||0)&&ka>=kb),n=clone(aFirst?a:b);n.gone=Object.assign({},a.gone||{});for(const id in b.gone||{})n.gone[id]=Math.max(+n.gone[id]||0,+b.gone[id]||0);const its=new Map();
+  for(const m of aFirst?[...(a.items||[]),...(b.items||[])]:[...(b.items||[]),...(a.items||[])]){const o=its.get(m.id);if(!o||(m._v||0)>(o._v||0)||((m._v||0)===(o._v||0)&&canonJ(m)>canonJ(o)))its.set(m.id,clone(m));}
   n.items=[...its.values()].filter(m=>!(n.gone[m.id]&&+n.gone[m.id]>=(m._v||0)));for(const m of n.items)delete n.gone[m.id];const bb=(a.bgv||0)>(b.bgv||0)||((a.bgv||0)===(b.bgv||0)&&canonJ([a.bgId||null,a.bg||null])>=canonJ([b.bgId||null,b.bg||null]))?a:b;n.bgId=bb.bgId||null;n.bg=bb.bg?clone(bb.bg):null;n.bgv=bb.bgv||0;
   if(!n.del)delete n.del;out.push(n);}
  return out;}
 function locPieces(sc){return sc.items.filter(it=>LOCT(it)&&!it.local);}
 /* link a scene (and its saved plans) to a location; replace=true swaps out its own set */
-const setFp=items=>(items||[]).filter(it=>LOCT(it)&&!it.lid).map(it=>canonJ(locStrip(it))).sort().join('|');
+const pieceKey=it=>canonJ([locStrip(it),it.lid||'',it.pgs||null,!!it.locked]);
+const setFp=items=>(items||[]).filter(it=>LOCT(it)).map(pieceKey).sort().join('|');
 function locLink(sc,L,replace){const now=Date.now(),own=setFp(sc.items);
  const doIt=(items)=>{let out=replace?items.filter(it=>!LOCT(it)):items.map(it=>{if(LOCT(it)&&!it.lid)it.local=true;return it;});out=out.filter(it=>!it.lid);
   return [...L.items.map(m=>locFromMaster(m,{id:uid(),pgs:null})),...out];};
- sc.items=doIt(sc.items);for(const p of sc.plans||[])if(p.d&&p.d.items&&(!replace||setFp(p.d.items)===own))p.d.items=doIt(p.d.items);
+ sc.items=doIt(sc.items);for(const p of sc.plans||[])if(p.d&&p.d.items){if(!replace||setFp(p.d.items)===own)p.d.items=doIt(p.d.items);
+  else for(const it of p.d.items)if(it.lid){delete it.lid;delete it.lv;it.local=true;}} /* a plan with a different set keeps it, as this scene's own */
  sc.loc=L.id;sc.locIds=L.items.map(m=>m.id);sc.locOut=[];delete sc.locBgOwn;
  if(L.bgId){sc.bgId=L.bgId;sc.bg=clone(L.bg);}sc.locBgv=L.bgv||0;
  if(!L.bgId&&sc.bgId&&!replace)sc.locBgOwn=true;
  if(!L.bgId&&replace){delete sc.bgId;delete sc.bg;}}
 function locCreate(sc,name){const own=setFp(sc.items),now=Date.now(),L={id:uid(),name:name||locKey(sc.heading)||'Location',home:rootKey(sc),key:locKey(sc.heading),items:[],gone:{},bgId:sc.bgId||null,bg:sc.bg?clone(sc.bg):null,bgv:now,at:now};
- for(const it of sc.items)if(LOCT(it)){delete it.local;const m=Object.assign(locStrip(it),{id:uid(),_v:now});L.items.push(m);it.lid=m.id;it.lv=now;}
+ const pool={};for(const it of sc.items)if(LOCT(it)){const key=pieceKey(it);delete it.local;const m=Object.assign(locStrip(it),{id:uid(),_v:now});L.items.push(m);it.lid=m.id;it.lv=now;(pool[key]=pool[key]||[]).push(m.id);}
  locList().push(L);sc.loc=L.id;sc.locIds=L.items.map(m=>m.id);sc.locOut=[];sc.locBgv=now;delete sc.locBgOwn;
- for(const p of sc.plans||[])if(p.d&&p.d.items&&setFp(p.d.items)===own){p.d.items=p.d.items.filter(it=>!LOCT(it));p.d.items.unshift(...L.items.map(m=>locFromMaster(m,{id:uid(),pgs:null})));}
+ /* a plan holding exactly the same set is linked piece for piece, keeping its own pieces (and whatever rides or aims at them) */
+ for(const p of sc.plans||[])if(p.d&&p.d.items&&setFp(p.d.items)===own){const left={};for(const key in pool)left[key]=pool[key].slice();for(const it of p.d.items)if(LOCT(it)){const q=left[pieceKey(it)];if(q&&q.length){delete it.local;it.lid=q.shift();it.lv=now;}}}
  return L;}
 /* ---------- riders: a character position attached to a prop (in a car, on a chair) moves and turns with it ---------- */
 const SEATS=new Set(['chair','armchair','sofa','bench','barstool','bedsingle','beddouble','hospbed','gurney','wheelchair','booth','stool','loveseat','recliner','couch']);
@@ -2836,6 +2899,7 @@ function aimSync(sc){for(const it of sc.items){if(it.type!=='cam')continue;
    const L=it.marks[rb];for(const q of L.pans||[])if(q.auto&&q._ar!=null&&Math.abs(angD(q.rot||0,q._ar))>.3)hand=true;
    if(hand){aimUnlock(it,ra);continue;}
    for(let j=ra;j<=rb;j++){const m=it.marks[j],r=angTo(m,pl.marks[j-ra]);m.rot=r;m._ar=r;}
+   if((L.pans||[]).some(q=>!q.auto))continue; /* pans made by hand stay as they are */
    let prev=L.rot||0;const pans=[];for(const t of pl.pans){const r=angTo(L,t);if(Math.abs(angD(prev,r))<3)continue;pans.push({rot:r,auto:1,_ar:r});prev=r;}
    const nx=pans;if(nx.length){L.pans=nx;if(!L.move||L.move==='Stationary')L.move='Pan';}else if(L.pans&&L.pans.every(q=>q.auto)){delete L.pans;if(L.move==='Pan')L.move='Stationary';}}}}
 function aimName(sc,a){if(!a)return '';if(a.id){const o=sc.items.find(q=>q.id===a.id);return o&&o.type==='char'?String((charById(o.charId)||{}).name||'').toUpperCase():'';}return 'a spot';}
@@ -2923,11 +2987,12 @@ function copyIdeas(src,dst){const cams=src.items.filter(i=>i.type==='cam');let n
  return n;}
 function photoView(s,id){const pins=scoutPins(s);if(!pins.length)return;let i=Math.max(0,pins.findIndex(p=>p.id===id));
  const body=()=>{const p=pins[i];return `<div class="phv">${images[p.img]?`<img alt="Scout photo" src="${images[p.img]}">`:'<p class="mut" style="padding:40px;color:#ccc">This photo hasn’t downloaded to this device yet.</p>'}</div><input id="phCap" class="phcap" value="${esc(p.cap||'')}" placeholder="Caption: what this shows" autocomplete="off"><div class="btns"><button id="phPrev" ${i>0?'':'disabled'} aria-label="Previous photo">‹</button><span class="mut" style="align-self:center">${i+1} of ${pins.length}</span><button id="phNext" ${i<pins.length-1?'':'disabled'} aria-label="Next photo">›</button><span style="flex:1"></span>${s.id===P.sceneId?'<button id="phShow">Show on plan</button><button class="danger" id="phDel">Delete</button>':''}<button class="pri" data-x>Done</button></div>`;};
- modal(`<h3>${esc(s.title||'Scout')} · photos</h3><div id="phB">${body()}</div>`,card=>{const save=()=>{const v=card.querySelector('#phCap'),p=pins[i];if(v&&p&&(p.cap||'')!==v.value){p.cap=v.value;commit();}};
+ const sid=s.id,livePin=id=>{const z=P.scenes.find(x=>x.id===sid);return z?(z.items||[]).find(q=>q.id===id&&q.kind==='photopin'):null;};
+ modal(`<h3>${esc(s.title||'Scout')} · photos</h3><div id="phB">${body()}</div>`,card=>{const save=()=>{const v=card.querySelector('#phCap'),p0=pins[i];if(!v||!p0||(p0.cap||'')===v.value)return;const p=livePin(p0.id);if(!p){toast('That photo was deleted on your other device. Caption not saved: '+v.value);return;}p.cap=v.value;p0.cap=v.value;commit();};
   card.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
    if(t.id==='phPrev'||t.id==='phNext'){save();i+=t.id==='phNext'?1:-1;card.querySelector('#phB').innerHTML=body();}
    else if(t.id==='phShow'){save();closeModal();sel={id:pins[i].id,mark:null};renderUI();}
-   else if(t.id==='phDel'){const p=pins[i];s.items.splice(s.items.indexOf(p),1);commit();closeModal();toast('Photo deleted. Undo brings it back.');}
+   else if(t.id==='phDel'){const p=livePin(pins[i].id),z=P.scenes.find(x=>x.id===sid);if(p&&z)z.items.splice(z.items.indexOf(p),1);commit();closeModal();toast('Photo deleted. Undo brings it back.');}
    else if(t.hasAttribute('data-x'))save();});
   card.addEventListener('change',e=>{if(e.target.id==='phCap')save();});},'phc');}
 function scoutLinkDialog(s){const L=scoutLoc(s);if(!L)return;const r=rootKey(s),cands=liveScenes().filter(x=>rootKey(x)===r&&!x.scout&&x.loc!==L.id).sort((a,b)=>natCmp(String(a.number||''),String(b.number||'')));
@@ -3943,10 +4008,12 @@ function vvCmp(A,B){let ge=true,le=true;const a=A.vv||{},b=B.vv||{};for(const d 
 function vvMax(A,B){const o=Object.assign({},A.vv||{}),b=B.vv||{};for(const d in b)o[d]=Math.max(o[d]||0,b[d]);return o;}
 let txTimer=null;
 function txFlush(){clearTimeout(txTimer);txTimer=null;detectChanges();saveLocal();schedulePush();updateStatus();}
-function txSaved(now){if(now){txFlush();return;}if(!txTimer)txTimer=setTimeout(txFlush,700);}
+function txSaved(now){if(now){txFlush();return;}if(!txTimer){txTimer=setTimeout(txFlush,700);updateStatus();}}
+function flushNotes(){let f=false;try{if(scNoteT){clearTimeout(scNoteT);scNoteT=null;f=true;}}catch(e){}try{if(setNoteT){clearTimeout(setNoteT);setNoteT=null;f=true;}}catch(e){}if(f)commit({insp:false});}
+const notePend=()=>{try{return !!(txTimer||scNoteT||setNoteT);}catch(e){return false;}};
 function txEdit(sid,key,fn){const c=txGet(sid,key,true);fn(c);txBump(sid,key,c);txSaved();return c;}
-addEventListener('pagehide',()=>{if(txTimer)txFlush();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&txTimer)txFlush();});
+addEventListener('pagehide',()=>{flushNotes();if(txTimer)txFlush();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){flushNotes();if(txTimer)txFlush();}});
 function txDoc(sid){const x=P.text&&P.text[sid];if(!x)return null;const c=txCells(x);for(const k in c)if((c[k].t||0)>1)return {nb:x.nb||{},st:x.st||null};return null;}
 const TX_MARK='<p><b>OTHER VERSION, edited on another device. Keep what you want and delete the rest:</b></p>';
 function txSame(a,b){const f=c=>JSON.stringify([c.h||'',c.title||'',c.box?1:0,c.del?1:0,c.v||null,c.type||'',c.to||'',c.toNum||'']);return f(a)===f(b);}
@@ -3970,7 +4037,7 @@ function mergeTxt(k,R){
   const nw=lt>=rt?L:r,od=nw===L?r:L,m=clone(nw),main=h=>String(h||'').split(TX_MARK)[0];
   if(key==='order')m.v=[...(nw.v||[]),...(od.v||[]).filter(i=>!(nw.v||[]).includes(i))];
   else if(nw.del&&!od.del)Object.assign(m,clone(od));
-  else if(!od.del){const oh=main(od.h);if(oh&&oh!==main(nw.h)&&!(nw.h||'').includes(oh)&&rtText(rtParse(oh))&&(nw.h||'').length+oh.length<150000){m.h=(nw.h||'')+TX_MARK+oh;conf++;}
+  else if(!od.del){const oh=main(od.h);if(oh&&oh!==main(nw.h)&&!(nw.h||'').includes(oh)&&rtText(rtParse(oh))){if((nw.h||'').length+oh.length<400000){m.h=(nw.h||'')+TX_MARK+oh;conf++;}else if(od===L){try{if(idb)snapPut(Date.now()-1,{data:snapshot(),text:JSON.stringify(P.text||{}),scenes:liveScenes().length,shots:0,name:'Before a long text was replaced by your other device’s version'});}catch(e){}setTimeout(()=>toast('A very long piece of writing was changed on both devices. The newer one is in place; yours is kept in Menu › Earlier versions.'),50);}}
    if(od.title&&nw.title&&od.title!==nw.title&&!(m.h||'').includes(esc(od.title))){m.h=(m.h||'')+TX_MARK+'<p>Other title: '+esc(od.title)+'</p>';conf++;}}
   m.vv=vvMax(L,r);m.vv[DEVICE]=(m.vv[DEVICE]||0)+1;delete m.a;m.t=Math.max(now,lt+1,rt+1);txPut(x,key,m);ch++;dirty=true;
  }
@@ -3978,9 +4045,9 @@ function mergeTxt(k,R){
  const d=txDoc(sid);if(d){const j=JSON.stringify(d);if(!dirty&&lastJson[k]===j)sync.dirty=sync.dirty.filter(q=>q!==k);if(!dirty||ch)lastJson[k]=j;}
  return {ch,conf};
 }
-function txAdopt(next){ /* a backup or an earlier version replaces the text here, and wins on other devices too */
- const prev=P.text||{},now=Date.now();P.text=clone(next||{});
- for(const sid of new Set([...Object.keys(prev),...Object.keys(P.text)])){
+function txAdopt(next,keep){ /* a backup or an earlier version replaces the text here, and wins on other devices too; scenes in `keep` are left as they are */
+ const prev=P.text||{},now=Date.now();P.text=clone(next||{});for(const sid of keep||[]){if(prev[sid])P.text[sid]=prev[sid];else delete P.text[sid];}
+ for(const sid of new Set([...Object.keys(prev),...Object.keys(P.text)])){if(keep&&keep.includes(sid))continue;
   const x=txOf(sid,true),was=txCells(prev[sid]),cur=txCells(x);
   for(const key of new Set([...Object.keys(was),...Object.keys(cur)])){const w=was[key];let c=cur[key];
    if(!c){if(!w||(w.t||0)<=1)continue;c=key==='order'?clone(w):{h:'',del:1};txPut(x,key,c);}
@@ -4619,12 +4686,14 @@ async function backup(){const d=new Date().toISOString().slice(0,10);await save(
 $('#fJson').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f)return;
  try{const o=JSON.parse(await f.text());if(o.app!=='blocking-board'||!Array.isArray(o.scenes)||!o.scenes.length)throw 0;
-  for(const sc of o.scenes){if(!sc||typeof sc!=='object'||!sc.id)throw 0;if(!Array.isArray(sc.items))sc.items=[];if(!Array.isArray(sc.setups))sc.setups=[];if(!Array.isArray(sc.pages)||!sc.pages.length)sc.pages=[{id:uid(),name:'Page 1'}];}
-  {const test=clone(o.scenes);for(const sc of test)migrateScene(sc);} /* throws on a damaged file, before anything here changes */
+  {const ids=new Set();for(const sc of o.scenes){if(!sc||typeof sc!=='object'||!sc.id||ids.has(sc.id))throw 0;ids.add(sc.id);if(!Array.isArray(sc.pages)||!sc.pages.length)throw 0;if(sc.items!==undefined&&!Array.isArray(sc.items))throw 0;}}
+  for(const key of ['characters','folders','locations','productions'])if(o[key]!=null&&!Array.isArray(o[key]))throw 0;
+  for(const key of ['labels','text','images'])if(o[key]!=null&&(typeof o[key]!=='object'||Array.isArray(o[key])))throw 0;
+  {const test=clone(o.scenes);for(const sc of test){migrateScene(sc);if(!Array.isArray(sc.items)||!Array.isArray(sc.pages)||!sc.pages.length)throw 0;}} /* throws on a damaged file, before anything here changes; an older layout is converted when it is adopted */
   confirmBox('Restore this backup?',`It replaces everything here with ${o.scenes.length} scene${o.scenes.length>1?'s':''} from the file, and syncs that to your other devices. Scenes here that aren’t in the file go to Trash.`,'Replace',()=>{
    const keepIds=new Set(o.scenes.map(z=>z.id)),now=Date.now(),extra=P.scenes.filter(z=>!keepIds.has(z.id)).map(z=>{if(!z.trashed&&!z.tpl)z.trashed=now;return z;});
-   P.characters=o.characters||[];P.folders=o.folders||[];P.locations=o.locations||[];if(o.productions)P.productions=o.productions;if(o.labels)P.labels=o.labels;P.scenes=[...o.scenes,...extra];txAdopt(o.text||{});migrate();P.sceneId=P.scenes[0].id;ensureLive();
-   for(const k in (o.images||{})){if(!images[k]){images[k]=o.images[k];sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}}imgDirty=true;sel=null;commit();txFlush();renderDocs(true);fit();
+   P.characters=o.characters||[];P.folders=o.folders||[];P.locations=o.locations||[];if(o.productions)P.productions=o.productions;if(o.labels)P.labels=o.labels;const tx0=clone(P.text||{}),u0=undoS.length,j0=cur,g0=rgen,mk=rvMark();P.scenes=[...o.scenes,...extra];txAdopt(o.text||{},extra.map(z=>z.id));migrate();P.sceneId=P.scenes[0].id;ensureLive();
+   for(const k in (o.images||{})){if(!images[k]){images[k]=o.images[k];sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}}imgDirty=true;sel=null;rvBump(mk);commit();undoWithText(tx0,u0,j0,g0);txFlush();renderDocs(true);fit();
   });
  }catch(err){toast('That file isn’t a backup from The Director’s Notebook.');}
 });
@@ -5262,15 +5331,22 @@ function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split
 function stgFill(){const el=document.getElementById('stgTxt');if(!el||!navigator.storage||!navigator.storage.estimate)return;const f=n=>n>=1073741824?(n/1073741824).toFixed(n<10737418240?1:0)+' GB':n>=1048576?(n/1048576).toFixed(n<10485760?1:0)+' MB':Math.max(1,Math.round(n/1024))+' KB';
  navigator.storage.estimate().then(e=>{if(e&&e.quota&&document.body.contains(el))el.textContent=` Storage on this device: ${f(e.usage||0)} used of about ${f(e.quota)} the app can use.`;}).catch(()=>{});}
 let started=false;
-function start(big){if(started)return;started=true;load(big);setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();
+function start(big,bigSync){if(started)return;started=true;load(big,bigSync);setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();
  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}}
 /* the scenes are in the large store but it will not open: never start empty over them without being told to */
 function bootFail(){if(document.getElementById('bootFail'))return;const d=document.createElement('div');d.id='bootFail';d.style.cssText='position:fixed;inset:0;z-index:999;background:#f6f5f1;display:flex;align-items:center;justify-content:center;padding:24px;font:16px/1.5 -apple-system,system-ui,sans-serif;color:#1c1c1e';
  d.innerHTML='<div style="max-width:460px"><h2 style="margin:0 0 10px;font-size:22px">Your scenes couldn’t be opened</h2><p style="margin:0 0 18px">They are saved on this device, but the app couldn’t read them just now. Close any other windows of the app and try again.</p><button id="bfRetry" style="font:inherit;font-weight:600;padding:10px 18px;border-radius:10px;border:0;background:#2f6fde;color:#fff">Try again</button> <button id="bfNew" style="font:inherit;padding:10px 18px;border-radius:10px;border:1px solid #c9c8c3;background:#fff;margin-left:8px">Start empty instead</button><p style="margin:16px 0 0;font-size:13px;color:#6b6c72">Starting empty leaves the saved scenes where they are. If you sync, signing in brings your synced scenes back.</p></div>';
  document.body.appendChild(d);d.querySelector('#bfRetry').onclick=()=>location.reload();d.querySelector('#bfNew').onclick=()=>{try{localStorage.removeItem(BIG);}catch(e){}d.remove();start();};}
-if(lsGet(LS.p))start();
-else{const big=!!lsGet(BIG);let up=false;const t=setTimeout(()=>{if(up)return;if(big)bootFail();else{up=true;start();}},big?6000:2500);
- kvGet('p').then(v=>{if(up)return;clearTimeout(t);up=true;if(v){const f=document.getElementById('bootFail');if(f)f.remove();start(v);}else if(big){up=false;bootFail();}else start();}).catch(()=>{if(up)return;clearTimeout(t);if(big)bootFail();else{up=true;start();}});}
+/* which saved copy to open: the small store, or the large one. If the marker and the copies disagree, the newer pair wins; a slow or failed read never becomes an empty project without being asked */
+function boot(){const small=lsGet(LS.p),big=!!lsGet(BIG);
+ if(small&&!big){start();return;}
+ const t=setTimeout(()=>{if(!started)bootFail();},6000),gOf=sj=>{try{return (JSON.parse(sj||'{}').g)||0;}catch(e){return 0;}};
+ Promise.all([kvGet('p'),kvGet('s')]).then(([v,sj])=>{if(started)return;clearTimeout(t);const f=document.getElementById('bootFail');
+  if(v&&small&&gOf(lsGet(LS.sync))>gOf(sj)){if(f)f.remove();start();return;}
+  if(v){if(f)f.remove();start(v,sj||undefined);return;}
+  if(small||!big){if(f)f.remove();start();return;}
+  bootFail();}).catch(()=>{if(started)return;clearTimeout(t);if(small){start();return;}bootFail();});}
+/*boot*/boot();
 })();
 </script>
 </body>
