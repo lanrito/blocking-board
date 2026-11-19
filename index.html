@@ -486,7 +486,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119150136';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119152448';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -2831,7 +2831,7 @@ function objPop(cx,cy){
    h=(rb>ra?`<div class="hd">Camera Positions</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this camera position" aria-label="Remove this camera position"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`:'')
     +sec('Camera Move',duo(B('trackfrom','Comes From…'),B('trackto','Moves To…'))+B('pan','Add a Pan')+(it.marks[ra].aim?B('aimoff','Stop Following '+esc(aimName(s,it.marks[ra].aim))):B('aim','Follow…')))
     +sec('Shot',B('shotdesc','Describe the Shot…')+(nv>1?duo(B('addver','Add Version…'),B('delmark','Remove Version')):B('addver','Add Version…')))
-    +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb&&it.marks.some(m=>m.sb)?duo(B('frame2','Add a Frame…'),B('regallery','Re-arrange…')):(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):'')))
+    +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb&&images[va.sb]?B('framecrop','Crop Main Frame…'):'')+(va.sb&&it.marks.some(m=>m.sb)?duo(B('frame2','Add a Frame…'),B('regallery','Re-arrange…')):(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):'')))
     +(s.setups.length>1?pr('Shooting Order',`<button data-o="shotUp"${s.setups[0].id!==it.setupId?'':' disabled'}>Earlier</button>`,`<button data-o="shotDown"${s.setups[s.setups.length-1].id!==it.setupId?'':' disabled'}>Later</button>`):'')
     +sec('Camera',B('edit','Camera Details…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages
     +sec('Arrange',B('dupcam','Add a Camera to Setup '+st.num)+lk)
@@ -2933,6 +2933,7 @@ function objAct(o){
   case 'shotdesc':shotPop(popAt.x,popAt.y);break;
   case 'frame':act('sbAdd',fake({id:it.id,v:String(sel.mark||0)}));break;
   case 'frame2':act('sbMore',fake({id:it.id,v:String(sel.mark||0)}));break;
+  case 'framecrop':{const mi=clamp(sel.mark||0,0,it.marks.length-1),has=j=>it.marks[j].sb&&images[it.marks[j].sb];closePop();sbCrop(it.id,has(mi)?mi:camRun(it,mi)[0],0);break;}
   case 'bgReplace':act('bgReplace',fake());break;
   case 'rotplan':closePop();rotateStart();break;
   case 'bgRemove':act('bgRemove',fake());break;
@@ -4207,10 +4208,9 @@ async function sbCrop(id,i,k){const c0=findCam(id);if(!c0)return;const m0=c0.it.
  if(nid===cur&&cut.def)return;commit();if(mode==='list'||mode==='split')renderList();toast(cut.def?'Back to the whole picture, centered.':'Framing changed. Crop… again to adjust it; the full picture is kept.');}
 $('#fSb').addEventListener('change',async e=>{
  const f=e.target.files[0];e.target.value='';if(!f||!pendingSb)return;const t=pendingSb;pendingSb=null;
- try{if(!findCam(t.id))return;let cut;{const url=URL.createObjectURL(f);try{cut=await cropDialog(url,null);}finally{URL.revokeObjectURL(url);}}
-  if(!cut)return;/* a framed picture keeps a larger copy of the whole, so a later Crop… still has detail to cut from */const {data}=await shrinkImage(f,cut.def?720:1280,cut.def?110000:235000),c=findCam(t.id);if(!c)return;const m=c.it.marks[t.vi];if(!m)return;const whole=addImage(data),id=cut.def?whole:addImage(cut.data);
+ try{const c=findCam(t.id);if(!c)return;const {data}=await shrinkImage(f,720,110000),m=c.it.marks[t.vi],id=addImage(data);
   const fresh=!m.sb||!images[m.sb];let fk=0;if(t.add&&m.sb){(m.sbs=m.sbs||[]).push(id);fk=m.sbs.length;}else if(t.k!=null&&m.sbs&&m.sbs[t.k]!=null){const o=m.sbs[t.k];m.sbs[t.k]=id;if(m.sbx&&m.sbx[o]){m.sbx[id]=m.sbx[o];delete m.sbx[o];}fk=t.k+1;}else m.sb=id;
-  fSet(m,fk,'o',cut.def?null:whole);fSet(m,fk,'cr',cut.def?null:cut.cr);
+  fSet(m,fk,'o',null);fSet(m,fk,'cr',null);
   let msg='';if(t.add&&frameOn()&&m.sb&&images[m.sb]){const k=(m.sbs||[]).length;if(!fx(m,k))fSetW(m,k,fWk(c.s,m,0));placeFrame(c.s,c.it,t.vi,k);msg=`Frame ${k+1} added to Shot ${shotCode(c.s,c.it)} on the floor plan.`;}
   else if(fresh&&!t.add&&t.k==null){const was=frameOn();if(!was){P.ui.frames=true;renderTop();}delete m.sba;if(!m.sbw)m.sbw=commonFW(c.s,m);placeFrame(c.s,c.it,t.vi);
    msg=`Frame added on the floor plan next to Shot ${shotCode(c.s,c.it)}${was?'':' (Frames is back on)'}. Drag it anywhere; drag its corner to resize it.`;}
