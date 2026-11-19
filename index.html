@@ -466,6 +466,13 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 #selbar button{height:36px;padding:0 16px;border:0;border-radius:8px;background:var(--accent);color:#fff;font-size:14.5px;font-weight:650}
 #selbar button.sb2{background:var(--chip);color:var(--ink);border:1px solid var(--line);font-weight:600;padding:0 12px}
 .ring.gring{stroke-width:2px;stroke-dasharray:9 5}
+
+/* Moves To / Comes From: the first thing in the menu, and the first thing the eye lands on */
+#pop .ls .duo.mvd{padding:10px 12px 8px;gap:8px}
+#pop .ls .duo.mvd button{min-height:46px;background:var(--accent);border-color:var(--accent);color:#fff;font-size:15.5px;font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+#pop .ls .duo.mvd button:hover,#pop .ls .duo.mvd button:active{background:#2a62c6}
+#pop .ls .duo.mvd button:only-child{flex:1}
+#pop .ls>.duo.mvd+.hd{margin-top:2px}
 </style>
 </head>
 <body>
@@ -535,7 +542,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119171119';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119174758';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1371,6 +1378,7 @@ function commit(opt){
  try{typeRefresh();}catch(e){}
  try{metaStamp();}catch(e){}
  try{locSyncAll(scene());locNote();}catch(e){console.error(e);}
+ try{groupSync(scene());}catch(e){console.error(e);}
  try{rideSync(scene());aimSync(scene());}catch(e){}
  try{beatSync(scene());}catch(e){}
  normShots(scene());ppFill(scene());const s=snapshot();
@@ -1379,7 +1387,7 @@ function commit(opt){
 }
 function rvMark(){const rv={},clean=new Set();for(const s of P.scenes){rv[s.id]=s.rv||0;const k='scene-'+s.id;if(sync.stamps[k]&&!sync.dirty.includes(k))clean.add(s.id);}return {rv,clean};}
 function rvBump(mk){detectChanges();for(const s of P.scenes)if(mk.clean.has(s.id)&&sync.dirty.includes('scene-'+s.id))s.rv=Math.max(s.rv||0,mk.rv[s.id]||0)+1;}
-function restore(snap){
+function restore(snap){gMem.clear();
  const o=JSON.parse(snap),pids={},mk=rvMark();for(const s of P.scenes)pids[s.id]=s.pageId;
   P.characters=o.c;if(o.f)P.folders=o.f;if(o.l){const have=new Set(o.l.map(L=>L.id)),now=Date.now();for(const L of P.locations||[])if(L&&L.id&&!have.has(L.id)){const c=clone(L);if(!c.del){c.del=Math.max(now,(c.at||0)+1);c.at=c.del;}o.l.push(c);}P.locations=o.l;}P.scenes=o.s.map(s=>{s.pageId=pids[s.id]==='all'||s.pages.some(p=>p.id===pids[s.id])?pids[s.id]:s.pages[0].id;return s;});
  if(!P.scenes.some(s=>s.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();
@@ -1561,7 +1569,7 @@ async function initSync(){
   },err=>{clearTimeout(t);online='error';syncErr=(err&&err.code)||'error';updateStatus();});
  }catch(e){updateStatus();}
 }
-function applyRemote(snap){
+function applyRemote(snap){gMem.clear();
  try{detectChanges();}catch(e){}const preSnap=cur;
  let changed=false,meta=null;const sd={},td={},seen=new Set(),goneNow=[];
  const join=!!acct&&sync.uid!==acct&&!(snap.metadata&&snap.metadata.fromCache);
@@ -2171,6 +2179,7 @@ function uiMarkup(){
   if(msel){const mi=mselItems(),grp=oneGroup(mi);
    if(grp){let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const it of mi){const b=msBox(it);if(!b)continue;x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}if(x0<Infinity)h+=`<rect class="ring gring" x="${x0-4}" y="${y0-4}" width="${x1-x0+8}" height="${y1-y0+8}" rx="8"/>`+(mi.every(i=>i.locked)?lockBadge(x1,y0):'');}
    else for(const it of mi){const b=msBox(it);if(b)h+=`<rect class="ring" x="${b.x0}" y="${b.y0}" width="${b.x1-b.x0}" height="${b.y1-b.y0}" rx="6"/>`+(it.locked?lockBadge(b.x1,b.y0):'');}}
+  else if(sel&&sel.id!=='__bg'){const gi=itemById(sel.id);if(gi&&gMember(gi))h+=groupRing(scene(),gi,sel.mark||0);}
   selBar();
  if(tool&&tool.t==='wall'&&tool.last){h+=`<circle cx="${tool.last.x}" cy="${tool.last.y}" r="${6/view.k}" fill="#2f6fde"/>`;if(tool.hover)h+=`<line x1="${tool.last.x}" y1="${tool.last.y}" x2="${tool.hover.x}" y2="${tool.hover.y}" stroke="#2f6fde" stroke-width="${WALL_T}" stroke-opacity=".45" stroke-linecap="square"/>`;}
  if(gesture&&(gesture.type==='frame'||gesture.type==='drag')&&gesture.guides&&gesture.moved)for(const q of gesture.guides)h+=`<line class="sguide" x1="${q.x1}" y1="${q.y1}" x2="${q.x2}" y2="${q.y2}"/>`;
@@ -2215,7 +2224,7 @@ function renderBg(){
 }
 function renderUI(){$('#ui').innerHTML=uiMarkup();renderCtx();keysCtx();}
 function renderCanvas(){
- const s=scene();syncPieces(s);try{rideSync(s);aimSync(s);}catch(e){console.error(e);}renderBg();applyLayers();if(anim.step){anim.base=null;drawAnim();}else $('#items').innerHTML=itemsMarkup(s);renderUI();renderAnimBar();renderConf();renderLoc();
+ const s=scene();syncPieces(s);try{groupSync(s);}catch(e){console.error(e);}try{rideSync(s);aimSync(s);}catch(e){console.error(e);}renderBg();applyLayers();if(anim.step){anim.base=null;drawAnim();}else $('#items').innerHTML=itemsMarkup(s);renderUI();renderAnimBar();renderConf();renderLoc();
  $('#empty').style.display=pageItems(s).length||s.bgId?'none':'';
 }
 
@@ -2402,7 +2411,7 @@ function act(a,b){
   case 'trackto':{const [,rb]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'to',at:rb});break;}
   case 'delMark':if(it.type==='char'){const [a,b]=runOf(it,sel.mark||0);if(it.marks.length>b-a+1){it.marks.splice(a,b-a+1);shiftAxis(s,it.id,b+1,-(b-a+1));if(a<it.marks.length&&it.marks[a].t)delete it.marks[a].t;sel.mark=Math.max(0,Math.min(a,it.marks.length-1));}}
   else if(it.type==='cam'){const [a,b]=camRun(it,sel.mark||0);if(nVer(it)>1){const kids=it.marks.map((q,j)=>q.sp&&j>b&&spBase(it,j)===a?j:-1).filter(j=>j>=0);if(kids.length){const K=it.marks[kids[0]];delete K.sp;K.mid=uid();for(const j of kids.slice(1))it.marks[j].sp=K.mid;}it.marks.splice(a,b-a+1);if(it.marks[0].tk)delete it.marks[0].tk;sel.mark=Math.min(a,it.marks.length-1);}}
-  else if(it.marks){it.marks.splice(sel.mark,1);sel.mark=Math.min(sel.mark,it.marks.length-1);}else if(sel.mark&&it.mv){it.mv.splice(sel.mark-1,1);sel.mark=null;}commit();break;
+  else if(it.marks){it.marks.splice(sel.mark,1);sel.mark=Math.min(sel.mark,it.marks.length-1);}else if(sel.mark&&it.mv){const gp=(it.mv[sel.mark-1]||{}).gp;it.mv.splice(sel.mark-1,1);if(!it.mv.length)delete it.mv;if(gp)for(const o of gMates(s,it))if(o!==it&&o.mv){o.mv=o.mv.filter(q=>q.gp!==gp);if(!o.mv.length)delete o.mv;}sel.mark=null;}commit();break;
   case 'front':s.items.splice(s.items.indexOf(it),1);s.items.push(it);commit();break;
   case 'back':s.items.splice(s.items.indexOf(it),1);s.items.unshift(it);commit();break;
   case 'dup':{const c=clone(it);delete c.gid;c.id=uid();c.locked=false;delete c.lid;delete c.lv;moveItem(c,c.marks?null:'all',30,30);s.items.push(c);sel={id:c.id,mark:c.marks?0:null};commit();break;}
@@ -2670,7 +2679,9 @@ function snapWall(w,skip){const r=16/view.k;let best=null,bd=r;for(const it of p
 function snapAngle(o,w){const ang=Math.atan2(w.y-o.y,w.x-o.x)*180/Math.PI,sa=Math.round(ang/45)*45;if(Math.abs(ang-sa)<5){const L=Math.hypot(w.x-o.x,w.y-o.y);return {x:o.x+Math.cos(rad(sa))*L,y:o.y+Math.sin(rad(sa))*L};}return w;}
 function toolTap(w){
  const s=scene();
- if(tool.t==='pfrom'){const it=itemById(tool.id);if(it){for(const x of s.items)for(const m of x.marks||[])if(m.ride&&m.ride.id===it.id)m.ride.k=(m.ride.k||0)+1;it.mv=[{x:it.x,y:it.y,rot:it.rot||0},...(it.mv||[])];it.x=w.x;it.y=w.y;sel={id:it.id,mark:null};}endTool();commit();return;}
+ if(tool.t==='pfrom'){const it=itemById(tool.id);if(it){const dx=w.x-it.x,dy=w.y-it.y,M=gMates(s,it),gp=M.length>1?uid():null;
+   for(const o of (M.length>1?M:[it])){if(o!==it&&o.locked)continue;for(const x of s.items)for(const m of x.marks||[])if(m.ride&&m.ride.id===o.id)m.ride.k=(m.ride.k||0)+1;const q={x:o.x,y:o.y,rot:o.rot||0};if(gp)q.gp=gp;o.mv=[q,...(o.mv||[])];o.x+=dx;o.y+=dy;}
+   sel={id:it.id,mark:null};}endTool();commit();return;}
  if(tool.t==='from'){const it=itemById(tool.id);const f=it.marks[0];it.marks.unshift({x:w.x,y:w.y,rot:Math.round(Math.atan2(f.y-w.y,f.x-w.x)*180/Math.PI/5)*5});for(const a of s.items)if(a.type==='axis'){if(a.a===it.id)a.am=(a.am||0)+1;if(a.b===it.id)a.bm=(a.bm||0)+1;}sel={id:it.id,mark:0};endTool();commit();return;}
  if(tool.t==='pan'){const it=itemById(tool.id),m=it&&it.marks[tool.mark||0];if(!m){endTool();return;}const ang=Math.round(Math.atan2(w.y-m.y,w.x-m.x)*180/Math.PI/5)*5,P=m.pans||(m.pans=[]),md=tool.mode,j=tool.pan||0;
   if(md==='change'){P[j-1].rot=ang;sel={id:it.id,mark:tool.mark,pan:j};endTool();commit();return;}
@@ -2691,7 +2702,7 @@ function toolTap(w){
   const ax={id:uid(),type:'axis',a:it.id,am:tool.mark,b:best.o.id,bm:best.mi,pgs:curPgs(),locked:false};s.items.push(ax);sel={id:ax.id,mark:null};endTool();commit();return;}
  if(tool.t==='move'&&!itemById(tool.id).marks){const it=itemById(tool.id),ps=positions(it),last=ps[ps.length-1];it.mv=it.mv||[];it.mv.push({x:w.x,y:w.y,rot:last.rot||0});const rc=rideCarry(s,it,it.mv.length-1);sel={id:it.id,mark:it.mv.length};
   if(it.gid){const gp=uid();for(const o of pageItems(s))if(o!==it&&o.gid===it.gid&&!o.marks&&o.type!=='wall'&&o.type!=='axis'&&o.x!=null&&!o.locked){const pl=positions(o),ol=pl[pl.length-1];o.mv=o.mv||[];o.mv.push({x:ol.x+(w.x-last.x),y:ol.y+(w.y-last.y),rot:ol.rot||0,gp});it.mv[it.mv.length-1].gp=gp;rc.push(...rideCarry(s,o,o.mv.length-1));}
-   const ids=groupIds(s,it.gid);if(ids.length>1){mselTap={id:it.id,mk:it.mv.length};msel=new Set(ids);sel=null;}}
+  }
   endTool();commit();if(rc.length)toast(`${rc.join(', ')} ${rc.length>1?'go':'goes'} with the ${propName(it)}. Drag a character out, or delete that position, if they get out first.`);return;}
  if(tool.t==='move'&&tool.tk){const it=itemById(tool.id);if(!it){endTool();return;}
   if(tool.tk==='to'){const b=tool.at,p=it.marks[b],m={x:w.x,y:w.y,rot:p.rot||0,tk:1};it.marks.splice(b+1,0,m);sel={id:it.id,mark:b+1};}
@@ -2864,7 +2875,7 @@ function objPop(cx,cy){
  /* rows: B plain, R removes something (red, always last), ck a switch, duo two actions side by side, pr a label with two choices */
  const sec=(t,b)=>b?`<div class="hd">${t}</div>${b}`:'',B=(o,l)=>`<button data-o="${o}">${l}</button>`,R=(o,l)=>`<button data-o="${o}" class="dng">${l}</button>`,
   ck=(o,l,on)=>`<button data-o="${o}">${l}<span class="chk${on?' on':''}">${on?'✓':''}</span></button>`,
-  duo=(a,b)=>`<div class="duo">${a}${b}</div>`,pb=(o,l,on)=>`<button data-o="${o}"${on?' class="on"':''}>${l}</button>`,pr=(l,a,b)=>`<div class="pr"><span>${l}</span>${a}${b}</div>`,end=b=>b?`<div class="dv"></div>${b}`:'';
+  duo=(a,b)=>`<div class="duo">${a}${b}</div>`,mvd=(a,b)=>`<div class="duo mvd">${a}${b}</div>`,pb=(o,l,on)=>`<button data-o="${o}"${on?' class="on"':''}>${l}</button>`,pr=(l,a,b)=>`<div class="pr"><span>${l}</span>${a}${b}</div>`,end=b=>b?`<div class="dv"></div>${b}`:'';
  let title='',sub='',dot='',h='';
  if(sel.id==='__bg'){const b=s.bg;if(!b)return;title='Background Image';h=sec('Image',B('bgReplace','Replace Image…')+B('rotplan','Rotate Floor Plan…')+B('edit','Opacity…')+B('lock',b.locked?'Unlock':'Lock in Place'))+end(R('bgRemove','Remove the Image'));}
  else{const it=itemById(sel.id);if(!it)return;const lk=B('lock',it.locked?'Unlock':'Lock in Place'),pages=`<div class="hd">Pages</div><button data-o="pages">Pages<span class="pgv">${esc(pagesSummary(it,sel.mark||0))} ›</span></button>`;
@@ -2875,7 +2886,7 @@ function objPop(cx,cy){
   else if(it.type==='char'){const c=charById(it.charId)||{},m=it.marks[sel.mark||0]||it.marks[0],runs=it.marks.filter(q=>!q.t).length,nm=esc(String(c.name||'Character').toUpperCase()),pi=posStarts(it).indexOf(runOf(it,sel.mark||0)[0])+1;
    title=nm;dot=c.color;sub=runs>1?`Position ${pi} of ${runs}`:'';
    const rdA=rideAt(it,sel.mark||0),rdP=rdA&&s.items.find(q=>q.id===rdA.id),under=!rdA&&propUnder(s,m.x,m.y,true);
-   h=sec('Blocking',duo(B('walkfrom','Comes From…'),B('walkto','Moves To…'))+B('turn','Add a Turn')+B('axis','180° Line To…')+(rdP?B('rideoff','Take '+(VEH.has(rdP.kind)?'Out of':'Off')+' the '+esc(tcase(propName(rdP)))):under?B('rideon','Put '+(VEH.has(under.pr.kind)?'In':'On')+' the '+esc(tcase(propName(under.pr)))):''))
+   h=mvd(B('walkto','Moves To…'),B('walkfrom','Comes From…'))+sec('Blocking',B('turn','Add a Turn')+B('axis','180° Line To…')+(rdP?B('rideoff','Take '+(VEH.has(rdP.kind)?'Out of':'Off')+' the '+esc(tcase(propName(rdP)))):under?B('rideon','Put '+(VEH.has(under.pr.kind)?'In':'On')+' the '+esc(tcase(propName(under.pr)))):''))
     +sec('Label',duo(B('label',m.note?'Edit Label…':'Add Label…'),labIsFree(it,sel.mark||0)?B('labback','Reattach Label'):B('labfree','Detach Label')))
     +sec('Character',B('edit','Character Details…')+stB+(c.extra?B('selgroup','Select All '+nm):''))+colorGrid(['#E5484D','#F76B15','#FFC53D','#30A46C','#12A594','#3E63DD','#8E4EC6','#D6409F'],c.color,'char')+pages
     +sec('Arrange',duo(B('dup','Duplicate'),lk))
@@ -2888,8 +2899,8 @@ function objPop(cx,cy){
   else if(it.type==='cam'){const st=setupIn(s,it.setupId)||{num:'?'};title=`Camera ${esc(shotCode(s,it))}`;dot=st.color;
    const mi=clamp(sel.mark||0,0,it.marks.length-1),[ra,rb]=camRun(it,mi),va=it.marks[ra],nv=nVer(it);if(nv>1)sub=`Version ${verCode(s,verNum(it,mi))}`;
    let dm='';for(let j=ra;j<=rb;j++)dm+=`<button data-o="dm:${j}" class="${j===mi?'on':''}">${j-ra+1}</button>`;
-   h=(rb>ra?`<div class="hd">Camera Positions</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this camera position" aria-label="Remove this camera position"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`:'')
-    +sec('Camera Move',duo(B('trackfrom','Comes From…'),B('trackto','Moves To…'))+B('pan','Add a Pan')+(it.marks[ra].aim?B('aimoff','Stop Following '+esc(aimName(s,it.marks[ra].aim))):B('aim','Follow…')))
+   h=mvd(B('trackto','Moves To…'),B('trackfrom','Comes From…'))+(rb>ra?`<div class="hd">Camera Positions</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this camera position" aria-label="Remove this camera position"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`:'')
+    +sec('Camera Move',B('pan','Add a Pan')+(it.marks[ra].aim?B('aimoff','Stop Following '+esc(aimName(s,it.marks[ra].aim))):B('aim','Follow…')))
     +sec('Shot',B('shotdesc','Describe the Shot…')+(nv>1?duo(B('addver','Add Version…'),B('delmark','Remove Version')):B('addver','Add Version…')))
     +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb&&images[va.sb]?B('framecrop','Crop Main Frame…'):'')+(va.sb&&it.marks.some(m=>m.sb)?duo(B('frame2','Add a Frame…'),B('regallery','Re-arrange…')):(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):'')))
     +(s.setups.length>1?pr('Shooting Order',`<button data-o="shotUp"${s.setups[0].id!==it.setupId?'':' disabled'}>Earlier</button>`,`<button data-o="shotDown"${s.setups[s.setups.length-1].id!==it.setupId?'':' disabled'}>Later</button>`):'')
@@ -2899,14 +2910,14 @@ function objPop(cx,cy){
   else if(it.type==='axis'){title='180° Line';h=R('del','Delete the Line');}
   else{const name=it.type==='wall'?'Wall':it.type==='text'?'Text':it.type==='ink'?'Drawing':(LIB[it.kind]||{}).n||'Item',np=(it.mv||[]).length+1;title=esc(name);sub=np>1?`Position ${(sel.mark||0)+1} of ${np}`:'';
    const isBox=BOX(it.type)&&it.type!=='mask';
-   h=(it.kind==='photopin'?sec('Photo',B('phview','View Photo')+B('phcap',it.cap?'Edit Caption…':'Add Caption…')):'')
+   const mates=gMates(s,it);if(mates.length>1)sub=(sub?sub+' · ':'')+'Group of '+mates.length;
+   h=(MOVABLE(it.type)?mvd(B('walkto','Moves To…'),B('movefrom','Comes From…')):'')+(it.kind==='photopin'?sec('Photo',B('phview','View Photo')+B('phcap',it.cap?'Edit Caption…':'Add Caption…')):'')
     +(it.type==='wall'&&!it.locked?sec('Wall',(wallJoined(s,it)?B('selrun','Move All Joined Walls')+(unhook===it.id?'':B('wunhook','Unhook This Wall')):'')+(unhook===it.id||wallAway(it)?B('wrehook','Rehook This Wall'):'')+B('wcorner','Add a Corner Here')+([1,2].some(e=>wallJoint(s,it,e).length===1)?B('wuncorner','Remove Nearest Corner'):'')+B('wextrude','Add Side Walls')):'')
-    +(MOVABLE(it.type)?sec('Movement',sel.mark?B('walkto','Moves To…'):duo(B('movefrom','Comes From…'),B('walkto','Moves To…'))):'')
     +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')
     +(()=>{const a=it.type==='prop'||it.type==='set'||it.type==='light'||it.type==='ink'?B('label',it.label?'Edit Label…':'Add Label…'):'',b=labCan(it)?(labIsFree(it)?B('labback','Reattach Label'):B('labfree','Detach Label')):'';return sec('Label',a&&b?duo(a,b):a+b);})()
     +(it.type==='ink'?sec('Drawing',B('inkmore','Draw More on This')+B('rsize','Reset Size')+ck('keepar','Keep Proportions',it.ar))+colorGrid(INK_COLS,(it.strokes[0]||{}).c,'ink'):sec('Shape',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+(ROOFK[it.kind]?ck('roof','Roof On',it.roof):'')+ck('scal','Allow Resizing',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Details…')))
     +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#2B2D33'],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages
-    +sec('Arrange',duo(B('dup','Duplicate'),lk)+duo(B('front','Bring to Front'),B('back','Send to Back')))
+    +sec('Arrange',(mates.length>1?B('ungroup','Ungroup'):'')+duo(B('dup','Duplicate'),lk)+duo(B('front','Bring to Front'),B('back','Send to Back')))
     +end(sel.mark?R('delmark','Delete Position '+(sel.mark+1))+R('del','Delete the Whole '+esc(name)+' ('+np+' Positions)'):R('del',np>1?'Delete '+esc(name)+' (All '+np+' Positions)':'Delete '+esc(name)));}
  }
  pop.innerHTML=`<h4>${dot?`<b class="pdot" style="background:${esc(dot)}"></b>`:''}<span class="pt">${title}</span>${sub?`<span class="psub">${sub}</span>`:''}</h4><div class="ls" style="width:290px">${h}</div>`;pop.classList.add('on');popFor=null;placePopAt(cx,cy);
@@ -2946,6 +2957,7 @@ function objAct(o){
   case 'dup':act('dup',fake());break;
   case 'dupcam':addCamTo(it.setupId);break;
   case 'movefrom':startTool({t:'pfrom',id:it.id});break;
+  case 'ungroup':{for(const o of gMates(s,it))delete o.gid;commit();toast('Ungrouped. Each piece is on its own again.');break;}
   case 'ctype':{swapFor=it.id;openPop('',$('#bAdd'));gridMenu(catOf(it.kind)==='set'?'set':catOf(it.kind)==='light'?'light':'prop');return;}
   case 'rsize':{const L=LIB[it.kind]||{};if(L.w){it.w=L.w;it.h=L.h;}commit();break;}
   case 'mirror':it.mir=!it.mir;if(!it.mir)delete it.mir;commit();objPop(popAt.x,popAt.y);break;
@@ -3303,6 +3315,41 @@ function rideWorld(pp,rd){const a=rad(pp.r),c=Math.cos(a),n=Math.sin(a);return {
 function rideLocal(pp,m){const a=rad(-pp.r),c=Math.cos(a),n=Math.sin(a),dx=m.x-pp.x,dy=m.y-pp.y;return {x:dx*c-dy*n,y:dx*n+dy*c,r:angD(pp.r,m.rot||0)};}
 /* the bend in a carried leg is one bend: control points added, dragged or removed on the prop's move or on the character's ride show on both */
 const rideCpJ=o=>JSON.stringify(o&&o.cp&&o.cp.length?o.cp:[]);
+/* ---------- a group moves as one piece ----------
+   Whatever is done to one member (dragged, turned, its path bent, its curve made soft or hard) carries the others with it, the way a
+   rider goes with a car. gMem remembers each member's poses, so a change to one member can be told apart from a change to all of
+   them (a multi-drag, an undo, the other device): only a change to exactly one is passed on. Positions are matched by the stamp they
+   got when the group moved together (gp), or else by their number. */
+const gMem=new Map();
+const gKey=(it,i)=>i?(((it.mv||[])[i-1]||{}).gp||('#'+i)):'0';
+const gMember=it=>!!it.gid&&!it.marks&&BOX(it.type)&&it.x!=null;
+function gPoses(it){const o={};positions(it).forEach((p,i)=>{const pp=propPose(it,i);o[gKey(it,i)]=[pp.x,pp.y,pp.r,rideCpJ(i?it.mv[i-1]:null),i];});return o;}
+function gMates(sc,it){return it&&it.gid?pageItems(sc).filter(o=>o.gid===it.gid&&gMember(o)):[];}
+function groupSync(sc){const G={},live=new Set();for(const it of sc.items)if(gMember(it))(G[it.gid]=G[it.gid]||[]).push(it);
+ for(const gid in G){const M=G[gid];for(const it of M)live.add(it.id);
+  if(M.length>1){const cur=M.map(gPoses),ch=M.map((it,i)=>{const mem=gMem.get(it.id);if(!mem||mem.gid!==gid)return null;const d=[];
+     for(const k in cur[i]){const a=mem.p[k],b=cur[i][k];if(!a)d.push([k,'new']);else if(Math.abs(a[0]-b[0])>.01||Math.abs(a[1]-b[1])>.01||Math.abs(angD(a[2],b[2]))>.01)d.push([k,'pose']);else if(a[3]!==b[3])d.push([k,'cp']);}
+     for(const k in mem.p)if(!(k in cur[i]))d.push([k,'gone']);return {d,hard:mem.hard!==!!it.hard};});
+   const who=ch.map((c,i)=>c&&(c.d.length||c.hard)?i:-1).filter(i=>i>=0);
+   /* first sight of this group (just made, or the app just opened): a bend that only some of its paths have goes onto the others, and a mix of soft and hard becomes soft */
+   if(!ch.some(Boolean)){const keys=new Set();cur.forEach(c=>{for(const k in c)if(c[k][4])keys.add(k);});
+    for(const k of keys){const have=M.map((it,i)=>cur[i][k]?it.mv[cur[i][k][4]-1]:null),src=have.find(q=>q&&q.cp&&q.cp.length);if(src)for(const q of have)if(q&&!(q.cp&&q.cp.length))q.cp=clone(src.cp);}
+    if(M.some(it=>it.hard)&&M.some(it=>!it.hard))for(const it of M)delete it.hard;}
+   if(ch.every(Boolean)&&who.length===1){const li=who[0],L=M[li],mem=gMem.get(L.id);
+    for(const [k,what] of ch[li].d){const a=mem.p[k],b=cur[li][k];
+     for(let oi=0;oi<M.length;oi++){if(oi===li)continue;const O=M[oi],oc=cur[oi][k];if(!oc||O.locked)continue;const j=oc[4],q=j?O.mv[j-1]:O;
+      if(what==='pose'){const dr=angD(a[2],b[2]),ca=Math.cos(rad(dr)),sa=Math.sin(rad(dr)),dx=oc[0]-a[0],dy=oc[1]-a[1];q.x=b[0]+dx*ca-dy*sa;q.y=b[1]+dx*sa+dy*ca;
+       if(Math.abs(dr)>.001){const nr=Math.round((oc[2]+dr)*10)/10;if(!j)O.rot=nr;else if(q.r!=null)q.r=nr;else q.rot=nr;}}
+      else if(what==='cp'&&j){const src=b[4]?L.mv[b[4]-1]:null;if(src&&src.cp&&src.cp.length)q.cp=clone(src.cp);else delete q.cp;}}}
+    if(ch[li].hard)for(const O of M)if(O!==L){if(L.hard)O.hard=true;else delete O.hard;}}}
+  for(const it of M)gMem.set(it.id,{gid,p:gPoses(it),hard:!!it.hard});}
+ for(const id of [...gMem.keys()])if(!live.has(id))gMem.delete(id);}
+/* the box of one position of a piece, turned as it is */
+function poseBox(it,i){const p=propPose(it,i||0),a=rad(p.r||0),c=Math.abs(Math.cos(a)),sn=Math.abs(Math.sin(a)),hw=(it.w*c+it.h*sn)/2+7,hh=(it.w*sn+it.h*c)/2+7;return {x0:p.x-hw,y0:p.y-hh,x1:p.x+hw,y1:p.y+hh};}
+/* the outline of the whole group at the position that is selected */
+function groupRing(sc,it,mk){const M=gMates(sc,it);if(M.length<2)return '';const key=gKey(it,mk||0);let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+ for(const o of M){let j=0;positions(o).forEach((p,i)=>{if(gKey(o,i)===key)j=i;});if(key!=='0'&&!j)continue;const b=poseBox(o,j);x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}
+ return x0<Infinity?`<rect class="ring gring" x="${x0-4}" y="${y0-4}" width="${x1-x0+8}" height="${y1-y0+8}" rx="8"/>`:'';}
 function rideSync(sc){
  /* a leg is shared when the character rides the same prop at one of its positions and then at the next, however those positions were made */
  for(const it of sc.items){if(it.type!=='char'||!it.marks)continue;const st=posStarts(it);st.forEach((a,i)=>{const rd=it.marks[a].ride;if(!rd)return;const pm=i?it.marks[st[i-1]]:null;if(pm&&pm.ride&&pm.ride.id===rd.id&&(rd.k||0)===(pm.ride.k||0)+1)rd.lk=1;else delete rd.lk;});}
@@ -5654,7 +5701,7 @@ function shortcut(e){
   if(lk==='i'){sceneInfo();return true;}
   if(lk==='s'){toast(localOk?'Everything is saved automatically.':'Not saving here. Back up from the menu.');return true;}
   if(lk==='p'){exportDialog();return true;}
-  if(lk==='g'&&msel&&msel.size>1&&!offCanvas()){if(e.shiftKey)ungroupSel();else groupSel();return true;}
+  if(lk==='g'&&!offCanvas()&&((msel&&msel.size>1)||(e.shiftKey&&selGroup().length>1))){if(e.shiftKey)ungroupSel();else groupSel();return true;}
    if(lk==='d'&&it&&it.type!=='axis'){act('dup',{dataset:{}});return true;}
   return false;}
  if(e.altKey)return false;
@@ -5699,21 +5746,22 @@ function rotateSel(ids){const s=scene(),its=ids.map(id=>s.items.find(i=>i.id===i
  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const it of its){const b=msBox(it);if(!b)continue;x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}if(x0===Infinity)return;
  sel=null;msel=null;rotS={a:0,sid:s.id,base:clone(s.items),cx:(x0+x1)/2,cy:(y0+y1)/2,only:new Set(ids)};startTool({t:'rot'});}
 function groupSel(){const its=mselItems().filter(i=>i.type!=='axis');if(its.length<2)return;const gid=uid();for(const i of its)i.gid=gid;closePop();commit();renderUI();toast(`Grouped ${its.length} pieces. They now move as one: tap any one of them to pick up the group.`);}
-function ungroupSel(){const its=mselItems();if(!its.some(i=>i.gid))return;for(const i of its)delete i.gid;msel=null;closePop();commit();renderUI();toast('Ungrouped. Each piece is on its own again.');}
+function ungroupSel(){const its=msel?mselItems():selGroup();if(!its.some(i=>i.gid))return;for(const i of its)delete i.gid;msel=null;closePop();commit();renderUI();toast('Ungrouped. Each piece is on its own again.');}
 /* a strip at the top of the plan whenever two or more pieces are selected, so Group is one tap away */
-function selBar(){const el=$('#selbar');if(!el)return;const its=msel&&!tool&&!setOn&&!offCanvas()?mselItems():[];
+function selGroup(){if(msel||!sel||sel.id==='__bg')return [];const it=itemById(sel.id);return it?gMates(scene(),it):[];}
+function selBar(){const el=$('#selbar');if(!el)return;const one=selGroup(),its=tool||setOn||offCanvas()?[]:msel?mselItems():one.length>1?one:[];
  if(its.length<2){if(el.classList.contains('on')){el.classList.remove('on');el.innerHTML='';delete el.dataset.h;}return;}
  const grp=oneGroup(its),h=`<span>${grp?'Group of '+its.length:its.length+' selected'}</span>${grp?'<button data-sb="ungroup">Ungroup</button>':'<button data-sb="group">Group</button>'}<button data-sb="more" class="sb2">More…</button><button data-sb="done" class="sb2">Done</button>`;
  if(el.dataset.h!==h){el.dataset.h=h;el.innerHTML=h;}el.classList.add('on');}
 $('#selbar').addEventListener('click',e=>{const b=e.target.closest('[data-sb]');if(!b)return;const a=b.dataset.sb;
- if(a==='group')groupSel();else if(a==='ungroup')ungroupSel();else if(a==='done')clearMsel();
- else if(a==='more'){const r=b.getBoundingClientRect();multiPop(r.left+r.width/2,r.bottom+8);}});
+ if(a==='group')groupSel();else if(a==='ungroup')ungroupSel();else if(a==='done'){if(msel)clearMsel();else{sel=null;inspOpen=false;closePop();renderUI();renderInsp();renderShotSel();}}
+ else if(a==='more'){if(!msel){const g=selGroup();if(g.length<2)return;mselTap={id:sel.id,mk:sel.mark};msel=new Set(g.map(i=>i.id));sel=null;inspOpen=false;renderInsp();renderUI();}const r=b.getBoundingClientRect();multiPop(r.left+r.width/2,r.bottom+8);}});
 $('#selbar').addEventListener('pointerdown',e=>e.stopPropagation());
 function mselItems(){const s=scene();return msel?[...msel].map(id=>s.items.find(x=>x.id===id)).filter(Boolean):[];}
 function msBox(it){
  if((BOX(it.type)||it.type==='ink')&&it.w&&it.h){let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const p of positions(it)){const a=(p.rot||0)*Math.PI/180,c=Math.abs(Math.cos(a)),sn=Math.abs(Math.sin(a)),hw=(it.w*c+it.h*sn)/2+7,hh=(it.w*sn+it.h*c)/2+7;x0=Math.min(x0,p.x-hw);y0=Math.min(y0,p.y-hh);x1=Math.max(x1,p.x+hw);y1=Math.max(y1,p.y+hh);}return {x0,y0,x1,y1};}
  const pts=itemPts(it);if(!pts.length)return null;let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;const pad=it.marks?28:BOX(it.type)||it.type==='ink'?Math.max(it.w,it.h)/2+6:12;for(const p of pts){x0=Math.min(x0,p.x-pad);y0=Math.min(y0,p.y-pad);x1=Math.max(x1,p.x+pad);y1=Math.max(y1,p.y+pad);}return {x0,y0,x1,y1};}
-function moveAll(dx,dy,mk){for(const it of mselItems()){if(it.locked)continue;
+function moveAll(dx,dy,mk){const all=mselItems();for(const it of all.slice())for(const o of gMates(scene(),it))if(!all.includes(o))all.push(o);for(const it of all){if(it.locked)continue;
  if(mk){if(!it.marks&&it.type!=='wall'&&it.type!=='axis')for(const q of it.mv||[])if(q.gp===mk){q.x+=dx;q.y+=dy;}continue;}
  if(it.marks)it.marks.forEach(m=>{m.x+=dx;m.y+=dy;});else if(it.type==='wall'){it.x1+=dx;it.y1+=dy;it.x2+=dx;it.y2+=dy;}
  else if(it.type!=='axis'){it.x+=dx;it.y+=dy;for(const q of (it.mv||[])){q.x+=dx;q.y+=dy;}}}}
@@ -5731,7 +5779,7 @@ function multiPop(cx,cy){
  const kinds=[['cam','Only Cameras'],['char','Only Characters']].filter(([t])=>cnt(t)&&cnt(t)<n);
  const other=its.filter(i=>!ACTOR(i.type)).length;
  const grp=oneGroup(its),gprops=its.filter(i=>!i.marks&&i.type!=='wall'&&i.type!=='axis'&&i.x!=null),gk=grp?groupMk():null;
- pop.innerHTML=`<h4>${grp?'Group of '+n:n+' Items Selected'}</h4><div class="ls" style="width:290px"><div class="hd">Move</div><div class="pnote">Drag any one of them to move them all.</div>${B('mrot','Rotate…')}${grp&&gprops.length?B('gmove','Add Next Position for the Group'):''}${gk?B('gdelpos','Delete Position '+(mselTap.mk+1)+' for the Group'):''}<div class="hd">Arrange</div>${grp?B('mungroup','Ungroup'):n>1?B('mgroup','Group'):''}${grp&&mselTap&&its.some(i=>i.id===mselTap.id)?B('gone','Select Just This Piece'):''}${B('mdup','Duplicate All')}${B('mlock',allLocked?'Unlock All':'Lock All')}${cnt('cam')?B('medit',`Change ${cnt('cam')>1?'These Shots':'This Shot'}… (⌘I)`):''}${scene().pages.length>1?`<div class="hd">Pages</div><button data-o="mpages">Pages for All Selected<span class="pgv">${esc(groupPgTxt(its))} ›</span></button>`:''}${kinds.length||(other&&other<n)?'<div class="hd">Narrow selection</div>':''}${kinds.map(([t,l])=>B('only-'+t,l)).join('')}${other&&other<n?B('only-other','Only Props & Set'):''}<div class="hd">Selection</div>${B('mclear','Clear Selection')}<div class="dv"></div><button data-o="mdel" class="dng">Delete These ${n}</button></div>`;
+ pop.innerHTML=`<h4>${grp?'Group of '+n:n+' Items Selected'}</h4><div class="ls" style="width:290px">${grp&&gprops.length?`<div class="duo mvd">${B('gmove','Moves To…')}${B('gfrom','Comes From…')}</div>`:''}<div class="hd">Move</div><div class="pnote">Drag any one of them to move them all.</div>${B('mrot','Rotate…')}${gk?B('gdelpos','Delete Position '+(mselTap.mk+1)+' for the Group'):''}<div class="hd">Arrange</div>${grp?B('mungroup','Ungroup'):n>1?B('mgroup','Group'):''}${B('mdup','Duplicate All')}${B('mlock',allLocked?'Unlock All':'Lock All')}${cnt('cam')?B('medit',`Change ${cnt('cam')>1?'These Shots':'This Shot'}… (⌘I)`):''}${scene().pages.length>1?`<div class="hd">Pages</div><button data-o="mpages">Pages for All Selected<span class="pgv">${esc(groupPgTxt(its))} ›</span></button>`:''}${kinds.length||(other&&other<n)?'<div class="hd">Narrow selection</div>':''}${kinds.map(([t,l])=>B('only-'+t,l)).join('')}${other&&other<n?B('only-other','Only Props & Set'):''}<div class="hd">Selection</div>${B('mclear','Clear Selection')}<div class="dv"></div><button data-o="mdel" class="dng">Delete These ${n}</button></div>`;
  pop.classList.add('on');popFor=null;
  {let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const it of its){const b=msBox(it);if(!b)continue;x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}
   const W=$('#wrap').clientWidth,H=$('#wrap').clientHeight,pw=pop.offsetWidth,ph=pop.offsetHeight,sx0=x0*view.k+view.x,sx1=x1*view.k+view.x,sy0=y0*view.k+view.y;
@@ -5744,7 +5792,7 @@ function multiPop(cx,cy){
   if(o==='mgroup'){groupSel();return;}
   if(o==='mungroup'){ungroupSel();return;}
   if(o==='mrot'){rotateSel(its.map(i=>i.id));return;}
-  if(o==='gmove'){const lead=gprops.find(i=>mselTap&&i.id===mselTap.id)||gprops[0];if(lead){msel=null;startTool({t:'move',id:lead.id});}return;}
+  if(o==='gmove'||o==='gfrom'){const lead=gprops.find(i=>mselTap&&i.id===mselTap.id)||gprops[0];if(lead){msel=null;sel={id:lead.id,mark:null};startTool({t:o==='gmove'?'move':'pfrom',id:lead.id});}return;}
   if(o==='gdelpos'){for(const i of gprops)if(i.mv){i.mv=i.mv.filter(q=>q.gp!==gk);if(!i.mv.length)delete i.mv;}mselTap=null;commit();toast('That position is removed for the whole group.');return;}
   if(o==='gone'){const t=itemById(mselTap.id);msel=null;sel={id:t.id,mark:t.marks?(mselTap.mk||0):mselTap.mk};renderUI();renderInsp();renderShotSel();toast('Just this piece is selected; it is still in its group. Tap anywhere else and the group is whole again.');return;}
   if(o==='medit'){bulkGo();return;}
@@ -5790,8 +5838,6 @@ svg.addEventListener('pointerdown',e=>{
  if(msel&&el&&msel.has(el.dataset.id)){mselTap={id:el.dataset.id,mk:el.dataset.mark!=null?+el.dataset.mark:null};gesture={type:'mdrag',last:w,sx:e.clientX,sy:e.clientY,moved:false,mk:groupMk()};return;}
  if(el&&e.shiftKey&&sel&&sel.id!==el.dataset.id&&sel.id!=='__bg'&&el.dataset.id!=='__bg'){msel=new Set([sel.id,el.dataset.id]);sel=null;inspOpen=false;renderInsp();renderUI();gesture=null;return;}
  if(msel){msel=null;renderUI();}
- if(el&&!tool&&el.dataset.id!=='__bg'&&!el.dataset.track&&!el.dataset.frame&&!el.dataset.lab&&!el.dataset.pan&&el.dataset.badge==null&&!(sel&&sel.id===el.dataset.id)){const gi=itemById(el.dataset.id);
-  if(gi&&gi.gid){const ids=groupIds(scene(),gi.gid);if(ids.length>1){sel=null;inspOpen=false;msel=new Set(ids);mselTap={id:gi.id,mk:el.dataset.mark!=null?+el.dataset.mark:null};renderInsp();renderUI();renderShotSel();gesture={type:'mdrag',last:w,sx:e.clientX,sy:e.clientY,moved:false,mk:groupMk()};return;}}}
  if(el){
   if(el.dataset.track){const id=el.dataset.id,i=+el.dataset.track,it=itemById(id);sel={id,mark:it&&it.marks?i:i,track:i};renderUI();renderInsp();renderShotSel();
    if(it&&!it.locked){gesture={type:'track',id,i,w0:w,sx:e.clientX,sy:e.clientY,moved:false};return;}}
