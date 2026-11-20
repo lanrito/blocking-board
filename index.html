@@ -489,6 +489,40 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 #drop.mm .mmsep{height:1px;margin:5px 0;background:var(--line)}
 #drop.mm button.dng{color:light-dark(#c93a36,#ff6b63)}
 #drop.mm .pnote{padding:8px 16px 6px;font-size:13px;line-height:1.4;color:var(--mut)}
+
+/* the Library panel */
+#app{--libw:280px}
+#lib{display:none;position:fixed;left:0;top:50px;bottom:0;width:var(--libw);z-index:8;flex-direction:column;background:var(--panel);color:var(--ink);border-right:1px solid var(--line);box-sizing:border-box}
+#app.lib-on #lib{display:flex}
+#app.lib-on{padding-left:var(--libw)}
+#app.lib-on>#top{margin-left:calc(-1*var(--libw))}
+@media (max-width:999px){#app.lib-on{padding-left:0}#app.lib-on>#top{margin-left:0}#lib{z-index:40;width:min(300px,86vw);box-shadow:10px 0 30px rgba(0,0,0,.18)}}
+#lib .lbtop{display:flex;align-items:center;gap:8px;padding:10px 10px 6px 16px}
+#lib .lbtop b{flex:1;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut)}
+#libHide{width:32px;height:32px;padding:0;border:0;border-radius:7px;background:var(--chip);color:var(--ink);font-size:20px;line-height:1}
+#lib .lbq{padding:2px 10px 8px}
+#libq{width:100%;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--ink);font-size:14px;box-sizing:border-box}
+#libL{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 6px 8px;display:flex;flex-direction:column;gap:1px}
+#libL button{flex:none;display:flex;align-items:center;gap:8px;width:100%;min-height:40px;padding:4px 8px;border:0;border-radius:8px;background:none;color:var(--ink);font-size:14.5px;text-align:left}
+#libL button:hover{background:var(--chip)}
+#libL .lbf{font-weight:600}
+#libL .lbf svg{flex:none;width:18px;height:18px}
+#libL .lbf span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#libL .lbc{flex:none;width:6px;height:6px;margin:0 5px 0 3px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(-45deg)}
+#libL .lbc.on{transform:rotate(45deg);margin-top:-3px}
+#libL .lbs{flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:44px}
+#libL .lbs b{font-size:13.5px}
+#libL .lbs span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--mut)}
+#libL .lbs.solo span{font-size:13.5px;font-weight:600;color:var(--ink)}
+#libL .lbs small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;color:var(--mut)}
+#libL .lbs.cur{background:light-dark(#e4edfc,#263a5e)}
+#libL .lbs.cur span{color:var(--ink)}
+#libL .lbh{padding:10px 10px 3px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut)}
+#libL .lbe{padding:6px 10px;font-size:13px;color:var(--mut)}
+#libL .lbsep{flex:none;height:1px;margin:6px;background:var(--line)}
+#lib .lbb{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 10px;border-top:1px solid var(--line)}
+#lib .lbb button{flex:1 1 auto;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--ink);font-size:13.5px;font-weight:600}
+#lib .lbb button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
 </style>
 </head>
 <body>
@@ -496,12 +530,13 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
  <header id="top">
   <button id="bMenu" aria-label="Menu" title="Menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   <div class="brand"><img alt="" width="26" height="26" src="data:image/png;base64,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">The Director’s Notebook</div>
-  <button id="sceneBtn" aria-label="Open a scene" title="Open a scene (⌘O)"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#e9c46a" stroke="#b8902f" stroke-width="1.2"/></svg><span id="sceneBtnT"></span><svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+  <button id="sceneBtn" aria-label="Library" title="Show or hide the Library (⌘O)"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#e9c46a" stroke="#b8902f" stroke-width="1.2"/></svg><span id="sceneBtnT"></span><svg viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
   <div class="seg" id="tabs"><button id="mNb">Breakdown</button><button id="mSt">Strategy</button><button id="mDia" class="on">Floor Plan</button><button id="mList">Shot List</button></div>
   <span class="sp"></span>
   <div class="seg" id="mdSw" title="Prep: plan everything. Set: shots, blocking and notes on the day, nothing to bump by accident."><button data-md="prep" class="on">Prep</button><button data-md="scout">Scout</button><button data-md="set">Set</button></div>
   <span id="status"></span>
  </header>
+ <nav id="lib" aria-label="Library"></nav>
  <main id="main">
   <div id="wrap">
    <svg id="cv" xmlns="http://www.w3.org/2000/svg">
@@ -558,7 +593,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261119234426';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261120023626';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3406,11 +3441,48 @@ function conflictDialog(){const s=scene(),c=(s.conflicts||[])[0];if(!c)return;co
   card.querySelector('#cfBoth').onclick=()=>{const nm='Other device · '+confWhen(c.at);(s.plans=s.plans||[]).push({id:uid(),name:nm,d:planTake(other)});done(`Kept both. The other device’s blocking is the plan “${nm}”.`);};
  },'cfcard');}
 function renderTop(){
- {const c=scene(),fp=c.tpl?'Template':pathTxt(sFolder(c));$('#sceneBtnT').innerHTML=(fp?`<small>${esc(c.tpl?'Template':fPath(sFolder(c)).slice(-1)[0].name)} ›</small> `:'')+esc(sceneLabel(c));$('#sceneBtn').title=(fp?fp+' › ':'')+sceneLabel(c)+'  (⌘O to open another scene)';}
+ {const c=scene(),fp=c.tpl?'Template':pathTxt(sFolder(c));$('#sceneBtnT').innerHTML=(fp?`<small>${esc(c.tpl?'Template':fPath(sFolder(c)).slice(-1)[0].name)} ›</small> `:'')+esc(sceneLabel(c));$('#sceneBtn').title=(fp?fp+' › ':'')+sceneLabel(c)+'  (⌘O shows the Library)';}
  const s=scene();$('#chip').innerHTML=`<b>${esc((s.number?s.number+'  ':'')+(s.title||s.heading||'Untitled scene'))}</b><span>${esc(s.title&&s.heading?s.heading:'Tap to add scene info')}</span>`;
  $('#bFr').classList.toggle('on',frameOn());
 }
-$('#sceneBtn').onclick=()=>openBrowser();
+/* ---------- the Library: folders and scenes in a panel at the left of every page ---------- */
+const libTouch=()=>/iPad|iPhone|Android/.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+const libNarrow=()=>innerWidth<1000;
+/* open on a computer, hidden on a tablet, until you choose; then each device remembers (an automated browser starts hidden, so the test suite sees the plain layout unless it asks) */
+function libOn(){return P.ui.lib!=null?!!P.ui.lib:(!libTouch()&&innerWidth>=1100&&!navigator.webdriver);}
+let libQ='',libHtml=null;
+function libSet(on,focus){P.ui.lib=!!on;saveLocal();renderLib();if(on&&focus){const i=$('#libq');if(i&&matchMedia('(pointer:fine)').matches){i.focus();i.select();}}}
+const libAuto=()=>new Set(fPath(sFolder(scene())).map(f=>f.id));
+function libIsOpen(id,auto){const o=(P.ui.libOpen||{})[id];return o!=null?!!o:auto.has(id);}
+function libRowS(s,depth,sub){const cur=s.id===P.sceneId,top=s.number?'Sc. '+s.number:(s.scout?'Scout':''),name=(s.title||s.heading||'Untitled').toUpperCase();
+ return `<button class="lbs${cur?' cur':''}${top?'':' solo'}" data-ls="${s.id}" style="padding-left:${14+depth*16}px"${cur?' aria-current="true"':''} title="${esc(sceneLabel(s))}">${top?`<b>${esc(top)}</b>`:''}<span>${esc(name)}</span>${sub?`<small>${esc(sub)}</small>`:''}</button>`;}
+function libTree(pid,depth,auto){let h='';for(const f of fKids(pid)){const open=libIsOpen(f.id,auto);
+  h+=`<button class="lbf" data-lf="${f.id}" aria-expanded="${open}" style="padding-left:${8+depth*16}px"><i class="lbc${open?' on':''}"></i>${BIC.fold}<span>${esc(f.name)}</span></button>`;
+  if(open){const inner=libTree(f.id,depth+1,auto)+fScenes(f.id).map(s=>libRowS(s,depth+1)).join('');h+=inner||`<div class="lbe" style="padding-left:${34+depth*16}px">Empty</div>`;}}
+ return h;}
+function libList(){const q=libQ.trim().toLowerCase();
+ if(q){const terms=q.split(/\s+/).filter(Boolean),hits=liveScenes().filter(s=>{const t=[s.number?'sc '+s.number+' scene '+s.number:'',s.title,s.heading,s.synopsis,pathTxt(sFolder(s))].join('\n').toLowerCase();return terms.every(w=>t.includes(w));}).sort(sceneCmp).slice(0,80);
+  return hits.length?hits.map(s=>libRowS(s,0,pathTxt(sFolder(s))||'Not in a folder')).join(''):'<div class="lbe">No scenes match.</div>';}
+ const tree=libTree(null,0,libAuto()),loose=fScenes(null);
+ return tree+(loose.length?`<div class="lbh">${tree?'Not in a folder':'Scenes'}</div>`+loose.map(s=>libRowS(s,0)).join(''):'')+(tree||loose.length?'':'<div class="lbe">No scenes yet.</div>')
+  +'<div class="lbsep"></div><button class="lbx" data-la="tpls">Templates</button><button class="lbx" data-la="trash">Trash</button>';}
+function renderLib(){const a=$('#app'),el=$('#lib');if(!el)return;const on=libOn()&&!setOn;a.classList.toggle('lib-on',on);
+ const sb=$('#sceneBtn');if(sb)sb.setAttribute('aria-expanded',on?'true':'false');if(!on)return;
+ if(!el.firstChild){el.innerHTML='<div class="lbtop"><b>Library</b><button id="libHide" aria-label="Hide the Library" title="Hide the Library">‹</button></div><div class="lbq"><input id="libq" type="search" placeholder="Search scenes" aria-label="Search scenes" autocomplete="off" autocapitalize="off" spellcheck="false"></div><div id="libL"></div><div class="lbb"><button class="pri" data-la="new">New Scene</button><button data-la="newfolder">New Folder</button><button data-la="org">Organize…</button></div>';libHtml=null;}
+ const h=libList();if(h!==libHtml){$('#libL').innerHTML=h;libHtml=h;}}
+function libPick(id){const t=P.scenes.find(s=>s.id===id);if(!t)return;
+ if(id!==P.sceneId){const o=P.ui.libOpen=P.ui.libOpen||{};for(const f of fPath(sFolder(t)))o[f.id]=true;try{flushNotes();if(txTimer)txFlush();}catch(e){}openScene(id);}
+ if(libNarrow())libSet(false);}
+function libNewFolder(){askText('New folder','Name','e.g. Season 2',v=>{P.folders.push({id:uid(),name:v,parent:null});commit();toast(`Folder “${v}” created. Use Organize… to move scenes into it or to put it inside another folder.`);});}
+$('#lib').addEventListener('click',e=>{
+ if(e.target.closest('#libHide')){libSet(false);return;}
+ const f=e.target.closest('[data-lf]');if(f){const id=f.dataset.lf;(P.ui.libOpen=P.ui.libOpen||{})[id]=!libIsOpen(id,libAuto());saveLocal();renderLib();return;}
+ const sc=e.target.closest('[data-ls]');if(sc){libPick(sc.dataset.ls);return;}
+ const b=e.target.closest('[data-la]');if(!b)return;const k=b.dataset.la;
+ if(k==='new')newScene();else if(k==='newfolder')libNewFolder();else if(k==='org')openBrowser();else if(k==='tpls')openBrowser('__tpl');else if(k==='trash')openBrowser('__trash');});
+$('#lib').addEventListener('input',e=>{if(e.target.id==='libq'){libQ=e.target.value;renderLib();}});
+$('#lib').addEventListener('keydown',e=>{if(e.key==='Escape'&&e.target.id==='libq'){if(libQ){libQ='';e.target.value='';renderLib();}else e.target.blur();e.stopPropagation();}});
+$('#sceneBtn').onclick=()=>{if(setOn){openBrowser();return;}libSet(!libOn(),true);};
 function newScene(folder){if(folder===undefined)folder=sFolder(scene());const n=fScenes(folder).reduce((m,s)=>Math.max(m,parseInt(s.number,10)||0),0)+1;const s=blankScene(n);if(folder)s.folder=folder;P.scenes.push(s);noteRecent(s.id);P.sceneId=s.id;sel=null;msel=null;inspOpen=false;endTool();commit();fit();sceneInfo();}
 /* ---------- scene browser: folders, search, recent, trash ---------- */
 function natCmp(a,b){return String(a||'').localeCompare(String(b||''),undefined,{numeric:true,sensitivity:'base'});}
@@ -5530,7 +5602,7 @@ function menu(sub){
  const B=(m,l,kb,cls)=>`<button data-m="${m}"${cls?` class="${cls}"`:''}>${l}${kb?`<span class="kb">${kb}</span>`:''}</button>`,
   G=(g,l,note)=>`<button data-g="${g}">${l}${note?`<small>${note}</small>`:''}<i class="mmc">›</i></button>`,SEP='<div class="mmsep"></div>';
  let h;
- if(!sub)h='<h4>Menu</h4>'+B('new','New Scene'+(fo?' in '+esc(fo.name):''))+B('open','Open Scene…','⌘O')+G('scene','This Scene')+SEP
+ if(!sub)h='<h4>Menu</h4>'+B('new','New Scene'+(fo?' in '+esc(fo.name):''))+B('open','Open Scene…','⇧⌘O')+G('scene','This Scene')+SEP
    +(fo?B('overview',esc(fo.name)+' Overview & Questions…'):'')+G('import','Import')+G('export','Export')+SEP
    +G('data','Sync & Backup',esc($('#status').textContent||''))+B('keys','Keyboard Shortcuts','?');
  else{let body='';
@@ -5901,7 +5973,7 @@ addEventListener('keyup',e=>{if(e.key!=='Shift'||!shiftSolo)return;shiftSolo=fal
  if(!sel)return;const p=selScreenPos();objPop(p.x,p.y);});
 
 /* ---------- keyboard shortcuts ---------- */
-const KEYS=[['Scenes',[['⌘O','Open a scene (folders, search)'],['⌘F','Search all scenes'],['⌘I','Scene info'],['⌘S','Saves happen automatically. This just confirms it'],['⌘P','Export PDF: this scene or the whole folder, portrait or landscape']]],
+const KEYS=[['Scenes',[['⌘O','Show the Library and search it'],['⇧⌘O','Open or organize scenes (folders, moving, Trash)'],['⌘F','Search all scenes'],['⌘I','Scene info'],['⌘S','Saves happen automatically. This just confirms it'],['⌘P','Export PDF: this scene or the whole folder, portrait or landscape']]],
  ['Add',[['C','Character'],['A','Camera'],['P','Prop'],['S','Set piece'],['L','Lighting'],['T','Annotation']]],
  ['Selected character or camera',[['W','Moves to (tap where)'],['F','Comes from (character)'],['R','Add a turn (character) / pan (camera)'],['X','180° line to (character)'],['Shift (by itself)','Open the menu for what’s selected. Or right-click / two-finger tap it'],['E','Edit'],['⌘D','Duplicate'],['← ↑ → ↓','Nudge (hold Shift for bigger steps)'],['Delete','Delete'],['Esc','Deselect, or cancel a tool']]],
  ['Select',[['G','Lasso: draw around things to select them together'],['Shift-click','Add a piece to the selection (or take it out)'],['⌘G  /  ⇧⌘G','Group the selected pieces so they move as one / ungroup them'],['⌘A','Select everything on this page'],['⌘Z  /  ⇧⌘Z','Undo / redo']]],
@@ -6240,7 +6312,7 @@ addEventListener('keydown',e=>{
  if(!modalEl.hidden){if(e.key==='Escape'){if(br&&br.sub&&$('#br')){br.sub=null;brRender();}else closeModal();}return;}
  if(e.key==='Escape'&&document.querySelector('#drop.mm')){closeDrop();return;}
  if(e.key==='Escape'&&pop.classList.contains('on')){closePop();return;}
- if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='o'){e.preventDefault();openBrowser();return;}
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='o'){e.preventDefault();if(e.shiftKey||setOn)openBrowser();else libSet(true,true);return;}
  if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&e.key.toLowerCase()==='i'&&!setOn){e.preventDefault();bulkGo();return;}
  if(setOn){if(typing)return;if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();setGo(1);}else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();setGo(-1);}else if(e.key===' '){e.preventDefault();play();}return;}
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&!typing){e.preventDefault();e.shiftKey?redo():undo();return;}
@@ -6254,7 +6326,7 @@ addEventListener('keydown',e=>{
  else if((e.key==='Delete'||e.key==='Backspace')&&sel&&sel.id!=='__bg'&&!sel.lab){const it=itemById(sel.id);if(it&&!it.locked){e.preventDefault();if(it.type==='cam'&&sel.pan)objAct('pdel');else if(it.marks&&it.marks.length>1&&(it.type!=='cam'||nVer(it)>1))act('delMark',{dataset:{}});else deleteSel(true);}}
 });
 
-function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split')&&opt.list!==false)renderList();renderDocs();renderTop();renderCanvas();renderPageBits();renderShots();if(opt.insp!==false)renderInsp();updateStatus();if(setOn)renderSet();if(scoutOn)renderScout();}
+function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split')&&opt.list!==false)renderList();renderDocs();renderTop();renderCanvas();renderPageBits();renderShots();if(opt.insp!==false)renderInsp();updateStatus();if(setOn)renderSet();if(scoutOn)renderScout();try{renderLib();}catch(e){console.error(e);}}
 
 function stgFill(){const el=document.getElementById('stgTxt');if(!el||!navigator.storage||!navigator.storage.estimate)return;const f=n=>n>=1073741824?(n/1073741824).toFixed(n<10737418240?1:0)+' GB':n>=1048576?(n/1048576).toFixed(n<10485760?1:0)+' MB':Math.max(1,Math.round(n/1024))+' KB';
  navigator.storage.estimate().then(e=>{if(e&&e.quota&&document.body.contains(el))el.textContent=` Storage on this device: ${f(e.usage||0)} used of about ${f(e.quota)} the app can use.`;}).catch(()=>{});}
