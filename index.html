@@ -540,6 +540,20 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 #drop.lm .mmk{font-style:normal;margin-left:auto;color:var(--accent);font-weight:700}
 #drop.lm button:disabled{opacity:.5;cursor:default}
 #drop.lm button:disabled:hover{background:none}
+
+/* dragging in the Library */
+#libL .lbrow{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#libL .lbrow.dragsrc{opacity:.4}
+#libL .lbrow.drop,#libL .lbx.drop{background:light-dark(#d5e3fb,#2c4572);box-shadow:inset 0 0 0 2px var(--accent)}
+#lib .lbtopdrop{display:none;align-items:center;justify-content:center;height:36px;padding:0 8px;border:2px dashed var(--line);border-radius:8px;box-sizing:border-box;color:var(--mut);font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden}
+#lib.lbdrag .lbtopdrop{display:flex}
+#lib.lbdrag #libq{display:none}
+#lib[data-dk=s] .lbtopdrop .df,#lib[data-dk=f] .lbtopdrop .ds{display:none}
+#lib .lbtopdrop.drop{border-color:var(--accent);color:var(--ink);background:light-dark(#d5e3fb,#2c4572)}
+#libL.lbdrag,#libL.lbdrag button{cursor:grabbing}
+#libGhost{position:fixed;z-index:90;pointer-events:none;display:flex;align-items:center;gap:8px;max-width:260px;padding:8px 12px;border-radius:10px;background:var(--panel);color:var(--ink);border:1px solid var(--line);box-shadow:0 10px 28px rgba(0,0,0,.22);font-size:13.5px;font-weight:600}
+#libGhost svg{flex:none;width:18px;height:18px}
+#libGhost span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -610,7 +624,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261120031258';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261120035048';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3481,11 +3495,11 @@ function libList(){const q=libQ.trim().toLowerCase();
  if(q){const terms=q.split(/\s+/).filter(Boolean),hits=liveScenes().filter(s=>{const t=[s.number?'sc '+s.number+' scene '+s.number:'',s.title,s.heading,s.synopsis,pathTxt(sFolder(s))].join('\n').toLowerCase();return terms.every(w=>t.includes(w));}).sort(sceneCmp).slice(0,80);
   return hits.length?hits.map(s=>libRowS(s,0,pathTxt(sFolder(s))||'Not in a folder')).join(''):'<div class="lbe">No scenes match.</div>';}
  const tree=libTree(null,0,libAuto()),loose=fScenes(null);
- return tree+(loose.length?`<div class="lbh">${tree?'Not in a folder':'Scenes'}</div>`+loose.map(s=>libRowS(s,0)).join(''):'')+(tree||loose.length?'':'<div class="lbe">No scenes yet.</div>')
+ return tree+(loose.length?`<div class="lbh" data-ldrop="root">${tree?'Not in a folder':'Scenes'}</div>`+loose.map(s=>libRowS(s,0)).join(''):'')+(tree||loose.length?'':'<div class="lbe">No scenes yet.</div>')
   +'<div class="lbsep"></div><button class="lbx" data-la="tpls">Templates</button><button class="lbx" data-la="trash">Trash</button>';}
 function renderLib(){const a=$('#app'),el=$('#lib');if(!el)return;const on=libOn()&&!setOn;a.classList.toggle('lib-on',on);
  const sb=$('#sceneBtn');if(sb)sb.setAttribute('aria-expanded',on?'true':'false');if(!on)return;
- if(!el.firstChild){el.innerHTML='<div class="lbtop"><b>Library</b><button id="libHide" aria-label="Hide the Library" title="Hide the Library">‹</button></div><div class="lbq"><input id="libq" type="search" placeholder="Search scenes" aria-label="Search scenes" autocomplete="off" autocapitalize="off" spellcheck="false"></div><div id="libL"></div><div class="lbb"><button class="pri" data-la="new">New Scene</button><button data-la="newfolder">New Folder</button><button data-la="org">Organize…</button></div>';libHtml=null;}
+ if(!el.firstChild){el.innerHTML='<div class="lbtop"><b>Library</b><button id="libHide" aria-label="Hide the Library" title="Hide the Library">‹</button></div><div class="lbq"><input id="libq" type="search" placeholder="Search scenes" aria-label="Search scenes" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="lbtopdrop" data-ldrop="root"><span class="ds">Drop here to take it out of its folder</span><span class="df">Drop here for the top level</span></div></div><div id="libL"></div><div class="lbb"><button class="pri" data-la="new">New Scene</button><button data-la="newfolder">New Folder</button><button data-la="org">Organize…</button></div>';libHtml=null;}
  const h=libList();if(h!==libHtml){$('#libL').innerHTML=h;libHtml=h;}}
 function libPick(id){const t=P.scenes.find(s=>s.id===id);if(!t)return;
  if(id!==P.sceneId){const o=P.ui.libOpen=P.ui.libOpen||{};for(const f of fPath(sFolder(t)))o[f.id]=true;try{flushNotes();if(txTimer)txFlush();}catch(e){}openScene(id);}
@@ -3525,8 +3539,47 @@ function libMenu(rect,kind,id,sub){closePop();closeDrop();const x=kind==='f'?fBy
   const t=e.target.closest('[data-dest]');if(t){if(t.disabled)return;closeDrop();libMove(kind,id,t.dataset.dest||null);return;}
   const m=e.target.closest('[data-m]');if(!m)return;closeDrop();ACT[m.dataset.m]();});
  setTimeout(()=>addEventListener('pointerdown',dropOut,true),0);}
-$('#lib').addEventListener('contextmenu',e=>{const r=e.target.closest('.lbrow');if(!r)return;const b=r.querySelector('.lbm');if(!b)return;e.preventDefault();const [k,id]=b.dataset.lm.split(':');libMenu({left:e.clientX,bottom:e.clientY,right:e.clientX,top:e.clientY},k,id);});
+$('#lib').addEventListener('contextmenu',e=>{const r=e.target.closest('.lbrow');if(!r)return;if(libDg&&libDg.touch){e.preventDefault();return;}const b=r.querySelector('.lbm');if(!b)return;e.preventDefault();const [k,id]=b.dataset.lm.split(':');libMenu({left:e.clientX,bottom:e.clientY,right:e.clientX,top:e.clientY},k,id);});
+/* dragging in the Library: a scene onto a folder, a folder into a folder, out to the top, or a scene onto the Trash.
+   Mouse: just drag. Finger or Pencil: press and hold a moment, then drag (so a swipe still scrolls the list). */
+let libDg=null,libDgEnd=0;
+function libDgTarget(x,y){const d=libDg,el=document.elementFromPoint(x,y);if(!el||!el.closest)return null;
+ if(el.closest('[data-ldrop=root]'))return {dest:null};
+ if(d.kind==='s'&&el.closest('#libL [data-la=trash]'))return {trash:1};
+ const row=el.closest('#libL .lbrow');if(!row)return null;const f=row.querySelector('[data-lf]'),sc=row.querySelector('[data-ls]');
+ if(f)return {dest:f.dataset.lf};if(sc){const x=P.scenes.find(q=>q.id===sc.dataset.ls);return x?{dest:sFolder(x)}:null;}return null;}
+function libDgOk(t){const d=libDg;if(!t)return false;if(t.trash)return d.kind==='s';
+ if(d.kind==='s'){const x=P.scenes.find(q=>q.id===d.id);return !!x&&sFolder(x)!==(t.dest||null);}
+ const f=fById(d.id);return !!f&&fParent(f)!==(t.dest||null)&&!(t.dest&&fDesc(f.id).has(t.dest));}
+function libDgPaint(){const d=libDg,L=$('#lib');if(!d||!L)return;L.querySelectorAll('.drop').forEach(e=>e.classList.remove('drop'));L.querySelectorAll('.dragsrc').forEach(e=>e.classList.remove('dragsrc'));
+ const src=L.querySelector(d.kind==='s'?`[data-ls="${d.id}"]`:`[data-lf="${d.id}"]`);if(src)src.closest('.lbrow').classList.add('dragsrc');
+ const t=d.tgt;if(!t||!libDgOk(t))return;let el=null;if(t.trash)el=L.querySelector('[data-la=trash]');else if(!t.dest)el=L.querySelector('.lbtopdrop');else{const b=L.querySelector(`[data-lf="${t.dest}"]`);el=b&&b.closest('.lbrow');}
+ if(el)el.classList.add('drop');}
+function libDgStart(){const d=libDg,L=$('#libL');if(!d||d.on)return;d.on=true;clearTimeout(d.timer);try{L.setPointerCapture(d.pid);}catch(e){}
+ L.classList.add('lbdrag');$('#lib').classList.add('lbdrag');$('#lib').dataset.dk=d.kind;const g=document.createElement('div');g.id='libGhost';
+ g.innerHTML=d.kind==='f'?BIC.fold+`<span>${esc(fById(d.id).name)}</span>`:`<span>${esc(sceneLabel(P.scenes.find(q=>q.id===d.id)))}</span>`;document.body.appendChild(g);d.ghost=g;libDgMove(d.x,d.y);
+ const tick=()=>{if(!libDg||!libDg.on)return;const r=L.getBoundingClientRect(),y=libDg.y;if(y<r.top+30)L.scrollTop-=10;else if(y>r.bottom-30)L.scrollTop+=10;libDg.raf=requestAnimationFrame(tick);};d.raf=requestAnimationFrame(tick);}
+function libDgMove(x,y){const d=libDg;if(!d||!d.on)return;d.x=x;d.y=y;d.ghost.style.left=(x+12)+'px';d.ghost.style.top=(y+8)+'px';
+ const t=libDgTarget(x,y),key=t?(t.trash?'t':'d:'+(t.dest||'')):'';if(key!==d.key){d.key=key;d.tgt=t;clearTimeout(d.spring);
+  if(t&&t.dest&&libDgOk(t)&&!libIsOpen(t.dest,libAuto()))d.spring=setTimeout(()=>{if(!libDg||libDg.key!==key)return;(P.ui.libOpen=P.ui.libOpen||{})[t.dest]=true;renderLib();libDgPaint();},700);
+  libDgPaint();}}
+function libDgStop(drop){const d=libDg;if(!d)return;libDg=null;clearTimeout(d.timer);clearTimeout(d.spring);cancelAnimationFrame(d.raf);const L=$('#libL');
+ if(L){L.classList.remove('lbdrag');const W=$('#lib');W.classList.remove('lbdrag');delete W.dataset.dk;W.querySelectorAll('.drop,.dragsrc').forEach(e=>e.classList.remove('drop','dragsrc'));try{L.releasePointerCapture(d.pid);}catch(e){}}
+ if(d.ghost)d.ghost.remove();if(!d.on)return;libDgEnd=Date.now();const t=d.tgt;if(!drop||!t)return;libDg=d;const ok=libDgOk(t);libDg=null;if(!ok)return;
+ if(t.trash){const x=P.scenes.find(q=>q.id===d.id);trashScenes([d.id]);commit();fit();toast(`${sceneLabel(x)} moved to Trash. Undo brings it back.`);}else libMove(d.kind,d.id,t.dest);}
+{const L=$('#lib');
+ L.addEventListener('pointerdown',e=>{if(e.button>0||libDg||libQ)return;const row=e.target.closest('#libL .lbrow');if(!row||e.target.closest('.lbm'))return;const b=row.querySelector('[data-ls],[data-lf]');if(!b)return;
+  const touch=e.pointerType!=='mouse';libDg={pid:e.pointerId,kind:b.dataset.ls?'s':'f',id:b.dataset.ls||b.dataset.lf,sx:e.clientX,sy:e.clientY,x:e.clientX,y:e.clientY,on:false,touch,key:null,tgt:null};
+  if(touch)libDg.timer=setTimeout(()=>{if(libDg&&!libDg.on)libDgStart();},380);});
+ L.addEventListener('pointermove',e=>{const d=libDg;if(!d||e.pointerId!==d.pid)return;
+  if(!d.on){const far=Math.hypot(e.clientX-d.sx,e.clientY-d.sy);d.x=e.clientX;d.y=e.clientY;if(d.touch){if(far>9){clearTimeout(d.timer);libDg=null;}return;}if(far<6)return;libDgStart();}
+  e.preventDefault();libDgMove(e.clientX,e.clientY);});
+ L.addEventListener('pointerup',e=>{if(libDg&&e.pointerId===libDg.pid)libDgStop(true);});
+ L.addEventListener('pointercancel',e=>{if(libDg&&e.pointerId===libDg.pid)libDgStop(false);});
+ L.addEventListener('touchmove',e=>{if(libDg&&libDg.on)e.preventDefault();},{passive:false});
+ addEventListener('keydown',e=>{if(e.key==='Escape'&&libDg&&libDg.on){e.stopPropagation();libDgStop(false);}},true);}
 $('#lib').addEventListener('click',e=>{
+ if(Date.now()-libDgEnd<80){e.preventDefault();return;}
  if(e.target.closest('#libHide')){libSet(false);return;}
  {const m=e.target.closest('[data-lm]');if(m){const [k,id]=m.dataset.lm.split(':');libMenu(m.getBoundingClientRect(),k,id);return;}}
  const f=e.target.closest('[data-lf]');if(f){const id=f.dataset.lf;(P.ui.libOpen=P.ui.libOpen||{})[id]=!libIsOpen(id,libAuto());saveLocal();renderLib();return;}
