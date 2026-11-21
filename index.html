@@ -407,6 +407,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 #pop .ls .pr button:disabled{opacity:.4}
 #pop .hd{margin-top:5px;padding:10px 18px 3px}
 #pop .ls>.pr+.hd,#pop .ls>.duo+.hd{margin-top:7px}
+#pop .ls .lensq{display:flex;flex-wrap:wrap;gap:6px;padding:6px 18px 8px}#pop .ls .lensq button{flex:1 1 44px;min-width:44px;width:auto;height:42px;padding:0 4px;border:1px solid var(--pl);border-radius:9px;background:var(--pc);color:var(--pi);font-size:14px;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center}#pop .ls .lensq button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .slpf{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;padding:0 20px;font-size:13.5px}.slpf .sm.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .gearsc{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.gearsc .sm.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .geart{width:100%;border-collapse:collapse;font-size:14px}.geart th{text-align:left;font-weight:700;white-space:nowrap;padding:9px 12px 9px 0;vertical-align:top}.geart td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}.geart tr:first-child td,.geart tr:first-child th{border-top:0}.geart th{border-top:1px solid var(--line)}.geart td span{display:inline-block;margin:2px 4px 2px 0;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}.geart td.n{text-align:right;white-space:nowrap;color:var(--mut);padding-left:10px}
@@ -641,7 +642,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121191520';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121215723';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -707,7 +708,8 @@ const lensDeg=v=>{const f=lensMM(v);return f?2*Math.atan(sensorOf()[2]/(2*f))*18
 function vaTarget(sc,m){const t=m&&m.vaTo;if(!t)return null;if(t.id){const o=sc&&sc.items.find(q=>q.id===t.id);if(!o||o.type!=='char'||!o.marks.length)return null;const q=o.marks[t.mk]&&!o.marks[t.mk].t?o.marks[t.mk]:o.marks[0];return {x:q.x,y:q.y,name:String((charById(o.charId)||{}).name||'a character').toUpperCase()};}
  return isFinite(t.x)&&isFinite(t.y)?{x:t.x,y:t.y,name:'a spot'}:null;}
 function vaWedge(m,col,sc){const d=lensDeg(m.lens);if(!d)return '';const tg=vaTarget(sc,m),h=rad(d/2),a=rad(m.rot||0),L=tg?Math.max(FT*1.5,Math.hypot(tg.x-m.x,tg.y-m.y)):VA_FT*FT,p=t=>`${(m.x+Math.cos(t)*L).toFixed(1)},${(m.y+Math.sin(t)*L).toFixed(1)}`;
- return `<path class="deco va" d="M${m.x},${m.y}L${p(a-h)}A${L},${L} 0 0 1 ${p(a+h)}Z" fill="${col}" fill-opacity=".14" stroke="${col}" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="7 5" vector-effect="non-scaling-stroke"/>`;}
+ const lx=m.x+Math.cos(a)*(L+14),ly=m.y+Math.sin(a)*(L+14);
+ return `<path class="deco va" d="M${m.x},${m.y}L${p(a-h)}A${L},${L} 0 0 1 ${p(a+h)}Z" fill="${col}" fill-opacity=".14" stroke="${col}" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="7 5" vector-effect="non-scaling-stroke"/><text class="deco valab" x="${lx.toFixed(1)}" y="${(ly+5).toFixed(1)}" text-anchor="middle" font-size="14" font-weight="800" fill="${shade(col,-.45)}" stroke="#fff" stroke-width="3" paint-order="stroke">${esc(String(m.lens).trim())}</text>`;}
 function cellVal(s,r,k){const m=r.m;switch(k){case 'gear':return (m.gear||[]).join(', ');case 'props':return (m.props||[]).join(', ');case 'cast':return castNames(m);case 'time':return minTxt(+m.time||0);case 'flag':return m.flag?'★':'';case 'vfx':return m.vfx?'VFX':'';case 'sfx':return m.sfx?'SFX':'';
  case 'ss':return m.ss&&m.ss!=='plan'?((SS.find(x=>x[0]===m.ss)||[])[1]||''):'';default:if(k.startsWith('c:'))return String((m.cx||{})[k.slice(2)]||'');return String(m[k]||'');}}
 const vlabel=m=>[m.size?(ABBR[m.size]||m.size):'',m.type].filter(Boolean).join(' ').toUpperCase();
@@ -2728,7 +2730,7 @@ function itemsMarkup(sc,pid){
     if(i>0&&m.tk&&prevOn){const p=it.marks[i-1];paths+=`<path class="deco" d="${trackD([p,...legPts(p,m),m],!it.hard)}" fill="none" stroke="${col}" stroke-opacity=".22" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`+arrow(p,m,dk,true,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);}
     else if(i>0&&!m.tk&&prevOn)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     const a=rad(m.rot||0);
-    if(on&&vaOn())paths+=vaWedge(m,col,sc);
+    if(vaOn()){if(on)paths+=vaWedge(m,col,sc);const seen=new Set([on?m.lens:null]);it.marks.forEach((q,j)=>{if(q.sp&&spBase(it,j)===i&&posOn(it,j,PG)&&lensMM(q.lens)&&!seen.has(q.lens)){seen.add(q.lens);paths+=vaWedge(Object.assign({},m,{lens:q.lens}),col,sc);}});}
     if(on&&frameOn()&&m.sb&&images[m.sb])frames+=framesSVG(sc,it,i,m,lay,`Shot ${shotCode(sc,it)}${n>1?' · V'+verCode(sc,verNum(it,i)):''}`);
     let lbl='',lead='';const ln=m.tk?(i===f0?labLines(it.marks[verStart(it,i)],verNum(it,i),n):[]):vlines(i);
     if(i===f0){const lp=camLabelPos(it,m,ln.length),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
@@ -2928,7 +2930,7 @@ function setPage(it,v,add){
  if(it.pgs&&it.pgs.length===s.pages.length)it.pgs=null;
 }
 /* the shot list's extra columns, when turned on, in the camera's side panel */
-const lensFld=(k,m)=>`<div class="fld">Lens${pick1('lens',k,m.lens||'')}${vaOn()?`<small class="mut" style="display:block;margin-top:4px;font-weight:400">${lensDeg(m.lens)?`View angle ${Math.round(lensDeg(m.lens))}° · ${sensorOf()[1]}`:'Pick a lens in mm to see its view angle'}</small>`:''}</div>`;
+const lensFld=(k,m)=>`<div class="fld">Lens${pick1('lens',k,m.lens||'')}${vaOn()?`<small class="mut" style="display:block;margin-top:4px;font-weight:400">${lensDeg(m.lens)?`Shown on the plan · ${sensorOf()[1]}`:'Pick a lens in mm to see it on the plan'}</small>`:''}</div>`;
 function inspExtra(s,it,vi,m){const k=`data-id="${it.id}" data-v="${vi}"`;let h='';
  if(vaOn()&&!colsOn(s).some(c=>c.k==='lens'))h+=lensFld(k,m); /* view angles are on: the lens is here even with its column off */
  for(const c of colsOn(s)){switch(c.k){
@@ -3255,7 +3257,7 @@ function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
  else if(t.t==='aim')$('#bannerTxt').textContent='Tap the character, or the spot, this camera should stay pointed at.';
  else if(t.t==='pfrom')$('#bannerTxt').textContent='Tap where it moves in from.';
  else if(t.t==='measure')$('#bannerTxt').textContent='Tap two points to measure between them.';
- else if(t.t==='vato')$('#bannerTxt').textContent='Tap the character, or the spot, the view angle should reach.';
+ else if(t.t==='vato')$('#bannerTxt').textContent='Tap the character, or the spot, the lens wedge should reach.';
  else if(t.t==='pan')$('#bannerTxt').textContent=t.mode==='change'?'Tap the new direction for this pan.':'Tap the direction the camera pans to.';
  else $('#bannerTxt').textContent='Tap to place wall corners. It finishes by itself when it meets another corner. Or tap Done.';
  $('#bannerDone').textContent=t.t==='wall'||t.t==='measure'?'Done':'Cancel';$('#banner').classList.add('on');renderUI();}
@@ -3271,7 +3273,7 @@ function toolTap(w){
  if(tool.t==='vato'){const it=itemById(tool.id),m=it&&it.marks[tool.mark];if(!m){endTool();return;}let best=null,bd=40/Math.min(view.k,1);
   for(const o of pageItems(s))if(o.type==='char')o.marks.forEach((q,mi)=>{if(q.t)return;const d=Math.hypot(q.x-w.x,q.y-w.y);if(d<bd){bd=d;best={o,mi};}});
   m.vaTo=best?{id:best.o.id,mk:runOf(best.o,best.mi)[0]}:{x:Math.round(w.x),y:Math.round(w.y)};sel={id:it.id,mark:tool.mark};endTool();commit();
-  toast(best?`The view angle now reaches ${vaTarget(s,m).name} and follows them.`:'The view angle now reaches that spot.'+(lensMM(m.lens)?'':' Give this camera a lens in mm to see it.'));return;}
+  toast(best?`The lens wedge now reaches ${vaTarget(s,m).name} and follows them.`:'The lens wedge now reaches that spot.'+(lensMM(m.lens)?'':' Give this camera a lens in mm to see it.'));return;}
  if(tool.t==='measure'){if(!tool.a||tool.b){tool.a={x:w.x,y:w.y};tool.b=null;$('#bannerTxt').textContent='Now tap the second point.';}else{tool.b={x:w.x,y:w.y};$('#bannerTxt').textContent=ftTxt(Math.hypot(tool.b.x-tool.a.x,tool.b.y-tool.a.y))+'. Tap two more points to measure again.';}renderUI();return;}
  if(tool.t==='pfrom'){const it=itemById(tool.id);if(it){const dx=w.x-it.x,dy=w.y-it.y,M=gMates(s,it),gp=M.length>1?uid():null;
    for(const o of (M.length>1?M:[it])){if(o!==it&&o.locked)continue;for(const x of s.items)for(const m of x.marks||[])if(m.ride&&m.ride.id===o.id)m.ride.k=(m.ride.k||0)+1;const q={x:o.x,y:o.y,rot:o.rot||0};if(gp)q.gp=gp;o.mv=[q,...(o.mv||[])];o.x+=dx;o.y+=dy;}
@@ -3493,7 +3495,9 @@ function sbPop(cx,cy){const s=scene(),it=sel&&itemById(sel.id),i=sel&&sel.mark||
   else if(o==='fh'||o==='fv'){fSet(m,k,o,!fGet(m,k,o));commit();sbPop(cx,cy);}
   else if(o==='nf'){fSet(m,k,'nf',!fGet(m,k,'nf'));commit();sbPop(cx,cy);}};}
 const tcase=t=>String(t).replace(/(^|\s)([a-z])/g,(m,a,b)=>a+b.toUpperCase());
+const LENSQ=['25mm','35mm','50mm','85mm','100mm','135mm'];let lensAll=false,popKeep=false;
 function objPop(cx,cy){
+ if(!popKeep)lensAll=false;popKeep=false;
  if(setOn||!sel||tool||mode==='list')return;popAt={x:cx,y:cy};const s=scene();
  /* rows: B plain, R removes something (red, always last), ck a switch, duo two actions side by side, pr a label with two choices */
  const sec=(t,b)=>b?`<div class="hd">${t}</div>${b}`:'',B=(o,l)=>`<button data-o="${o}">${l}</button>`,R=(o,l)=>`<button data-o="${o}" class="dng">${l}</button>`,
@@ -3524,11 +3528,11 @@ function objPop(cx,cy){
    const mi=clamp(sel.mark||0,0,it.marks.length-1),[ra,rb]=camRun(it,mi),va=it.marks[ra],nv=nVer(it);if(nv>1)sub=`Version ${verCode(s,verNum(it,mi))}`;
    let dm='';for(let j=ra;j<=rb;j++)dm+=`<button data-o="dm:${j}" class="${j===mi?'on':''}">${j-ra+1}</button>`;
    h=mvd(B('trackto','Moves To…'),B('trackfrom','Comes From…'))+(rb>ra?`<div class="hd">Camera Positions</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this camera position" aria-label="Remove this camera position"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`:'')
+    +sec('Lens',(vaOn()?(()=>{const cur=String(it.marks[mi].lens||''),all=[...LENSES,...ownList('lens').filter(v=>!LENSES.includes(v))],quick=LENSQ.filter(l=>all.includes(l)),show=lensAll||(cur&&!quick.includes(cur))?all:quick;return `<div class="lensq">${show.map(l=>`<button data-o="lens:${esc(l)}"${l===cur?' class="on" aria-pressed="true"':''}>${esc(l.replace(/mm$/i,''))}</button>`).join('')}${show===all?'':`<button data-o="lensmore">More…</button>`}</div>`;})():'')+B('vatog',vaOn()?'Hide Lenses on the Plan':'Show Lenses on the Plan')+(vaOn()?B('vasensor','Sensor: '+sensorOf()[1]+' (tap to change)')+(()=>{const wi=it.marks[mi].sp?spBase(it,mi):mi,tg=vaTarget(s,it.marks[wi]);return tg?duo(B('vato','Reaches '+esc(tg.name)+' (change…)'),B('vastd','Back to Standard Length')):B('vato','Reach to a Subject or a Spot…');})():''))
     +sec('Camera Move',B('pan','Add a Pan')+(it.marks[ra].aim?B('aimoff','Stop Following '+esc(aimName(s,it.marks[ra].aim))):B('aim','Follow…')))
     +sec('Shot',B('shotdesc','Describe the Shot…')+(nv>1?duo(B('addver','Add Version…'),B('delmark','Remove Version')):B('addver','Add Version…')))
     +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb&&images[va.sb]?B('framecrop','Crop Main Frame…'):'')+(va.sb&&it.marks.some(m=>m.sb)?duo(B('frame2','Add a Frame…'),B('regallery','Re-arrange…')):(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):'')))
     +(s.setups.length>1?pr('Shooting Order',`<button data-o="shotUp"${s.setups[0].id!==it.setupId?'':' disabled'}>Earlier</button>`,`<button data-o="shotDown"${s.setups[s.setups.length-1].id!==it.setupId?'':' disabled'}>Later</button>`):'')
-    +sec('View Angle',B('vatog',vaOn()?'Hide View Angles':'Show View Angles')+(vaOn()?B('vasensor','Sensor: '+sensorOf()[1]+' (tap to change)')+(()=>{const wi=it.marks[mi].sp?spBase(it,mi):mi,tg=vaTarget(s,it.marks[wi]);return tg?duo(B('vato','Reaches '+esc(tg.name)+' (change…)'),B('vastd','Back to Standard Length')):B('vato','Reach to a Subject or a Spot…');})():''))
     +sec('Camera',B('edit','Camera Details…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages
     +sec('Arrange',B('dupcam','Add a Camera to Setup '+st.num)+lk)
     +end(R('del','Delete Camera '+esc(shotCode(s,it))));}
@@ -3561,8 +3565,10 @@ function objAct(o){
  if(it&&it.type==='cam'&&o==='addver'){addVersion(it,sel.mark||0);return;}
  if(o==='astep'){stepSub();return;}
  if(o==='vato'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);closePop();startTool({t:'vato',id:it.id,mark:it.marks[mi].sp?spBase(it,mi):mi});return;}
- if(o==='vastd'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);delete it.marks[it.marks[mi].sp?spBase(it,mi):mi].vaTo;commit();closePop();toast('The view angle is back to its standard length.');return;}
- if(o==='vatog'){P.ui.va=!vaOn();saveLocal();closePop();render();if(vaOn()){const any=s.items.some(q=>q.type==='cam'&&q.marks.some(m=>lensMM(m.lens)));toast(any?'View angles are on.':'View angles are on. Give a camera a lens (Camera Details… › Lens) to see its angle.');}return;}
+ if(o==='vastd'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);delete it.marks[it.marks[mi].sp?spBase(it,mi):mi].vaTo;commit();closePop();toast('The lens wedge is back to its standard length.');return;}
+ if(o==='lensmore'){lensAll=true;popKeep=true;objPop(popAt.x,popAt.y);return;}
+ if(it&&it.type==='cam'&&o.startsWith('lens:')){const mi=clamp(sel.mark||0,0,it.marks.length-1),v=o.slice(5),m=it.marks[mi];if(m.lens===v)delete m.lens;else m.lens=v;commit();popKeep=true;objPop(popAt.x,popAt.y);return;}
+ if(o==='vatog'){P.ui.va=!vaOn();saveLocal();render();if(vaOn()){popKeep=true;objPop(popAt.x,popAt.y);const any=s.items.some(q=>q.type==='cam'&&q.marks.some(m=>lensMM(m.lens)));if(!any)toast('Pick a lens for this camera to see it on the plan.');}else closePop();return;}
  if(o==='vasensor'){const i=SENSORS.indexOf(sensorOf());prefSet('sensor',SENSORS[(i+1)%SENSORS.length][0]);render();objPop(popAt.x,popAt.y);return;}
  if(it&&it.type==='char'&&o.startsWith('pose-')){const pm=it.marks[runOf(it,sel.mark||0)[0]],v=o.slice(5);if(v)pm.pose=v;else delete pm.pose;commit();objPop(popAt.x,popAt.y);return;}
  closePop();
@@ -3980,7 +3986,7 @@ function todoDialog(sid){const id=sid||scene().id,S=()=>P.scenes.find(x=>x.id===
  const row=t=>`<div class="tdr${t.d?' done':''}"><label><input type="checkbox" data-td="${t.id}"${t.d?' checked':''}><span>${esc(t.t)}</span></label><button data-tdx="${t.id}" aria-label="Remove this item" title="Remove">×</button></div>`;
  const body=()=>{const L=S().todo||[],open=L.filter(t=>!t.d).length;return `<p class="pnote" style="padding:0 0 6px">${L.length?`${L.length-open} of ${L.length} done`:'Nothing on the list yet.'}</p>${L.map(row).join('')}`;};
  modal(`<h3>Checklist</h3><p class="mut" style="margin:-4px 0 8px;font-size:13.5px">${esc(sceneLabel(S()))}</p><div id="tdB">${body()}</div><div class="tdadd"><input id="tdNew" placeholder="Add an item" autocomplete="off" maxlength="200" aria-label="New checklist item"><button class="pri" id="tdAdd">Add</button></div><div class="btns end"><button id="tdClear">Remove Finished</button><button data-x>Done</button></div>`,card=>{
-  const redraw=()=>{card.querySelector('#tdB').innerHTML=body();},save=()=>{const sc=S();if(sc.todo&&!sc.todo.length)delete sc.todo;commit();redraw();};
+  const redraw=()=>{card.querySelector('#tdB').innerHTML=body();},save=()=>{const sc=S();if(sc.todo&&!sc.todo.length)delete sc.todo;commit();redraw();try{if(mode==='nb'||mode==='st')renderDocs(true);}catch(e){}};
   const add=()=>{const i=card.querySelector('#tdNew'),v=i.value.trim();if(!v)return;const sc=S();(sc.todo=sc.todo||[]).push({id:uid(),t:v});i.value='';save();i.focus();};
   card.querySelector('#tdAdd').onclick=add;card.querySelector('#tdNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();add();}});
   card.addEventListener('change',e=>{const c=e.target.closest('[data-td]');if(!c)return;const t=(S().todo||[]).find(q=>q.id===c.dataset.td);if(t){if(c.checked)t.d=1;else delete t.d;save();}});
@@ -5471,7 +5477,7 @@ function labelMenu(btn,col){
 }
 function docHead(s,kind){
  const D=prodOpts(s),T=kind==='nb'?[D.nbT,D.nbS]:[D.stT,D.stS];
- return `<div class="dvh"><div class="dvt"><div class="dvk">${esc(T[0]||'')}<i>${esc(T[1]||'')}</i></div><h2>${esc((s.number?'Sc. '+s.number+'  ':'')+(s.title||s.heading||'Untitled scene'))}</h2>${s.title&&s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}</div><div class="dvb">${kind==='nb'?'<button class="sm" data-d="docx">Import from Word…</button>':''}<button class="sm" data-d="info">Scene info</button><button class="sm" data-d="pdf">Export PDF…</button></div></div>`;
+ return `<div class="dvh"><div class="dvt"><div class="dvk">${esc(T[0]||'')}<i>${esc(T[1]||'')}</i></div><h2>${esc((s.number?'Sc. '+s.number+'  ':'')+(s.title||s.heading||'Untitled scene'))}</h2>${s.title&&s.heading?`<p>${esc(s.heading.toUpperCase())}</p>`:''}</div><div class="dvb">${kind==='nb'?'<button class="sm" data-d="docx">Import from Word…</button>':''}<button class="sm" data-d="todo">Checklist${(s.todo||[]).length?` · ${(s.todo||[]).filter(t=>!t.d).length} open`:''}</button><button class="sm" data-d="info">Scene info</button><button class="sm" data-d="pdf">Export PDF…</button></div></div>`;
 }
 const FMT_BAR='<div class="fmt"><button data-f="bold" title="Bold (⌘B)"><b>B</b></button><button data-f="insertUnorderedList" title="Bullets">• List</button><button data-f="insertOrderedList" title="Numbered list">1. List</button></div>';
 /* ---------- the breakdown's layout: which columns, in what order, called what, with which labels ----------
@@ -5582,6 +5588,7 @@ function docClick(e){
   stLast={id:d.story,t:now,prev:s.story||null};s.story=s.story===d.story?null:d.story;if(!s.story)delete s.story;commit();renderDocs(true);}
  else if(d.d==='info')sceneInfo(null,()=>renderDocs(true));
  else if(d.d==='pdf')exportDialog();
+ else if(d.d==='todo')todoDialog();
  else if(d.d==='docx')$('#fDocx').click();
  else if(d.sm)secMenu(b,d.sm);
  else if(d.cutm)cutMenu(b,d.cutm);
@@ -6163,6 +6170,25 @@ function shotMenu(btn){dropMenu(btn,`<h4>Shot List</h4><button data-d="new">New 
 /* one list of the gear named in the Gear column: by shot for a scene, by scene for its folder. Nothing extra to fill in */
 function gearOf(scenes,byScene){const G=new Map();for(const sc of scenes){let R=[];try{R=rowsOf(sc);}catch(e){}for(const r of R)for(const g of (r.m.gear||[])){const k=String(g).trim();if(!k)continue;const e=G.get(k)||{n:0,at:[]};e.n++;const tag=byScene?(sc.number?'Sc. '+sc.number:(sc.title||sc.heading||'Untitled')):shotCode(sc,r.it)+(nVer(r.it)>1?' V'+verCode(sc,r.vn):'');if(!e.at.includes(tag))e.at.push(tag);G.set(k,e);}}
  return [...G.entries()].map(([g,e])=>({g,n:e.n,at:e.at})).sort((a,b)=>b.n-a.n||natCmp(a.g,b.g));}
+/* the gear list as its own letter page (or pages), in the look of the PDF shot list */
+function gearPagesSVG(name,kind,list){const W=1275,H=1650,M=84,TW=W-2*M,C1=M+14,C2=M+330,C3=W-M-14,CH=62,pages=[];
+ const wrap=t=>{const out=[];let cur='';for(const w of t){const nx=cur?cur+', '+w:w;if(nx.length>CH&&cur){out.push(cur+',');cur=w;}else cur=nx;}if(cur)out.push(cur);return out;};
+ const rows=list.map(x=>({g:x.g,n:plural(x.n,'shot'),L:wrap(x.at)})),tot=list.reduce((a,x)=>a+x.n,0);
+ const T=(x,y,t,sz,wt,fill,an)=>`<text x="${x}" y="${y}" font-size="${sz}" font-weight="${wt}" fill="${fill}"${an?` text-anchor="${an}"`:''}>${esc(t)}</text>`;
+ let i=0,pg=0;while(i<rows.length||!pg){pg++;let y=M,b='';
+  b+=T(M,y+22,'GEAR LIST'+(pg>1?' (CONTINUED)':''),20,800,'#2f6fde')+T(M,y+78,name,46,800,'#1c1c1e')+T(W-M,y+78,`${plural(list.length,'item')} · ${plural(tot,'shot')}`,22,500,'#44474f','end');y+=104;
+  b+=`<rect x="${M}" y="${y}" width="${TW}" height="5" fill="#1c1c1e"/>`;y+=34;
+  b+=`<rect x="${M}" y="${y}" width="${TW}" height="46" fill="#262d3d"/>`+T(C1,y+31,'GEAR',18,800,'#ffffff')+T(C2,y+31,kind==='Folder'?'SCENES':'SHOTS',18,800,'#ffffff')+T(C3,y+31,'COUNT',18,800,'#ffffff','end');y+=46;
+  while(i<rows.length){const r=rows[i],h=Math.max(1,r.L.length)*34+30;if(y+h>H-M-60&&y>M+260)break;
+   b+=T(C1,y+40,r.g,25,800,'#1c1c1e')+r.L.map((l,k)=>T(C2,y+40+k*34,l,23,500,'#1c1c1e')).join('')+T(C3,y+40,r.n,23,500,'#44474f','end');y+=h;b+=`<rect x="${M}" y="${y}" width="${TW}" height="1.5" fill="#cfcfcf"/>`;i++;}
+  if(i>=rows.length)b+=T(M,y+44,'Built from the Gear column of the shot list. Shots with no gear named are not listed.',19,500,'#44474f');
+  b+=`<rect x="${M}" y="${H-M-34}" width="${TW}" height="1.5" fill="#cfcfcf"/>`+T(M,H-M,'The Director’s Notebook',18,500,'#44474f');
+  pages.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"><style>${SVG_CSS}</style><rect width="${W}" height="${H}" fill="#ffffff"/>${b}</svg>`);}
+ const n=pages.length;return n>1?pages.map((p,k)=>p.replace('</svg>',T(W-M,H-M,`Page ${k+1} of ${n}`,18,500,'#44474f','end')+'</svg>')):pages;}
+async function gearPdf(name,kind,list){toast('Building PDF…');
+ try{const {jsPDF}=await loadJsPDF(),doc=new jsPDF({orientation:'portrait',unit:'pt',format:'letter'}),svgs=gearPagesSVG(name,kind,list);
+  for(let i=0;i<svgs.length;i++){const c=await rasterize(svgs[i],1275,1650,1.4);if(i)doc.addPage('letter','portrait');doc.addImage(c.toDataURL('image/jpeg',.92),'JPEG',0,0,612,792);}
+  await save((String(name).replace(/[^\w\- ]+/g,'').trim()||'Gear')+' - Gear List.pdf',doc.output('blob'));}catch(e){console.error(e);toast('The PDF could not be made. Copy List still works.');}}
 let gearScope='scene';
 function gearDialog(){const s=scene(),fid=sFolder(s);if(!fid)gearScope='scene';
  const data=()=>gearScope==='folder'&&fid?{list:gearOf(folderScenes(fid).filter(x=>!x.scout),true),name:fById(fid).name}:{list:gearOf([s],false),name:sceneLabel(s)};
@@ -6171,7 +6197,8 @@ function gearDialog(){const s=scene(),fid=sFolder(s);if(!fid)gearScope='scene';
   return `<div class="gearsc"><button class="sm${gearScope==='scene'?' on':''}" data-gs="scene">This scene</button><button class="sm${gearScope==='folder'?' on':''}" data-gs="folder"${fid?'':' disabled'}>${fid?'Whole folder · '+esc(fById(fid).name):'Not in a folder'}</button></div>`
    +(d.list.length?`<table class="geart"><tbody>${d.list.map(x=>`<tr><th>${esc(x.g)}</th><td>${x.at.map(t=>`<span>${esc(t)}</span>`).join('')}</td><td class="n">${plural(x.n,'shot')}</td></tr>`).join('')}</tbody></table>`:`<p class="pnote" style="padding:14px 0">No gear is named ${gearScope==='folder'?'in this folder':'in this scene'} yet. Turn on the Gear column (Shot list ▾ › Columns…) and pick gear for each shot.</p>`)
    +`<p class="pnote" style="padding:0">${all?`Built from the Gear column across ${plural(all,'shot')}.`:''}</p>`;};
- modal(`<h3>Gear list</h3><div id="gearB">${body()}</div><div class="btns end"><button id="gearCopy">Copy List</button><button class="pri" data-x>Done</button></div>`,card=>{
+ modal(`<h3>Gear list</h3><div id="gearB">${body()}</div><div class="btns end"><button id="gearCopy">Copy List</button><button id="gearPdf">Save as PDF</button><button class="pri" data-x>Done</button></div>`,card=>{
+  card.querySelector('#gearPdf').onclick=()=>{const d=data();if(!d.list.length){toast('There is no gear to put in a PDF yet.');return;}gearPdf(d.name,gearScope==='folder'&&fid?'Folder':'Scene',d.list);};
   card.addEventListener('click',e=>{const g=e.target.closest('[data-gs]');if(g&&!g.disabled){gearScope=g.dataset.gs;card.querySelector('#gearB').innerHTML=body();}});
   card.querySelector('#gearCopy').onclick=async()=>{try{await navigator.clipboard.writeText(text());toast('Gear list copied.');}catch(e){toast('Copying is not allowed here. Select the list and copy it by hand.');}};},'numcard');}
 function numberingDialog(){const s=scene(),c=numCfg(s);
