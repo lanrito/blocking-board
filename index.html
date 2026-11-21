@@ -407,6 +407,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 #pop .ls .pr button:disabled{opacity:.4}
 #pop .hd{margin-top:5px;padding:10px 18px 3px}
 #pop .ls>.pr+.hd,#pop .ls>.duo+.hd{margin-top:7px}
+.nmerr{margin:8px 0 0;color:#b42318;font-size:13.5px;line-height:1.4}
 .duo.pz{gap:5px}.duo.pz button{font-size:13px;min-height:38px;padding:0 2px}#pop .ls .duo.pz button.on,#pop .ls .duo.pz button.on:hover{background:var(--accent);border-color:var(--accent);color:#fff}
 .gs{display:flex;gap:8px;align-items:center}.gs input{flex:1;min-width:0}
 #favEd{flex:none;height:40px;padding:0 12px;border-radius:9px;border:1px solid var(--pl);background:var(--pc);color:var(--pi);font-size:14px;font-weight:600;white-space:nowrap}#favEd.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -635,7 +636,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121055259';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121142940';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -2118,7 +2119,7 @@ function applyRemote(snap){gMem.clear();
   changed=true;
  }
  if(meta&&metaBack){sync.stamps.meta=Math.max(Date.now(),(meta.updatedAt||0)+1);markDirty('meta');changed=true;setTimeout(()=>{saveLocal();schedulePush(500);},30);}
- if(meta&&meta.appV&&window.BB_VERSION&&String(meta.appV)>String(window.BB_VERSION)&&!outdated){outdated=true;showUpdate('Your other device has a newer version of the app. Reload before you keep working; your changes here are saved.');}
+ if(meta&&meta.appV&&window.BB_VERSION&&String(meta.appV)>String(window.BB_VERSION)&&!outdated){outdated=true;showUpdate('This copy is out of date and has stopped sending changes to your other devices. Reload to update; your work here is saved.');}
  if(meta&&Array.isArray(meta.imgs)){const u=new Set(sync.imgK||[]);for(const i of meta.imgs)u.add(i);sync.imgK=[...u].sort();}
  if(meta)try{imgWant(meta);}catch(e){}
  if(join){const rim=new Set((meta&&meta.imgs)||[]);for(const k in images)if(!seen.has('img-'+k)&&!rim.has(k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
@@ -3692,9 +3693,12 @@ function confirmBox(title,msg,ok,fn){modal(`<h3>${esc(title)}</h3><p>${esc(msg)}
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400);}
 function sceneInfo(s0,after){
  const s=s0||scene(),F=[['number','Scene number','7'],['title','Title','NOBEL PRIZE'],['heading','Scene heading','INT. LOCATION - DAY'],['code','Episode / code','e.g. Ep. 110'],['day','Shoot day','e.g. Shoot Day 8'],['date','Shoot date','e.g. April 17, 2026']];
- modal(`<h3>Scene info</h3>${F.map(([k,l,p])=>`<label class="fld">${l}<input data-k="${k}" value="${esc(s[k]||'')}" placeholder="${p}" autocomplete="off"></label>`).join('')}<label class="fld">Synopsis<textarea data-k="synopsis" rows="3">${esc(s.synopsis||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{
+ modal(`<h3>Scene info</h3>${F.map(([k,l,p])=>`<label class="fld">${l}<input data-k="${k}" value="${esc(s[k]||'')}" placeholder="${p}" autocomplete="off"></label>`).join('')}<label class="fld">Synopsis<textarea data-k="synopsis" rows="3">${esc(s.synopsis||'')}</textarea></label><p class="nmerr" id="nmErr" hidden></p><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{
   const sid=s.id,was={};card.querySelectorAll('[data-k]').forEach(el=>{was[el.dataset.k]=el.value;});
-  card.querySelector('#ok').onclick=()=>{const live=P.scenes.find(x=>x.id===sid)||s;card.querySelectorAll('[data-k]').forEach(el=>{if(el.value!==was[el.dataset.k]||live===s)live[el.dataset.k]=el.value;});closeModal();commit();if(after)after();};
+  const er=card.querySelector('#nmErr');card.querySelectorAll('[data-k]').forEach(el=>{if(el.addEventListener)el.addEventListener('input',()=>{if(er)er.hidden=true;});});
+  card.querySelector('#ok').onclick=()=>{const live=P.scenes.find(x=>x.id===sid)||s,now={};card.querySelectorAll('[data-k]').forEach(el=>{now[el.dataset.k]=el.value;});
+   if(!live.tpl&&['number','title','heading'].some(k=>now[k]!==undefined&&now[k]!==was[k])){const pick=k=>now[k]!==undefined&&now[k]!==was[k]?now[k]:live[k],t={id:live.id,number:pick('number'),title:pick('title'),heading:pick('heading')};if(sKey(t)!==sKey(live)&&sTaken(t,sFolder(live))){if(er){er.textContent=`Another scene in this folder is already named “${sceneLabel(t)}”. Change the number or the title.`;er.hidden=false;}return;}}
+   card.querySelectorAll('[data-k]').forEach(el=>{if(el.value!==was[el.dataset.k]||live===s)live[el.dataset.k]=el.value;});closeModal();commit();if(after)after();};
  });
 }
 $('#chip').onclick=()=>sceneInfo();
@@ -3759,7 +3763,7 @@ function conflictDialog(){const s=scene(),c=(s.conflicts||[])[0];if(!c)return;co
   card.querySelector('#cfBoth').onclick=()=>{const nm='Other device · '+confWhen(c.at);(s.plans=s.plans||[]).push({id:uid(),name:nm,d:planTake(other)});done(`Kept both. The other device’s blocking is the plan “${nm}”.`);};
  },'cfcard');}
 function renderTop(){
- {const c=scene(),fp=c.tpl?'Template':pathTxt(sFolder(c));$('#sceneBtnT').innerHTML=(c.tpl?'<small>Template ›</small> ':'')+esc(sceneLabel(c));$('#sceneBtn').title=(fp?fp+' › ':'')+sceneLabel(c)+'  (⌘O shows the Library)';}
+ {const c=scene(),fp=c.tpl?'Template':pathTxt(sFolder(c));$('#sceneBtnT').innerHTML=(fp?`<small>${esc(c.tpl?'Template':fPath(sFolder(c)).slice(-1)[0].name)} ›</small> `:'')+esc(sceneLabel(c));$('#sceneBtn').title=(fp?fp+' › ':'')+sceneLabel(c)+'  (⌘O shows the Library)';}
  const s=scene();$('#chip').innerHTML=`<b>${esc((s.number?s.number+'  ':'')+(s.title||s.heading||'Untitled scene'))}</b><span>${esc(s.title&&s.heading?s.heading:'Tap to add scene info')}</span>`;
  $('#bFr').classList.toggle('on',frameOn());
 }
@@ -3791,7 +3795,7 @@ function renderLib(){const a=$('#app'),el=$('#lib');if(!el)return;const on=libOn
 function libPick(id){const t=P.scenes.find(s=>s.id===id);if(!t)return;
  if(id!==P.sceneId){const o=P.ui.libOpen=P.ui.libOpen||{};for(const f of fPath(sFolder(t)))o[f.id]=true;try{flushNotes();if(txTimer)txFlush();}catch(e){}openScene(id);}
  if(libNarrow())libSet(false);}
-function libNewFolder(){askText('New folder','Name','e.g. Season 2',v=>{P.folders.push({id:uid(),name:v,parent:null});commit();toast(`Folder “${v}” created. Use Organize… to move scenes into it or to put it inside another folder.`);});}
+function libNewFolder(){libName('New folder','','Add',v=>{P.folders.push({id:uid(),name:v,parent:null});commit();toast(`Folder “${v}” created. Drag scenes onto it, or drag it onto another folder.`);},v=>fTaken(v,null)?fDupMsg(v):'');}
 /* show where the open scene lives: its folders opened, the row scrolled into view and flashed */
 function libCurSeen(){const r=$('#libL .lbs.cur'),L=$('#libL');if(!r||!L)return false;const a=r.getBoundingClientRect(),b=L.getBoundingClientRect();return a.top>=b.top-2&&a.bottom<=b.bottom+2;}
 function libReveal(){const c=scene();if(libQ){libQ='';const i=$('#libq');if(i)i.value='';}
@@ -3802,11 +3806,12 @@ function libDest(cur,dis){let h=`<button data-dest=""${cur===null?' disabled':''
  const walk=(pid,d)=>{for(const f of fKids(pid)){const off=dis&&dis.has(f.id),here=cur===f.id;h+=`<button data-dest="${f.id}"${off||here?' disabled':''} style="padding-left:${10+d*16}px">${BIC.fold}<span>${esc(f.name)}</span>${here?'<i class="mmk">✓</i>':''}</button>`;if(!off)walk(f.id,d+1);}};walk(null,0);
  return h+'<div class="mmsep"></div><button data-m="newdest">New Folder…</button>';}
 function libMove(kind,id,dest){dest=dest||null;
- if(kind==='f'){const f=fById(id);if(!f||(dest&&fDesc(f.id).has(dest)))return;f.parent=dest;}
- else{const x=P.scenes.find(q=>q.id===id);if(!x)return;if(dest)x.folder=dest;else delete x.folder;}
+ let ren='';
+ if(kind==='f'){const f=fById(id);if(!f||(dest&&fDesc(f.id).has(dest)))return;f.parent=dest;const nn=fFree(f.name,dest,f.id);if(nn!==f.name){f.name=nn;ren=nn;}}
+ else{const x=P.scenes.find(q=>q.id===id);if(!x)return;if(dest)x.folder=dest;else delete x.folder;if(sUnique(x))ren=sceneLabel(x);}
  if(dest){const o=P.ui.libOpen=P.ui.libOpen||{};for(const f of fPath(dest))o[f.id]=true;}
- commit();toast(`Moved to ${dest?fById(dest).name:(kind==='f'?'the top level':'no folder')}.`);}
-function libName(title,val,ok,fn){modal(`<h3>${esc(title)}</h3><label class="fld">Name<input id="atx" value="${esc(val||'')}" placeholder="e.g. Season 2" autocomplete="off"></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">${esc(ok)}</button></div>`,card=>{const i=card.querySelector('#atx'),go=()=>{const v=i.value.trim();if(!v)return;closeModal();fn(v);};card.querySelector('#ok').onclick=go;i.addEventListener('keydown',e=>{if(e.key==='Enter')go();});i.focus();i.select();});}
+ commit();toast(`Moved to ${dest?fById(dest).name:(kind==='f'?'the top level':'no folder')}.`+(ren?` That name was already there, so it is now “${ren}”.`:''));}
+function libName(title,val,ok,fn,chk){modal(`<h3>${esc(title)}</h3><label class="fld">Name<input id="atx" value="${esc(val||'')}" placeholder="e.g. Season 2" autocomplete="off"></label><p class="nmerr" id="nmErr" hidden></p><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">${esc(ok)}</button></div>`,card=>{const i=card.querySelector('#atx'),er=card.querySelector('#nmErr'),go=()=>{const v=i.value.trim();if(!v)return;const m=chk?chk(v):'';if(m){er.textContent=m;er.hidden=false;i.focus();i.select();return;}closeModal();fn(v);};card.querySelector('#ok').onclick=go;i.addEventListener('keydown',e=>{if(e.key==='Enter')go();});i.addEventListener('input',()=>{er.hidden=true;});i.focus();i.select();});}
 function libMenu(rect,kind,id,sub){closePop();closeDrop();const x=kind==='f'?fById(id):P.scenes.find(q=>q.id===id);if(!x)return;
  const B=(m,l,cls)=>`<button data-m="${m}"${cls?` class="${cls}"`:''}>${l}</button>`,G=(g,l)=>`<button data-g="${g}">${l}<i class="mmc">›</i></button>`,SEP='<div class="mmsep"></div>',name=kind==='f'?x.name:sceneLabel(x);
  let h;
@@ -3818,10 +3823,10 @@ function libMenu(rect,kind,id,sub){closePop();closeDrop();const x=kind==='f'?fBy
  const open1=fid=>{(P.ui.libOpen=P.ui.libOpen||{})[fid]=true;};
  const ACT={info:()=>sceneInfo(x),dup:()=>{const n=duplicateScene(x);commit();toast(`Made ${sceneLabel(n)}.`);},
   trash:()=>{trashScenes([x.id]);commit();fit();toast(`${sceneLabel(x)} moved to Trash. Organize… › Trash to get it back.`);},
-  fnew:()=>{open1(x.id);newScene(x.id);},fsub:()=>libName('New folder inside '+x.name,'','Create',v=>{P.folders.push({id:uid(),name:v,parent:x.id});open1(x.id);commit();}),
-  frename:()=>libName('Rename folder',x.name,'Save',v=>{x.name=v;commit();}),foverview:()=>overviewDialog(x.id),
+  fnew:()=>{open1(x.id);newScene(x.id);},fsub:()=>libName('New folder inside '+x.name,'','Create',v=>{P.folders.push({id:uid(),name:v,parent:x.id});open1(x.id);commit();},v=>fTaken(v,x.id)?fDupMsg(v):''),
+  frename:()=>libName('Rename folder',x.name,'Save',v=>{x.name=v;commit();},v=>fTaken(v,fParent(x),x.id)?fDupMsg(v):''),foverview:()=>overviewDialog(x.id),
   fdel:()=>{const n=countIn(x.id),k=fDesc(x.id).size-1;confirmBox(`Delete “${x.name}”?`,(n?`Its ${plural(n,'scene')} go to the Trash, where you can put them back. `:'')+(k?`The ${plural(k,'folder')} inside it ${k===1?'is':'are'} removed too.`:'')+(!n&&!k?'The folder is empty.':''),'Delete folder',()=>{const nm=x.name;deleteFolder(x.id);commit();toast(`Folder “${nm}” deleted.`);});},
-  newdest:()=>libName('New folder','','Create and move',v=>{const f={id:uid(),name:v,parent:null};P.folders.push(f);libMove(kind,id,f.id);})};
+  newdest:()=>libName('New folder','','Create and move',v=>{const f={id:uid(),name:v,parent:null};P.folders.push(f);libMove(kind,id,f.id);},v=>fTaken(v,null)?fDupMsg(v):'')};
  d.addEventListener('click',e=>{const g=e.target.closest('[data-g]');if(g){libMenu(rect,kind,id,g.dataset.g||null);return;}
   const t=e.target.closest('[data-dest]');if(t){if(t.disabled)return;closeDrop();libMove(kind,id,t.dataset.dest||null);return;}
   const m=e.target.closest('[data-m]');if(!m)return;closeDrop();ACT[m.dataset.m]();});
@@ -3890,6 +3895,16 @@ function fKids(id){id=id||null;return P.folders.filter(f=>fParent(f)===id).sort(
 function fDesc(id){const set=new Set([id]);let grew=true;while(grew){grew=false;for(const f of P.folders){const pa=fParent(f);if(pa&&set.has(pa)&&!set.has(f.id)){set.add(f.id);grew=true;}}}return set;}
 function sceneCmp(a,b){return natCmp(a.number,b.number)||natCmp(a.title,b.title);}
 function fScenes(id){id=id||null;return liveScenes().filter(s=>sFolder(s)===id).sort(sceneCmp);}
+/* one name per folder: a scene is known by its number and title together (Sc. 12 · KITCHEN and Sc. 13 · KITCHEN are two names), a folder by its name among its siblings.
+   What you type is refused if it is taken; what the app places there itself (a copy, a move, something back from Trash) gets a number added so both are kept.
+   Scenes brought in by script import or by sync are left as they come. */
+const nmKey=v=>String(v||'').trim().replace(/\s+/g,' ').toLowerCase();
+const sKey=s=>nmKey(s.number)+'|'+nmKey(s.title||s.heading||'Untitled');
+function sTaken(s,folder){folder=(folder===undefined?sFolder(s):folder)||null;const k=sKey(s);return P.scenes.some(q=>q.id!==s.id&&!q.trashed&&!q.tpl&&(sFolder(q)||null)===folder&&sKey(q)===k);}
+function sUnique(s){if(s.tpl||s.trashed||!sTaken(s))return false;const base=String(s.title||s.heading||'Untitled').trim();for(let n=2;n<500;n++){s.title=base+' '+n;if(!sTaken(s))break;}return true;}
+function fTaken(name,parent,except){const k=nmKey(name);parent=parent||null;return P.folders.some(f=>f.id!==except&&(fParent(f)||null)===parent&&nmKey(f.name)===k);}
+function fFree(name,parent,except){if(!fTaken(name,parent,except))return name;for(let n=2;n<500;n++)if(!fTaken(name+' '+n,parent,except))return name+' '+n;return name;}
+const fDupMsg=v=>`A folder named “${v}” is already here. Choose another name.`;
 function sceneLabel(s){return (s.number?'Sc. '+s.number+' · ':'')+(s.title||s.heading||'Untitled').toUpperCase();}
 function rootOf(s){const p=fPath(sFolder(s));return p.length?p[0].id:null;}
 function countIn(id){const d=fDesc(id);return liveScenes().filter(s=>d.has(sFolder(s))).length;}
@@ -4165,7 +4180,7 @@ function projName(s){const r=rootOf(s);return (r&&(P.folders.find(f=>f.id===r)||
 function scoutLoc(sc){return sc&&sc.loc?locById(sc.loc):null;}
 function newScout(name){const cur=scene(),f=sFolder(cur),pg={id:uid(),name:'Page 1'};
  const sc={id:uid(),number:'',title:name,heading:'LOCATION SCOUT',synopsis:'',code:'',day:'',setups:[],items:[],pages:[pg],pageId:pg.id,bgId:null,bg:null,scout:1,at:Date.now()};if(f)sc.folder=f;
- P.scenes.push(sc);const L=locCreate(sc,name.toUpperCase());L.scout=sc.id;P.sceneId=sc.id;noteRecent(sc.id);sel=null;msel=null;inspOpen=false;commit();fit();return sc;}
+ P.scenes.push(sc);sUnique(sc);const L=locCreate(sc,name.toUpperCase());L.scout=sc.id;P.sceneId=sc.id;noteRecent(sc.id);sel=null;msel=null;inspOpen=false;commit();fit();return sc;}
 function quickCam(s){const nc=numCfg(s),num=nc.auto?(+nc.start||1)+s.setups.filter(x=>setupCams(s,x.id).length).length:s.setups.reduce((m,x)=>Math.max(m,parseInt(x.num,10)||0),0)+1;
  const st={id:uid(),num,color:nextSetupColor(s)};s.setups.push(st);const c=viewCenter(),it={id:uid(),type:'cam',setupId:st.id,letter:'A',fov:50,marks:[{x:c.x,y:c.y+120,rot:-90,size:'',type:'',angle:'Eye Level',move:'Stationary',desc:''}],locked:false,pgs:curPgs()};
  s.items.push(it);sel={id:it.id,mark:0};commit();toast('Camera idea added. Drag it into place, turn it, and tap it to note the lens or framing.');}
@@ -4248,9 +4263,9 @@ function ensureLive(){
 }
 function openScene(id){if(!P.scenes.some(s=>s.id===id&&!s.trashed))return;stopPlay();anim.step=0;P.sceneId=id;noteRecent(id);sel=null;msel=null;inspOpen=false;endTool();closeModal();saveLocal();render();fit();}
 function trashScenes(ids){const now=Date.now();for(const s of P.scenes)if(ids.includes(s.id))s.trashed=now;msel=null;ensureLive();}
-function restoreScenes(ids){for(const s of P.scenes)if(ids.includes(s.id)){delete s.trashed;if(!sFolder(s))delete s.folder;}}
+function restoreScenes(ids){for(const s of P.scenes)if(ids.includes(s.id)){delete s.trashed;if(!sFolder(s))delete s.folder;sUnique(s);}}
 function killScenes(ids){P.scenes=P.scenes.filter(s=>!ids.includes(s.id));ensureLive();}
-function duplicateScene(s){let j=JSON.stringify(stripScene(s));for(const id of [s.id,...s.items.map(i=>i.id)])j=j.split('"'+id+'"').join('"'+uid()+'"');const n=JSON.parse(j);delete n.trashed;n.title=(s.title||'Untitled')+' (copy)';migrateScene(n);P.scenes.push(n);txCopy(s.id,n.id);return n;}
+function duplicateScene(s){let j=JSON.stringify(stripScene(s));for(const id of [s.id,...s.items.map(i=>i.id)])j=j.split('"'+id+'"').join('"'+uid()+'"');const n=JSON.parse(j);delete n.trashed;n.title=(s.title||s.heading||'Untitled')+' (copy)';migrateScene(n);P.scenes.push(n);sUnique(n);txCopy(s.id,n.id);return n;}
 function deleteFolder(id){const d=fDesc(id),now=Date.now();for(const s of P.scenes)if(!s.trashed&&d.has(sFolder(s)))s.trashed=now;P.folders=P.folders.filter(f=>!d.has(f.id));ensureLive();}
 const fmtDay=t=>new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric',year:new Date(t).getFullYear()===new Date().getFullYear()?undefined:'numeric'});
 const plural=(n,w)=>n+' '+w+(n===1?'':'s');
@@ -4622,6 +4637,7 @@ function brSubAct(a,dest){
   if(a==='fmove'){br.sub={k:'move',folder:f.id,prev:u};brRender();return;}
   if(a==='fdel'){br.sub={k:'confirm',what:'fdel',id:f.id,prev:u};brRender();return;}}
  if(u.k==='name'&&a==='save'){const v=($('#brn').value||'').trim();if(!v){$('#brn').focus();return;}
+  if(u.mode==='rename'?fTaken(v,fParent(fById(u.id)),u.id):fTaken(v,u.parent||null)){toast(fDupMsg(v));$('#brn').focus();$('#brn').select();return;}
   if(u.mode==='rename'){fById(u.id).name=v;commit();br.sub=null;brRender();return;}
   const f={id:uid(),name:v,parent:u.parent||null};P.folders.push(f);
   if(u.then){br.sub=null;moveTo(u.then,f.id);return;}
@@ -4857,7 +4873,7 @@ function importReview(ps,chars,fname,into){
   card.querySelector('#imGo').onclick=()=>{
    if(mode==='rev'){revApply(fS.value,cS.value,revPlan(fS.value,ps),chars,card.querySelector('#imPl').checked,!!(card.querySelector('#imTp')||{}).checked,known());return;}
    const name=card.querySelector('#imN').value.trim()||ps.title,par=sel.value||null,place=card.querySelector('#imPl').checked,useTpl=!!(card.querySelector('#imTp')||{}).checked;
-   const fo={id:uid(),name,parent:par};P.folders.push(fo);
+   const fo={id:uid(),name:fFree(name,par),parent:par};P.folders.push(fo);
    const rootId=par?(fPath(par)[0]||{}).id||par:fo.id,usedC=rootColors(rootId);const ids={};let ci=0;for(const c of chars)if(c.on){ci++;const col=distinctColor(usedC);usedC.push(col);const ch={id:uid(),name:c.name,color:col,home:rootId};if(c.g)ch.g=c.g;P.characters.push(ch);ids[c.name]=ch.id;}
    const xg={},xBy={};card.querySelectorAll('.xn').forEach(inp=>{const i=+inp.dataset.i,n=Math.max(0,Math.min(200,parseInt(inp.value,10)||0)),lab=(card.querySelector(`.xl[data-i="${i}"]`).value.trim()||'BG').toUpperCase();if(!n)return;
     if(!xg[lab]){const col=distinctColor(usedC,EXTRA_COLORS);usedC.push(col);const c={id:uid(),name:lab,color:col,extra:true,home:rootId};P.characters.push(c);xg[lab]=c;}(xBy[xrows[i].si]=xBy[xrows[i].si]||[]).push({c:xg[lab],n});});
@@ -4919,9 +4935,10 @@ function bindBrDrag(root){
 }
 function moveTo(u,dest){
  const name=dest?fById(dest).name:'the top level';
- if(u.folder){const f=fById(u.folder);if(dest&&fDesc(f.id).has(dest))return;f.parent=dest;}
- else for(const s of P.scenes)if(u.ids.includes(s.id)){if(dest)s.folder=dest;else delete s.folder;}
- commit();br.sub=null;br.pick=null;brRender();toast(`Moved to ${name}.`);
+ let ren=0;
+ if(u.folder){const f=fById(u.folder);if(dest&&fDesc(f.id).has(dest))return;f.parent=dest;const nn=fFree(f.name,dest,f.id);if(nn!==f.name){f.name=nn;ren++;}}
+ else for(const s of P.scenes)if(u.ids.includes(s.id)){if(dest)s.folder=dest;else delete s.folder;if(sUnique(s))ren++;}
+ commit();br.sub=null;br.pick=null;brRender();toast(`Moved to ${name}.`+(ren?` ${ren===1?'One name was':ren+' names were'} already there, so a number was added.`:''));
 }
 
 
@@ -6740,7 +6757,8 @@ function copyTake(){const b=document.getElementById('copyTake');if(b){b.disabled
  copyT=setTimeout(()=>{if(copyGo)copyGo();},1500);try{copyCh.postMessage({t:'take',id:COPY_ID});}catch(e){copyGo();}}
 function copyInit(){if(!('BroadcastChannel' in window))return;try{copyCh=new BroadcastChannel('blk.copy');}catch(e){copyCh=null;return;}
  copyCh.onmessage=e=>{const m=e.data||{};if(!m.t||m.id===COPY_ID)return;
-  if(m.t==='hello'){if(copyPaused||(copyWait&&COPY_ID>m.id))return;copyCh.postMessage({t:'here',id:COPY_ID,to:m.id});}
+  if(m.t==='hello'){if(copyPaused)return;if(copyWait&&COPY_ID>m.id){if(!m.re)copyCh.postMessage({t:'hello',id:COPY_ID,re:1});return;} /* both just opened: the other one keeps working; say hello again in case it missed ours */
+   copyCh.postMessage({t:'here',id:COPY_ID,to:m.id});}
   else if(m.t==='here'&&m.to===COPY_ID)copyPause(false);
   else if(m.t==='take'){if(!copyPaused){try{flushNotes();if(txTimer)txFlush();saveLocal();}catch(er){console.error(er);}copyPause(true);}setTimeout(()=>{try{copyCh.postMessage({t:'released',id:COPY_ID,to:m.id});}catch(er){}},350);}
   else if(m.t==='released'&&m.to===COPY_ID&&copyGo)copyGo();};
