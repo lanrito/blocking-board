@@ -641,7 +641,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121161157';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121191520';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -704,7 +704,9 @@ const priSel=(attrs,v,first)=>`<select ${attrs}>${first}${PRI.map(([p,l])=>`<opt
 const vaOn=()=>!!(P.ui&&P.ui.va);
 const sensorOf=()=>SENSORS.find(x=>x[0]===prefGet('sensor'))||SENSORS[0];
 const lensDeg=v=>{const f=lensMM(v);return f?2*Math.atan(sensorOf()[2]/(2*f))*180/Math.PI:0;};
-function vaWedge(m,col){const d=lensDeg(m.lens);if(!d)return '';const h=rad(d/2),a=rad(m.rot||0),L=VA_FT*FT,p=t=>`${(m.x+Math.cos(t)*L).toFixed(1)},${(m.y+Math.sin(t)*L).toFixed(1)}`;
+function vaTarget(sc,m){const t=m&&m.vaTo;if(!t)return null;if(t.id){const o=sc&&sc.items.find(q=>q.id===t.id);if(!o||o.type!=='char'||!o.marks.length)return null;const q=o.marks[t.mk]&&!o.marks[t.mk].t?o.marks[t.mk]:o.marks[0];return {x:q.x,y:q.y,name:String((charById(o.charId)||{}).name||'a character').toUpperCase()};}
+ return isFinite(t.x)&&isFinite(t.y)?{x:t.x,y:t.y,name:'a spot'}:null;}
+function vaWedge(m,col,sc){const d=lensDeg(m.lens);if(!d)return '';const tg=vaTarget(sc,m),h=rad(d/2),a=rad(m.rot||0),L=tg?Math.max(FT*1.5,Math.hypot(tg.x-m.x,tg.y-m.y)):VA_FT*FT,p=t=>`${(m.x+Math.cos(t)*L).toFixed(1)},${(m.y+Math.sin(t)*L).toFixed(1)}`;
  return `<path class="deco va" d="M${m.x},${m.y}L${p(a-h)}A${L},${L} 0 0 1 ${p(a+h)}Z" fill="${col}" fill-opacity=".14" stroke="${col}" stroke-opacity=".7" stroke-width="1.5" stroke-dasharray="7 5" vector-effect="non-scaling-stroke"/>`;}
 function cellVal(s,r,k){const m=r.m;switch(k){case 'gear':return (m.gear||[]).join(', ');case 'props':return (m.props||[]).join(', ');case 'cast':return castNames(m);case 'time':return minTxt(+m.time||0);case 'flag':return m.flag?'★':'';case 'vfx':return m.vfx?'VFX':'';case 'sfx':return m.sfx?'SFX':'';
  case 'ss':return m.ss&&m.ss!=='plan'?((SS.find(x=>x[0]===m.ss)||[])[1]||''):'';default:if(k.startsWith('c:'))return String((m.cx||{})[k.slice(2)]||'');return String(m[k]||'');}}
@@ -2726,7 +2728,7 @@ function itemsMarkup(sc,pid){
     if(i>0&&m.tk&&prevOn){const p=it.marks[i-1];paths+=`<path class="deco" d="${trackD([p,...legPts(p,m),m],!it.hard)}" fill="none" stroke="${col}" stroke-opacity=".22" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`+arrow(p,m,dk,true,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);}
     else if(i>0&&!m.tk&&prevOn)paths+=arrow(it.marks[i-1],m,col,false,20,!it.hard,`data-id="${it.id}" data-track="${i}"`);
     const a=rad(m.rot||0);
-    if(on&&vaOn())paths+=vaWedge(m,col);
+    if(on&&vaOn())paths+=vaWedge(m,col,sc);
     if(on&&frameOn()&&m.sb&&images[m.sb])frames+=framesSVG(sc,it,i,m,lay,`Shot ${shotCode(sc,it)}${n>1?' · V'+verCode(sc,verNum(it,i)):''}`);
     let lbl='',lead='';const ln=m.tk?(i===f0?labLines(it.marks[verStart(it,i)],verNum(it,i),n):[]):vlines(i);
     if(i===f0){const lp=camLabelPos(it,m,ln.length),tag=`Shot ${shotCode(sc,it)}`,pw=tag.length*6.3+12;
@@ -3253,6 +3255,7 @@ function startTool(t){tool=t;closePop();inspOpen=false;renderInsp();
  else if(t.t==='aim')$('#bannerTxt').textContent='Tap the character, or the spot, this camera should stay pointed at.';
  else if(t.t==='pfrom')$('#bannerTxt').textContent='Tap where it moves in from.';
  else if(t.t==='measure')$('#bannerTxt').textContent='Tap two points to measure between them.';
+ else if(t.t==='vato')$('#bannerTxt').textContent='Tap the character, or the spot, the view angle should reach.';
  else if(t.t==='pan')$('#bannerTxt').textContent=t.mode==='change'?'Tap the new direction for this pan.':'Tap the direction the camera pans to.';
  else $('#bannerTxt').textContent='Tap to place wall corners. It finishes by itself when it meets another corner. Or tap Done.';
  $('#bannerDone').textContent=t.t==='wall'||t.t==='measure'?'Done':'Cancel';$('#banner').classList.add('on');renderUI();}
@@ -3265,6 +3268,10 @@ function snapAngle(o,w){const ang=Math.atan2(w.y-o.y,w.x-o.x)*180/Math.PI,sa=Mat
 const ftTxt=u=>{const n=Math.round(u/FT*12),f=Math.floor(n/12),i=n%12;return f+' ft'+(i?' '+i+' in':'');};
 function toolTap(w){
  const s=scene();
+ if(tool.t==='vato'){const it=itemById(tool.id),m=it&&it.marks[tool.mark];if(!m){endTool();return;}let best=null,bd=40/Math.min(view.k,1);
+  for(const o of pageItems(s))if(o.type==='char')o.marks.forEach((q,mi)=>{if(q.t)return;const d=Math.hypot(q.x-w.x,q.y-w.y);if(d<bd){bd=d;best={o,mi};}});
+  m.vaTo=best?{id:best.o.id,mk:runOf(best.o,best.mi)[0]}:{x:Math.round(w.x),y:Math.round(w.y)};sel={id:it.id,mark:tool.mark};endTool();commit();
+  toast(best?`The view angle now reaches ${vaTarget(s,m).name} and follows them.`:'The view angle now reaches that spot.'+(lensMM(m.lens)?'':' Give this camera a lens in mm to see it.'));return;}
  if(tool.t==='measure'){if(!tool.a||tool.b){tool.a={x:w.x,y:w.y};tool.b=null;$('#bannerTxt').textContent='Now tap the second point.';}else{tool.b={x:w.x,y:w.y};$('#bannerTxt').textContent=ftTxt(Math.hypot(tool.b.x-tool.a.x,tool.b.y-tool.a.y))+'. Tap two more points to measure again.';}renderUI();return;}
  if(tool.t==='pfrom'){const it=itemById(tool.id);if(it){const dx=w.x-it.x,dy=w.y-it.y,M=gMates(s,it),gp=M.length>1?uid():null;
    for(const o of (M.length>1?M:[it])){if(o!==it&&o.locked)continue;for(const x of s.items)for(const m of x.marks||[])if(m.ride&&m.ride.id===o.id)m.ride.k=(m.ride.k||0)+1;const q={x:o.x,y:o.y,rot:o.rot||0};if(gp)q.gp=gp;o.mv=[q,...(o.mv||[])];o.x+=dx;o.y+=dy;}
@@ -3521,7 +3528,7 @@ function objPop(cx,cy){
     +sec('Shot',B('shotdesc','Describe the Shot…')+(nv>1?duo(B('addver','Add Version…'),B('delmark','Remove Version')):B('addver','Add Version…')))
     +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb&&images[va.sb]?B('framecrop','Crop Main Frame…'):'')+(va.sb&&it.marks.some(m=>m.sb)?duo(B('frame2','Add a Frame…'),B('regallery','Re-arrange…')):(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):'')))
     +(s.setups.length>1?pr('Shooting Order',`<button data-o="shotUp"${s.setups[0].id!==it.setupId?'':' disabled'}>Earlier</button>`,`<button data-o="shotDown"${s.setups[s.setups.length-1].id!==it.setupId?'':' disabled'}>Later</button>`):'')
-    +sec('View Angle',B('vatog',vaOn()?'Hide View Angles':'Show View Angles')+(vaOn()?B('vasensor','Sensor: '+sensorOf()[1]+' (tap to change)'):''))
+    +sec('View Angle',B('vatog',vaOn()?'Hide View Angles':'Show View Angles')+(vaOn()?B('vasensor','Sensor: '+sensorOf()[1]+' (tap to change)')+(()=>{const wi=it.marks[mi].sp?spBase(it,mi):mi,tg=vaTarget(s,it.marks[wi]);return tg?duo(B('vato','Reaches '+esc(tg.name)+' (change…)'),B('vastd','Back to Standard Length')):B('vato','Reach to a Subject or a Spot…');})():''))
     +sec('Camera',B('edit','Camera Details…')+stB)+colorGrid(SETUP_COLORS,(setupIn(s,it.setupId)||{}).color,'cam')+pages
     +sec('Arrange',B('dupcam','Add a Camera to Setup '+st.num)+lk)
     +end(R('del','Delete Camera '+esc(shotCode(s,it))));}
@@ -3553,6 +3560,8 @@ function objAct(o){
  if(it&&it.type==='cam'&&o==='trackfrom'){const [ra]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'from',at:ra});return;}
  if(it&&it.type==='cam'&&o==='addver'){addVersion(it,sel.mark||0);return;}
  if(o==='astep'){stepSub();return;}
+ if(o==='vato'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);closePop();startTool({t:'vato',id:it.id,mark:it.marks[mi].sp?spBase(it,mi):mi});return;}
+ if(o==='vastd'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);delete it.marks[it.marks[mi].sp?spBase(it,mi):mi].vaTo;commit();closePop();toast('The view angle is back to its standard length.');return;}
  if(o==='vatog'){P.ui.va=!vaOn();saveLocal();closePop();render();if(vaOn()){const any=s.items.some(q=>q.type==='cam'&&q.marks.some(m=>lensMM(m.lens)));toast(any?'View angles are on.':'View angles are on. Give a camera a lens (Camera Details… › Lens) to see its angle.');}return;}
  if(o==='vasensor'){const i=SENSORS.indexOf(sensorOf());prefSet('sensor',SENSORS[(i+1)%SENSORS.length][0]);render();objPop(popAt.x,popAt.y);return;}
  if(it&&it.type==='char'&&o.startsWith('pose-')){const pm=it.marks[runOf(it,sel.mark||0)[0]],v=o.slice(5);if(v)pm.pose=v;else delete pm.pose;commit();objPop(popAt.x,popAt.y);return;}
