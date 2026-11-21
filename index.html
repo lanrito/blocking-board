@@ -642,7 +642,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121215723';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121230541';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -680,6 +680,10 @@ const SL_COLS=[['sb','Storyboard','STORYBOARD',1],['shot','Shot #','SHOT #',1],[
    P.prefs[key]={v:the value (null once cleared), t:when it was set}; it travels with the account's shared record and, key by key, the newer one wins */
 const prefHas=k=>!!(P.prefs&&P.prefs[k]);
 function prefGet(k){const e=P.prefs&&P.prefs[k];return e&&e.v!=null?e.v:null;}
+/* switches you turn on or off (lenses, shot descriptions, frames, smart guides, the Questions column, the priority filter, only-this-time):
+   kept with the account so every device shows the same. A value left on one device from before is used until the switch is next changed. */
+const uiOn=k=>prefHas('ui_'+k)?prefGet('ui_'+k):(P.ui?P.ui[k]:undefined);
+function uiSet(k,v){if(P.ui)delete P.ui[k];prefSet('ui_'+k,v==null?false:v);}
 /* saved and sent at once: these are not part of a scene, so the usual save-on-change would not notice them */
 function prefSet(k,v){P.prefs=P.prefs||{};P.prefs[k]={v:v==null?null:clone(v),t:Math.max(Date.now(),((P.prefs[k]||{}).t||0)+1)};try{metaSaved();}catch(e){console.error(e);}}
 function colCfg(s){const f=fById(rootOf(s));return clone((f&&f.cols)||(prefHas('cols')?prefGet('cols'):P.ui&&P.ui.cols)||{});}
@@ -699,10 +703,10 @@ function propOpts(s){const root=rootOf(s),out=[],add=v=>{v=String(v||'').trim();
  shots(s);for(const it of s.items)if(it.type==='prop'&&it.label)add(it.label);for(const sc of P.scenes)if(sc!==s&&rootOf(sc)===root)shots(sc);return out;}
 const PRI=[['A','Must have'],['B','Should have'],['C','If there is time']];
 /* the shot list can be narrowed to the top priorities; only while the Priority column is on, and it carries into the PDF */
-const priF=s=>colsOn(s).some(c=>c.k==='pri')?(P.ui.priF||''):'';
+const priF=s=>colsOn(s).some(c=>c.k==='pri')?(uiOn('priF')||''):'';
 function priRows(s,rows){const f=priF(s);return f?rows.filter(r=>f.includes(r.m.pri||'-')):rows;}
 const priSel=(attrs,v,first)=>`<select ${attrs}>${first}${PRI.map(([p,l])=>`<option value="${p}"${v===p?' selected':''}>${p} · ${l}</option>`).join('')}</select>`;
-const vaOn=()=>!!(P.ui&&P.ui.va);
+const vaOn=()=>!!uiOn('va');
 const sensorOf=()=>SENSORS.find(x=>x[0]===prefGet('sensor'))||SENSORS[0];
 const lensDeg=v=>{const f=lensMM(v);return f?2*Math.atan(sensorOf()[2]/(2*f))*180/Math.PI:0;};
 function vaTarget(sc,m){const t=m&&m.vaTo;if(!t)return null;if(t.id){const o=sc&&sc.items.find(q=>q.id===t.id);if(!o||o.type!=='char'||!o.marks.length)return null;const q=o.marks[t.mk]&&!o.marks[t.mk].t?o.marks[t.mk]:o.marks[0];return {x:q.x,y:q.y,name:String((charById(o.charId)||{}).name||'a character').toUpperCase()};}
@@ -1899,9 +1903,9 @@ async function versionsDialog(){
  await takeSnap();const all=await snapList();
  const fmt=t=>{const d=new Date(t),today=new Date().toDateString()===d.toDateString();return (today?'Today':d.toLocaleDateString(undefined,{month:'short',day:'numeric'}))+', '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});};
  modal(`<h3>Earlier versions</h3><p class="mut">A copy is kept every five minutes while you work (about the last six hours), plus one a day for 30 days. Versions you save by name are kept until you delete them. Restoring one replaces what’s here now; you can undo it. These copies live on this device; for a copy you can keep anywhere, use Back Up Everything.</p><div class="menu">${all.length?all.map((x,i)=>`<button data-t="${x.t}"><b>${x.v.name?esc(x.v.name)+' · ':''}${fmt(x.t)}${i===0?' · latest':''}</b><small>${x.v.scenes} scene${x.v.scenes===1?'':'s'}, ${x.v.shots} shot${x.v.shots===1?'':'s'}${x.v.name?' · kept':''}</small></button>`).join(''):'<p class="mut">No earlier versions yet.</p>'}</div><div class="btns end"><button id="vSave">Save a version now…</button><button data-x>Close</button></div>`,card=>{
-  card.querySelector('#vSave').onclick=()=>{closeModal();saveVersionNow();};
+  card.querySelector('#vSave').onclick=()=>{kidNext();saveVersionNow();};
   card.querySelector('.menu').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const x=all.find(y=>String(y.t)===b.dataset.t);if(!x)return;
-   confirmBox('Restore this version?',`Everything goes back to how it was at ${fmt(x.t)}, on your other device too. Scenes made since then go to Trash, not away. You can undo this.`,'Restore',()=>{const o=JSON.parse(x.v.data),mk=rvMark();P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;const extraIds=[];{const keepIds=new Set(o.s.map(z=>z.id)),now=Date.now();for(const z of P.scenes)if(!keepIds.has(z.id)){if(!z.trashed&&!z.tpl)z.trashed=now;o.s.push(z);extraIds.push(z.id);}}P.scenes=o.s.map(sc=>{migrateScene(sc);return sc;});const tx0=x.v.text?clone(P.text||{}):null,u0=undoS.length,j0=cur,g0=rgen;if(x.v.text)txAdopt(JSON.parse(x.v.text),extraIds);if(!P.scenes.some(sc=>sc.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();sel=null;inspOpen=false;rvBump(mk);commit();undoWithText(tx0,u0,j0,g0);txFlush();renderDocs(true);fit();toast('Version restored.');});});
+   kidNext();confirmBox('Restore this version?',`Everything goes back to how it was at ${fmt(x.t)}, on your other device too. Scenes made since then go to Trash, not away. You can undo this.`,'Restore',()=>{const o=JSON.parse(x.v.data),mk=rvMark();P.characters=o.c;if(o.f)P.folders=o.f;if(o.l)P.locations=o.l;const extraIds=[];{const keepIds=new Set(o.s.map(z=>z.id)),now=Date.now();for(const z of P.scenes)if(!keepIds.has(z.id)){if(!z.trashed&&!z.tpl)z.trashed=now;o.s.push(z);extraIds.push(z.id);}}P.scenes=o.s.map(sc=>{migrateScene(sc);return sc;});const tx0=x.v.text?clone(P.text||{}):null,u0=undoS.length,j0=cur,g0=rgen;if(x.v.text)txAdopt(JSON.parse(x.v.text),extraIds);if(!P.scenes.some(sc=>sc.id===P.sceneId))P.sceneId=P.scenes[0].id;ensureLive();sel=null;inspOpen=false;rvBump(mk);commit();undoWithText(tx0,u0,j0,g0);txFlush();renderDocs(true);fit();toast('Version restored.');});});
  });
 }
 setInterval(takeSnap,5*60*1000);
@@ -2057,7 +2061,7 @@ function authMsg(e){const c=(e&&e.code)||'';return ({'auth/invalid-credential':'
 function accountDialog(){
  if(!fbAuth)return;
  if(fbUser){const no=syncErr==='permission-denied';modal(`<h3>Sync</h3>${no?`<p><b>${esc(fbUser.email||'')}</b> isn’t approved for sync yet. Ask the person who shared this app with you to add this exact email. Until then, your work is saved on this device.</p>`:`${syncWhy()?`<p class="warnbox">${esc(syncWhy())}</p>`:''}<p>Signed in as <b>${esc(fbUser.email||'')}</b>. Your scenes sync to every device where you sign in with this account, and anything you do offline is sent when you’re back online.</p><p>Last confirmed by the cloud: <b>${whenTxt(lastSync)}</b>${sync.dirty.length?` · ${plural(sync.dirty.length,'change')} waiting to send`:''}</p>`}<div class="btns end"><button class="danger" id="so">Sign out</button>${no?'':'<button id="snow">Sync now</button>'}${no?'<button id="sre">Try Again</button>':'<button id="apr">Approved people…</button>'}<button class="pri" data-x>Done</button></div>`,c=>{
-  const ap=c.querySelector('#apr');if(ap)ap.onclick=()=>approvedDialog();const sn=c.querySelector('#snow');if(sn)sn.onclick=()=>{closeModal();syncNow();};const re=c.querySelector('#sre');if(re)re.onclick=()=>location.reload();c.querySelector('#so').onclick=async()=>{try{await fbAuth.signOut();}catch(e){}closeModal();toast('Signed out. Your work stays saved on this device.');};});return;}
+  const ap=c.querySelector('#apr');if(ap)ap.onclick=()=>kidNext()||approvedDialog();const sn=c.querySelector('#snow');if(sn)sn.onclick=()=>{closeModal();syncNow();};const re=c.querySelector('#sre');if(re)re.onclick=()=>location.reload();c.querySelector('#so').onclick=async()=>{try{await fbAuth.signOut();}catch(e){}closeModal();toast('Signed out. Your work stays saved on this device.');};});return;}
  modal(`<h3>Sign in to sync</h3><p class="mut">Use the same email and password on your Mac and your iPad. The very first time, tap Create account. This is the app’s own account, separate from GitHub and Claude.</p><label class="fld">Email<input id="em" type="email" autocomplete="username" autocapitalize="off"></label><label class="fld">Password<input id="pw" type="password" autocomplete="current-password"></label><p id="aerr" class="danger" style="min-height:1.3em;margin-top:10px"></p><div class="btns"><button id="fp">Forgot password</button></div><div class="btns end"><button id="ca">Create account</button><button class="pri" id="si">Sign in</button></div>`,c=>{
   const em=()=>c.querySelector('#em').value.trim(),pw=()=>c.querySelector('#pw').value,err=m=>{c.querySelector('#aerr').textContent=m;};
   const run=async f=>{err('');try{await f();closeModal();toast('Signed in. Syncing your scenes…');}catch(e){err(authMsg(e));}};
@@ -2322,7 +2326,7 @@ function frameList(s){const out=[];for(const it of s.items)if(it.type==='cam')it
 function sbxTidy(m){if(!m.sbx)return;const keep=new Set(m.sbs||[]);for(const id in m.sbx)if(!keep.has(id))delete m.sbx[id];if(!Object.keys(m.sbx).length)delete m.sbx;}
 function frameMarks(s){const out=[];for(const it of s.items)if(it.type==='cam')it.marks.forEach((m,i)=>{if(m.sb&&images[m.sb])out.push({it,i,m});});return out;}
 function commonFW(s,skip){const n={};for(const f of frameList(s))if(!(f.m===skip&&!f.k)){const w=fWk(s,f.m,f.k);n[w]=(n[w]||0)+1;}let best=null;for(const w in n)if(!best||n[w]>n[best])best=w;return best?+best:fsz(s);}
-const frameOn=()=>P.ui.frames!==false;
+let frForce=null;const frameOn=()=>frForce!=null?frForce:uiOn('frames')!==false;
 function frameLayout(sc,pid,base){
  const FW=Math.max(fsz(sc),...frameMarks(sc).map(f=>fW(sc,f.m))),FH=fszH(FW);
  const out={},list=rowsOf(sc,pid||sc.pageId).filter(r=>r.m.sb&&images[r.m.sb]&&!r.m.sba&&!r.m.sbp);if(!list.length)return out;
@@ -2574,7 +2578,7 @@ function addVersion(it,from){const a=verStart(it,from),A=it.marks[a];
 function camSync(it){if(it.type!=='cam'||!it.marks.some(m=>m.sp))return;
  if(sel&&sel.id===it.id&&it.marks[sel.mark]&&it.marks[sel.mark].sp){const m=it.marks[sel.mark],B=it.marks[spBase(it,sel.mark)];B.x=m.x;B.y=m.y;B.rot=m.rot;}
  it.marks.forEach((m,j)=>{if(m.sp){const B=it.marks[spBase(it,j)];m.x=B.x;m.y=B.y;m.rot=B.rot;}});}
-function labLines(m,i,n){const cap=capOf(m),d=P.ui.camDesc?String(m.desc||'').split('\n')[0]:'';let l=[...wrapText(cap,24).slice(0,2),...wrapText(d,26).slice(0,2)];if(n>1||i>0){const vc=verCode(scene(),i);if(l.length)l[0]=`V${vc}: `+l[0];else if(i===0)l=['V'+vc];}return l;}
+function labLines(m,i,n){const cap=capOf(m),d=uiOn('camDesc')?String(m.desc||'').split('\n')[0]:'';let l=[...wrapText(cap,24).slice(0,2),...wrapText(d,26).slice(0,2)];if(n>1||i>0){const vc=verCode(scene(),i);if(l.length)l[0]=`V${vc}: `+l[0];else if(i===0)l=['V'+vc];}return l;}
 function camLabelPos(it,m,nl){if(it.lab)return it.lab;const L=behind(m.rot,46);return {x:L.x,y:L.y+(L.s<-.35?-6-(nl||0)*11:L.s>.35?6:0)};}
 function framePos(m,vi){if(m.sbp)return m.sbp;const L=behind(m.rot,160),k=(vi||0)%2?-1:1,o=Math.ceil((vi||0)/2)*185*k;return {x:L.x-L.s*o,y:L.y+L.c*o};}
 const FT=18.29,TRACK_H=46;
@@ -2995,7 +2999,7 @@ function act(a,b){
   case 'lock':if(sel.id==='__bg')s.bg.locked=!s.bg.locked;else if(it)it.locked=!it.locked;commit();break;
   case 'del':deleteSel(true);break;
   case 'moveMode':startTool({t:'move',id:it.id});break;
-  case 'addVer':addVersion(it,sel.mark||0);break;
+  case 'addVer':shotFrom=null;addVersion(it,sel.mark||0);break;
   case 'trackto':{const [,rb]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'to',at:rb});break;}
   case 'delMark':if(it.type==='char'){const [a,b]=runOf(it,sel.mark||0);if(it.marks.length>b-a+1){it.marks.splice(a,b-a+1);shiftAxis(s,it.id,b+1,-(b-a+1));if(a<it.marks.length&&it.marks[a].t)delete it.marks[a].t;sel.mark=Math.max(0,Math.min(a,it.marks.length-1));}}
   else if(it.type==='cam'){const [a,b]=camRun(it,sel.mark||0);if(nVer(it)>1){const kids=it.marks.map((q,j)=>q.sp&&j>b&&spBase(it,j)===a?j:-1).filter(j=>j>=0);if(kids.length){const K=it.marks[kids[0]];delete K.sp;K.mid=uid();for(const j of kids.slice(1))it.marks[j].sp=K.mid;}it.marks.splice(a,b-a+1);if(it.marks[0].tk)delete it.marks[0].tk;sel.mark=Math.min(a,it.marks.length-1);}}
@@ -3394,7 +3398,7 @@ function addCamTo(setupId){const s=scene(),c=jitter(),used=new Set(s.items.filte
 function cameraDialog(){
  closePop();const s=scene();if(!s.setups.length){setupDialog();return;}
  modal(`<h3>Add camera</h3><div class="menu"><button id="ns"><b>New setup</b><small>Asks how many cameras. Gets the next color.</small></button>${[...s.setups].sort((a,b)=>a.num-b.num).map(st=>`<button data-su="${st.id}"><b><span class="dot" style="background:${st.color};margin-right:8px"></span>Another camera on setup ${st.num}</b></button>`).join('')}</div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{
-  card.querySelector('#ns').onclick=()=>{closeModal();setupDialog();};
+  card.querySelector('#ns').onclick=()=>{kidNext();setupDialog();};
   card.addEventListener('click',e=>{const b=e.target.closest('[data-su]');if(b)addCamTo(b.dataset.su);});
  });
 }
@@ -3497,7 +3501,7 @@ function sbPop(cx,cy){const s=scene(),it=sel&&itemById(sel.id),i=sel&&sel.mark||
 const tcase=t=>String(t).replace(/(^|\s)([a-z])/g,(m,a,b)=>a+b.toUpperCase());
 const LENSQ=['25mm','35mm','50mm','85mm','100mm','135mm'];let lensAll=false,popKeep=false;
 function objPop(cx,cy){
- if(!popKeep)lensAll=false;popKeep=false;
+ if(!popKeep)lensAll=false;popKeep=false;shotFrom=null;
  if(setOn||!sel||tool||mode==='list')return;popAt={x:cx,y:cy};const s=scene();
  /* rows: B plain, R removes something (red, always last), ck a switch, duo two actions side by side, pr a label with two choices */
  const sec=(t,b)=>b?`<div class="hd">${t}</div>${b}`:'',B=(o,l)=>`<button data-o="${o}">${l}</button>`,R=(o,l)=>`<button data-o="${o}" class="dng">${l}</button>`,
@@ -3528,7 +3532,7 @@ function objPop(cx,cy){
    const mi=clamp(sel.mark||0,0,it.marks.length-1),[ra,rb]=camRun(it,mi),va=it.marks[ra],nv=nVer(it);if(nv>1)sub=`Version ${verCode(s,verNum(it,mi))}`;
    let dm='';for(let j=ra;j<=rb;j++)dm+=`<button data-o="dm:${j}" class="${j===mi?'on':''}">${j-ra+1}</button>`;
    h=mvd(B('trackto','Moves To…'),B('trackfrom','Comes From…'))+(rb>ra?`<div class="hd">Camera Positions</div><div class="dmr"><button data-o="dmdel"${mi>ra?'':' disabled'} title="Remove this camera position" aria-label="Remove this camera position"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="9" fill="none" stroke="#e5484d" stroke-width="3"/><path d="M5.6 5.6L18.4 18.4" stroke="#e5484d" stroke-width="3"/></svg></button>${dm}</div>`:'')
-    +sec('Lens',(vaOn()?(()=>{const cur=String(it.marks[mi].lens||''),all=[...LENSES,...ownList('lens').filter(v=>!LENSES.includes(v))],quick=LENSQ.filter(l=>all.includes(l)),show=lensAll||(cur&&!quick.includes(cur))?all:quick;return `<div class="lensq">${show.map(l=>`<button data-o="lens:${esc(l)}"${l===cur?' class="on" aria-pressed="true"':''}>${esc(l.replace(/mm$/i,''))}</button>`).join('')}${show===all?'':`<button data-o="lensmore">More…</button>`}</div>`;})():'')+B('vatog',vaOn()?'Hide Lenses on the Plan':'Show Lenses on the Plan')+(vaOn()?B('vasensor','Sensor: '+sensorOf()[1]+' (tap to change)')+(()=>{const wi=it.marks[mi].sp?spBase(it,mi):mi,tg=vaTarget(s,it.marks[wi]);return tg?duo(B('vato','Reaches '+esc(tg.name)+' (change…)'),B('vastd','Back to Standard Length')):B('vato','Reach to a Subject or a Spot…');})():''))
+    +sec('Lens',(vaOn()?(()=>{const cur=String(it.marks[mi].lens||''),all=[...LENSES,...ownList('lens').filter(v=>!LENSES.includes(v))],quick=LENSQ.filter(l=>all.includes(l)),show=lensAll||(cur&&!quick.includes(cur))?all:quick;return `<div class="lensq">${show.map(l=>`<button data-o="lens:${esc(l)}"${l===cur?' class="on" aria-pressed="true"':''}>${esc(l.replace(/mm$/i,''))}</button>`).join('')}${show===all?'':`<button data-o="lensmore">More…</button>`}</div>`;})():'')+B('vatog',vaOn()?'Hide Lenses on the Plan':'Show Lenses on the Plan')+(vaOn()?B('vasensor','Sensor: '+sensorOf()[1]+' (tap to change)')+(()=>{const wi=it.marks[mi].sp?spBase(it,mi):mi,tg=vaTarget(s,it.marks[wi]);return tg?B('vato','Reaches '+esc(tg.name)+' · Change…')+B('vastd','Back to Standard Length'):B('vato','Reach to a Subject or a Spot…');})():''))
     +sec('Camera Move',B('pan','Add a Pan')+(it.marks[ra].aim?B('aimoff','Stop Following '+esc(aimName(s,it.marks[ra].aim))):B('aim','Follow…')))
     +sec('Shot',B('shotdesc','Describe the Shot…')+(nv>1?duo(B('addver','Add Version…'),B('delmark','Remove Version')):B('addver','Add Version…')))
     +sec('Storyboard',B('frame',va.sb?'Replace Main Frame…':'Add Storyboard Frame…')+(va.sb&&images[va.sb]?B('framecrop','Crop Main Frame…'):'')+(va.sb&&it.marks.some(m=>m.sb)?duo(B('frame2','Add a Frame…'),B('regallery','Re-arrange…')):(va.sb?B('frame2','Add Another Frame…'):'')+(it.marks.some(m=>m.sb)?B('regallery','Re-arrange All Frames'):'')))
@@ -3562,13 +3566,13 @@ function objAct(o){
  if(it&&it.type==='cam'&&o==='dmdel'){const mi=sel.mark||0;if(mi>0&&it.marks[mi].tk){it.marks.splice(mi,1);sel.mark=mi-1;commit();objPop(popAt.x,popAt.y);}return;}
  if(it&&it.type==='cam'&&o==='trackto'){const [,rb]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'to',at:rb});return;}
  if(it&&it.type==='cam'&&o==='trackfrom'){const [ra]=camRun(it,sel.mark||0);startTool({t:'move',id:it.id,tk:'from',at:ra});return;}
- if(it&&it.type==='cam'&&o==='addver'){addVersion(it,sel.mark||0);return;}
+ if(it&&it.type==='cam'&&o==='addver'){shotFrom=1;addVersion(it,sel.mark||0);return;}
  if(o==='astep'){stepSub();return;}
  if(o==='vato'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);closePop();startTool({t:'vato',id:it.id,mark:it.marks[mi].sp?spBase(it,mi):mi});return;}
- if(o==='vastd'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);delete it.marks[it.marks[mi].sp?spBase(it,mi):mi].vaTo;commit();closePop();toast('The lens wedge is back to its standard length.');return;}
+ if(o==='vastd'&&it&&it.type==='cam'){const mi=clamp(sel.mark||0,0,it.marks.length-1);delete it.marks[it.marks[mi].sp?spBase(it,mi):mi].vaTo;commit();objPop(popAt.x,popAt.y);toast('The lens wedge is back to its standard length.');return;}
  if(o==='lensmore'){lensAll=true;popKeep=true;objPop(popAt.x,popAt.y);return;}
  if(it&&it.type==='cam'&&o.startsWith('lens:')){const mi=clamp(sel.mark||0,0,it.marks.length-1),v=o.slice(5),m=it.marks[mi];if(m.lens===v)delete m.lens;else m.lens=v;commit();popKeep=true;objPop(popAt.x,popAt.y);return;}
- if(o==='vatog'){P.ui.va=!vaOn();saveLocal();render();if(vaOn()){popKeep=true;objPop(popAt.x,popAt.y);const any=s.items.some(q=>q.type==='cam'&&q.marks.some(m=>lensMM(m.lens)));if(!any)toast('Pick a lens for this camera to see it on the plan.');}else closePop();return;}
+ if(o==='vatog'){uiSet('va',!vaOn());render();popKeep=true;objPop(popAt.x,popAt.y);if(vaOn()){const any=s.items.some(q=>q.type==='cam'&&q.marks.some(m=>lensMM(m.lens)));if(!any)toast('Pick a lens for this camera to see it on the plan.');}return;}
  if(o==='vasensor'){const i=SENSORS.indexOf(sensorOf());prefSet('sensor',SENSORS[(i+1)%SENSORS.length][0]);render();objPop(popAt.x,popAt.y);return;}
  if(it&&it.type==='char'&&o.startsWith('pose-')){const pm=it.marks[runOf(it,sel.mark||0)[0]],v=o.slice(5);if(v)pm.pose=v;else delete pm.pose;commit();objPop(popAt.x,popAt.y);return;}
  closePop();
@@ -3601,7 +3605,7 @@ function objAct(o){
   case 'scal':it.fixed=!it.fixed;if(!it.fixed)delete it.fixed;commit();objPop(popAt.x,popAt.y);break;
   case 'keepar':it.ar=!it.ar;if(!it.ar)delete it.ar;commit();objPop(popAt.x,popAt.y);break;
   case 'selrun':{const ids=wallRun(s,it).map(i=>i.id);sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();toast(`${ids.length} walls selected. Drag any of them to move them all.`);break;}
-  case 'selgroup':{const ids=pageItems(s).filter(i=>i.type==='char'&&i.charId===it.charId).map(i=>i.id);sel=null;inspOpen=false;renderInsp();msel=new Set(ids);renderUI();multiPop(popAt.x,popAt.y);break;}
+  case 'selgroup':{const ids=pageItems(s).filter(i=>i.type==='char'&&i.charId===it.charId).map(i=>i.id);mselBack={one:{id:it.id,mark:sel.mark||0}};sel=null;inspOpen=false;renderInsp();msel=new Set(ids);mselBack.key=mselKey();renderUI();multiPop(popAt.x,popAt.y);break;}
   case 'wunhook':{unhook=it.id;renderUI();toast('Unhooked. Drag it away from the others.');break;}
   case 'wrehook':{if(unhook===it.id){unhook=null;renderUI();toast('Hooked again.');break;}
    let n=0;for(const e of [1,2])for(const p of ((it.uh||{})[e]||[])){const o=itemById(p.id);if(o&&o.type==='wall'){wSet(it,e,wEnd(o,p.e));n++;break;}}
@@ -3638,7 +3642,7 @@ function objAct(o){
   case 'edit':openInsp();break;
   case 'tstraight':it.bend=0;commit();break;
   case 'regallery':for(const o of s.items)if(o.type==='cam')for(const m of o.marks){delete m.sbp;delete m.sba;}freezeFrames(s);commit();break;
-  case 'shotdesc':shotPop(popAt.x,popAt.y);break;
+  case 'shotdesc':shotFrom=1;shotPop(popAt.x,popAt.y);break;
   case 'frame':act('sbAdd',fake({id:it.id,v:String(sel.mark||0)}));break;
   case 'frame2':act('sbMore',fake({id:it.id,v:String(sel.mark||0)}));break;
   case 'framecrop':{const mi=clamp(sel.mark||0,0,it.marks.length-1),has=j=>it.marks[j].sb&&images[it.marks[j].sb];closePop();sbCrop(it.id,has(mi)?mi:camRun(it,mi)[0],0);break;}
@@ -3754,9 +3758,17 @@ $('#pq').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b
 
 /* ---------- dialogs ---------- */
 const modalEl=$('#modal');
-function modal(html,bind,cls){closePop();modalEl.innerHTML=`<div class="card ${cls||''}" role="dialog" aria-modal="true">${html}</div>`;modalEl.hidden=false;const card=modalEl.firstChild;card.addEventListener('click',e=>{if(e.target.closest('[data-x]'))closeModal();});if(bind)bind(card);const f=card.querySelector('input:not([type=color])');if(f&&matchMedia('(pointer:fine)').matches)f.focus();}
-function closeModal(){modalEl.hidden=true;modalEl.innerHTML='';}
-modalEl.addEventListener('pointerdown',e=>{if(e.target===modalEl)closeModal();});
+/* kidNext(): the next dialog opens on top of the one that is showing, and Cancel, Escape or a tap outside comes back to it.
+   kidNext(fn): the next dialog runs fn when it is cancelled (used to reopen the menu it came from). */
+let mStack=[],mNext=null;
+function kidNext(ret){mNext=ret||true;setTimeout(()=>{mNext=null;},0);}
+function modal(html,bind,cls){closePop();const nx=mNext;mNext=null;
+ if(typeof nx==='function')mStack=[nx];else if(nx&&!modalEl.hidden&&modalEl.firstElementChild){const c=modalEl.firstElementChild;c.remove();mStack.push(c);}else mStack=[];
+ modalEl.innerHTML=`<div class="card ${cls||''}" role="dialog" aria-modal="true">${html}</div>`;modalEl.hidden=false;const card=modalEl.firstChild;card.addEventListener('click',e=>{if(e.target.closest('[data-x]'))modalBack();});if(bind)bind(card);const f=card.querySelector('input:not([type=color])');if(f&&matchMedia('(pointer:fine)').matches)f.focus();}
+function closeModal(){modalEl.hidden=true;modalEl.innerHTML='';mStack=[];}
+function modalBack(){const p=mStack.pop();if(!p){closeModal();return;}if(typeof p==='function'){closeModal();p();return;}modalEl.innerHTML='';modalEl.appendChild(p);modalEl.hidden=false;}
+function modalEsc(){const b=!modalEl.hidden&&modalEl.querySelector('[data-esc]');if(b){b.click();return;}modalBack();}
+modalEl.addEventListener('pointerdown',e=>{if(e.target===modalEl)modalEsc();});
 function confirmBox(title,msg,ok,fn){modal(`<h3>${esc(title)}</h3><p>${esc(msg)}</p><div class="btns end"><button data-x>Cancel</button><button class="pri danger" id="ok">${esc(ok)}</button></div>`,c=>{c.querySelector('#ok').onclick=()=>{closeModal();fn();};});}
 let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400);}
 function sceneInfo(s0,after){
@@ -3809,9 +3821,9 @@ function locManage(){const s=scene(),L=locById(s.loc);if(!L)return;const sc=locS
   card.querySelector('#lM').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;P.ui.locMode=b.dataset.v;card.querySelectorAll('#lM button').forEach(x=>x.classList.toggle('on',x===b));saveLocal();renderLoc();};
   const nm=()=>{const v=card.querySelector('#lN').value.trim().toUpperCase();if(v&&v!==L.name){L.name=v;L.at=Math.max(Date.now(),(L.at||0)+1);}};
   card.querySelector('#lOk').onclick=()=>{nm();closeModal();commit();};
-  {const sc=L.scout&&P.scenes.find(x=>x.id===L.scout&&!x.trashed),a=card.querySelector('#lPh'),b=card.querySelector('#lCam');if(a)a.onclick=()=>{closeModal();photoView(sc,(scoutPins(sc)[0]||{}).id);};if(b)b.onclick=()=>{nm();closeModal();const n=copyIdeas(sc,s);commit();toast(`Copied ${plural(n,'camera idea')} from the scout as new setups. Undo takes them back.`);};}
+  {const sc=L.scout&&P.scenes.find(x=>x.id===L.scout&&!x.trashed),a=card.querySelector('#lPh'),b=card.querySelector('#lCam');if(a)a.onclick=()=>{kidNext();photoView(sc,(scoutPins(sc)[0]||{}).id);};if(b)b.onclick=()=>{nm();closeModal();const n=copyIdeas(sc,s);commit();toast(`Copied ${plural(n,'camera idea')} from the scout as new setups. Undo takes them back.`);};}
   card.querySelector('#lUn').onclick=()=>{nm();locUnlink(s);closeModal();commit();toast('Unlinked. This scene keeps its own copy of the set.');};
-  card.querySelector('#lDel').onclick=()=>{nm();closeModal();confirmBox(`Delete ${L.name}?`,`The ${plural(sc.length,'scene')} keep their own copy of the set. They just stop being linked.`,'Delete',()=>{L.del=Math.max(Date.now(),(L.at||0)+1);L.at=L.del;for(const x of sc)locUnlink(x);commit();toast('Location deleted. Each scene kept its set.');});};});}
+  card.querySelector('#lDel').onclick=()=>{nm();kidNext();confirmBox(`Delete ${L.name}?`,`The ${plural(sc.length,'scene')} keep their own copy of the set. They just stop being linked.`,'Delete',()=>{L.del=Math.max(Date.now(),(L.at||0)+1);L.at=L.del;for(const x of sc)locUnlink(x);commit();toast('Location deleted. Each scene kept its set.');});};});}
 function confAuto(){let n=0;for(const x of P.scenes){if(!x.conflicts||!x.conflicts.length)continue;for(const c of x.conflicts){(x.plans=x.plans||[]).push({id:uid(),name:'Other device · '+confWhen(c.at),d:planTake(c.scene)});n++;}delete x.conflicts;}return n;}
 function renderConf(){const el=$('#confBar');if(!el)return;if(P.scenes.some(x=>x.conflicts&&x.conflicts.length)){setTimeout(()=>{const n=confAuto();if(n){commit();toast(n===1?'The other device’s version of this scene is saved as a Blocking Plan (Pages menu).':n+' other versions are saved as Blocking Plans (Pages menu).');}},0);el.hidden=true;return;}const s=scene(),c=(s&&s.conflicts)||[];if(!c.length||mode!=='diagram'){el.hidden=true;return;}
  $('#confTxt').textContent=`This scene was also changed on another device (${confWhen(c[c.length-1].at)}). Both versions are kept.`;el.hidden=false;$('#confGo').onclick=()=>conflictDialog();}
@@ -4510,7 +4522,7 @@ function applyTemplateDialog(t){const s=scene();if(s.tpl){toast('This is a templ
   card.querySelector('#aOk').onclick=()=>{const rb=!!(card.querySelector('#aBg')||{}).checked,all=!!(card.querySelector('#aAll')||{}).checked;applyTemplate(t,s,rb);let n=1;if(all)for(const o of others){applyTemplate(t,o,false);n++;}closeModal();commit();fit();toast(n>1?`Added to ${plural(n,'scene')}. Undo takes it all back.`:'Template added.');};});}
 function pickTemplateDialog(){const s=scene(),ts=templates();if(!ts.length){toast('No templates yet. Use Menu › This Scene › Save as Template… on a scene with your set.');return;}
  const k=locKey(s.heading),m=t=>k&&(t.loc||locKey(t.heading))===k;ts.sort((a,b)=>m(b)-m(a));
- modal(`<h3>Add a template</h3><div class="menu tplm">${tplGroups(ts).map(([g,l])=>`<div class="mgh">${esc(g)}</div>`+l.map(t=>`<button data-t="${t.id}"><b>${esc(t.title)}${m(t)?' · matches this scene':''}</b><small>${esc(t.loc||'')}</small></button>`).join('')).join('')}</div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{card.querySelector('.menu').onclick=e=>{const b=e.target.closest('[data-t]');if(b)applyTemplateDialog(P.scenes.find(x=>x.id===b.dataset.t));};});}
+ modal(`<h3>Add a template</h3><div class="menu tplm">${tplGroups(ts).map(([g,l])=>`<div class="mgh">${esc(g)}</div>`+l.map(t=>`<button data-t="${t.id}"><b>${esc(t.title)}${m(t)?' · matches this scene':''}</b><small>${esc(t.loc||'')}</small></button>`).join('')).join('')}</div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{card.querySelector('.menu').onclick=e=>{const b=e.target.closest('[data-t]');if(b){kidNext();applyTemplateDialog(P.scenes.find(x=>x.id===b.dataset.t));}};});}
 function brTemplates(){const ts=templates();if(!ts.length)return `<div class="brempty">No templates yet.<br><small>Open a scene with your set built, then Menu › This Scene › Save as Template… Standing sets you return to every episode are the best use.</small></div>`;
  const row=t=>{const n=t.items.filter(i=>!ACTOR(i.type)&&i.type!=='axis').length,nc=t.items.filter(i=>i.type==='char').length,nk=t.items.filter(i=>i.type==='cam').length;return `<div class="brr" data-t="${t.id}"><span class="bri">${BIC.tpl}</span><span class="brt"><b>${esc(t.title)}</b><small>${esc([t.loc,n?plural(n,'set piece'):'',nc?plural(nc,'character'):'',nk?plural(nk,'camera'):'',t.bgId?'floor plan':''].filter(Boolean).join(' · '))}</small></span><button class="brm" data-tm="${t.id}" aria-label="Template options">•••</button></div>`;};
  const groups=tplGroups(ts);
@@ -4591,7 +4603,7 @@ function overviewDialog(fid){const f=fById(fid);if(!f){toast('Put this scene in 
    if(t.dataset.ov==='back'){openBrowser(fid);return;}
    if(t.dataset.ov==='copy'){const txt=ovQText(f,S);(navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('Questions copied. Paste them into an email or a document.'),()=>toast('Couldn’t copy here. Use Export PDF instead.'));return;}
    if(t.dataset.ov==='qpdf'){ovQPdf(f,S);return;}
-   if(t.dataset.os){const m=t.dataset.om;closeModal();openScene(t.dataset.os);if(m==='q'){P.ui.nbQ=true;saveLocal();setMode('nb');}else setMode(m);}});
+   if(t.dataset.os){const m=t.dataset.om;closeModal();openScene(t.dataset.os);if(m==='q'){if(!uiOn('nbQ'))uiSet('nbQ',true);setMode('nb');}else setMode(m);}});
  },'ovcard');}
 function ovQText(f,S){return `Questions · ${f.name}\n\n`+S.filter(o=>o.k.qs.length).map(({s,k})=>`${sceneLabel(s)}${s.heading?' ('+s.heading+')':''}\n`+k.qs.map(q=>'• '+q).join('\n')).join('\n\n')+'\n';}
 async function ovQPdf(f,S){const W=S.filter(o=>o.k.qs.length);if(!W.length)return;toast('Making the PDF…');
@@ -4655,7 +4667,7 @@ function brClick(e){
   if(k==='up'){brGo(br.at==='__trash'?null:fParent(fById(br.at)));return;}
   if(k==='trash'){brGo('__trash');return;}
   if(k==='tpls'){brGo('__tpl');return;}
-  if(k==='savetpl'){closeModal();saveTemplateDialog();return;}
+  if(k==='savetpl'){kidNext();saveTemplateDialog();return;}
   if(k==='newscene'){if(templates().length){br.sub={k:'newpick'};brRender();return;}closeModal();newScene(br.at);return;}
   if(k==='import'){importScript();return;}
   if(k==='newfolder'){br.sub={k:'name',mode:'new',parent:br.at};brRender();return;}
@@ -4703,14 +4715,14 @@ function brSubAct(a,dest){
  if(u.k==='newpick'){if(a==='blank'){closeModal();newScene(br.at);return;}if(a==='dest'&&dest){sceneFromTemplate(P.scenes.find(x=>x.id===dest),br.at==='__tpl'?null:br.at);return;}}
  if(u.k==='tact'){const t=P.scenes.find(x=>x.id===u.id);if(!t)return;
   if(a==='tnew'){const f=sFolder(scene());sceneFromTemplate(t,f);return;}
-  if(a==='tapply'){closeModal();applyTemplateDialog(t);return;}
+  if(a==='tapply'){kidNext();applyTemplateDialog(t);return;}
   if(a==='tedit'){openScene(t.id);toast('Editing the template. Changes affect new scenes made from it, not scenes already made.');return;}
   if(a==='trename'){br.sub={k:'tname',id:t.id,prev:u};brRender();return;}
   if(a==='tdelete'){br.sub={k:'confirm',what:'tdel',id:t.id,prev:u};brRender();return;}}
  if(u.k==='tname'&&a==='save'){const t=P.scenes.find(x=>x.id===u.id);t.title=($('#brn').value||'').trim()||t.title;t.loc=($('#brl').value||'').trim().toUpperCase();commit();br.sub=null;brRender();return;}
  if(u.k==='sact'){const s=P.scenes.find(x=>x.id===u.id);if(!s)return;
   if(a==='open'){openScene(s.id);return;}
-  if(a==='info'){sceneInfo(s,()=>openBrowser(br.at));return;}
+  if(a==='info'){kidNext();sceneInfo(s,()=>openBrowser(br.at));return;}
   if(a==='dup'){const n=duplicateScene(s);commit();br.sub=null;brRender();toast(`Made ${sceneLabel(n)}.`);return;}
   if(a==='move'){br.sub={k:'move',ids:[s.id],prev:u};brRender();return;}
   if(a==='trash'){trashScenes([s.id]);commit();br.sub=null;brRender();toast(`${sceneLabel(s)} moved to Trash.`);return;}
@@ -5104,7 +5116,7 @@ $('#fSb').addEventListener('change',async e=>{
   const fresh=!m.sb||!images[m.sb];let fk=0;if(t.add&&m.sb){(m.sbs=m.sbs||[]).push(id);fk=m.sbs.length;}else if(t.k!=null&&m.sbs&&m.sbs[t.k]!=null){const o=m.sbs[t.k];m.sbs[t.k]=id;if(m.sbx&&m.sbx[o]){m.sbx[id]=m.sbx[o];delete m.sbx[o];}fk=t.k+1;}else m.sb=id;
   fSet(m,fk,'o',null);fSet(m,fk,'cr',null);
   let msg='';if(t.add&&frameOn()&&m.sb&&images[m.sb]){const k=(m.sbs||[]).length;if(!fx(m,k))fSetW(m,k,fWk(c.s,m,0));placeFrame(c.s,c.it,t.vi,k);msg=`Frame ${k+1} added to Shot ${shotCode(c.s,c.it)} on the floor plan.`;}
-  else if(fresh&&!t.add&&t.k==null){const was=frameOn();if(!was){P.ui.frames=true;renderTop();}delete m.sba;if(!m.sbw)m.sbw=commonFW(c.s,m);placeFrame(c.s,c.it,t.vi);
+  else if(fresh&&!t.add&&t.k==null){const was=frameOn();if(!was){uiSet('frames',true);renderTop();}delete m.sba;if(!m.sbw)m.sbw=commonFW(c.s,m);placeFrame(c.s,c.it,t.vi);
    msg=`Frame added on the floor plan next to Shot ${shotCode(c.s,c.it)}${was?'':' (Frames is back on)'}. Drag it anywhere; drag its corner to resize it.`;}
   else if(frameOn())freezeFrames(c.s);
   commit();if(msg)toast(msg);
@@ -5156,7 +5168,7 @@ function renderList(){
 }
 const lvEl=$('#listView');
 lvEl.addEventListener('click',e=>{if(e.target.matches('input,textarea,select'))return;
- {const pb=e.target.closest('[data-pf]');if(pb){P.ui.priF=pb.dataset.pf;saveLocal();renderList();return;}}
+ {const pb=e.target.closest('[data-pf]');if(pb){uiSet('priF',pb.dataset.pf);renderList();return;}}
  {const tr=e.target.closest('tr[data-id]');if(tr&&(e.metaKey||e.ctrlKey||e.shiftKey)&&!e.target.closest('[data-pick],[data-tog]')){const key=tr.dataset.id+'|'+tr.dataset.v;if(slMulti.has(key))slMulti.delete(key);else slMulti.add(key);slSelMode=true;renderList();return;}}
  {const p1=e.target.closest('[data-pick1]');if(p1){slChoose(p1);return;}}
  const pk=e.target.closest('[data-pick]');if(pk){slPick(pk);return;}
@@ -5247,8 +5259,8 @@ function colDialog(){const s=scene(),cfg=colCfg(s);cfg.on=cfg.on||{};cfg.cc=cfg.
   L.addEventListener('pointerup',dgEnd);L.addEventListener('pointercancel',dgEnd);
   L.addEventListener('change',e=>{const k=e.target.dataset.c;if(!k)return;cfg.on[k]=e.target.checked;colSave(s,clone(cfg));});
   L.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;e.preventDefault();const id=b.dataset.rm,cc=cfg.cc.find(x=>x.id===id);
-   confirmBox(`Remove the ${cc?cc.name:''} column?`,'What you typed in it stays with the shots, and comes back if you add a column with the same name.','Remove',()=>{cfg.cc=cfg.cc.filter(x=>x.id!==id);delete cfg.on['c:'+id];colSave(s,clone(cfg));colDialog();});});
-  card.querySelector('#colNew').onclick=()=>askText('New custom column','Column name','e.g. Props, Wardrobe, Stunts',v=>{v=String(v||'').trim();if(!v)return;
+   kidNext();confirmBox(`Remove the ${cc?cc.name:''} column?`,'What you typed in it stays with the shots, and comes back if you add a column with the same name.','Remove',()=>{cfg.cc=cfg.cc.filter(x=>x.id!==id);delete cfg.on['c:'+id];colSave(s,clone(cfg));colDialog();});});
+  card.querySelector('#colNew').onclick=()=>kidNext()||askText('New custom column','Column name','e.g. Props, Wardrobe, Stunts',v=>{v=String(v||'').trim();if(!v)return;
    const id=v.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||uid();if(!cfg.cc.some(x=>x.id===id))cfg.cc.push({id,name:v});cfg.on['c:'+id]=true;colSave(s,clone(cfg));colDialog();});
   draw();});}
 lvEl.addEventListener('input',e=>{const t=e.target;
@@ -5490,7 +5502,7 @@ function nbCols(s){const c=nbRaw(s),D=nbDefault();if(!c)return D;
  const out=c.cols.filter(x=>x&&x.k).map(x=>({k:String(x.k),name:String(x.name||''),on:x.on?1:0,labels:(x.labels||[]).map(String),start:(x.start||[]).map(String)}));
  for(const d of D)if(!out.some(x=>x.k===d.k))out.push(d);return out;}
 /* the columns on the page: Questions follows its own tick in the toolbar */
-function nbShown(s){const q=!!P.ui.nbQ;return nbCols(s).filter(c=>c.k==='q'?q:c.on);}
+function nbShown(s){const q=!!uiOn('nbQ');return nbCols(s).filter(c=>c.k==='q'?q:c.on);}
 function nbSave(s,cols){const v=cols?{cols:clone(cols)}:null,f=fById(rootOf(s));if(f){if(v)f.nb=v;else delete f.nb;}else{prefSet('nb',v);delete P.ui.nb;}commit();}
 /* what an untouched cell starts with: the column's starter labels, each with room under it */
 function nbTpl(c){if(c.k==='q')return RT_UL;const st=(c.start||[]).filter(t=>(c.labels||[]).includes(t));return (c.k==='syn'||c.k==='snap'||!st.length?RT_P:'')+st.map(t=>rtL(esc(t))+(PLAIN_AFTER.has(t)?RT_P:RT_UL)).join('');}
@@ -5498,7 +5510,7 @@ function nbDialog(){const s=scene(),pname=rootOf(s)?(fById(rootOf(s))||{}).name:
  const save=()=>{nbSave(s,cols);if(mode==='nb')renderDocs(true);};
  modal(`<h3>Breakdown columns</h3><p class="mut">${pname?`For every scene in ${esc(pname)}, on this device and your others.`:'For scenes that aren’t in a project folder, on this device and your others.'} Tick what you want to see, rename anything, drag ⠿ to change the order. Labels are the headings offered by “+ Label” in a column. Hiding or removing a column never deletes what was written in it.</p><div class="colL nbL" id="nbL"></div><div class="btns"><button id="nbNew">New column…</button><button id="nbReset">Back to the starting layout</button><span style="flex:1"></span><button class="pri" data-x>Done</button></div>`,card=>{
   const L=card.querySelector('#nbL'),isCustom=k=>!NB_COLS.some(c=>c[0]===k);
-  const draw=()=>{L.innerHTML=cols.map((c,i)=>{const on=c.k==='q'?!!P.ui.nbQ:!!c.on,ex=open===c.k;
+  const draw=()=>{L.innerHTML=cols.map((c,i)=>{const on=c.k==='q'?!!uiOn('nbQ'):!!c.on,ex=open===c.k;
     return `<div class="colR nbR" data-k="${esc(c.k)}"><span class="grip colG" title="Drag to reorder">⠿</span><input type="checkbox" data-on="${i}"${on?' checked':''} aria-label="Show this column"><input class="nbN" data-nm="${i}" value="${esc(c.name)}" placeholder="Column name" autocomplete="off">${c.k==='syn'||c.k==='q'?'':`<button class="sm" data-lb="${i}">Labels (${c.labels.length}) ${ex?'▴':'▾'}</button>`}${isCustom(c.k)?`<button class="sm" data-rm="${i}">Remove</button>`:''}</div>`
      +(ex?`<div class="nbLb" data-k="${esc(c.k)}">${c.labels.length?c.labels.map((t,j)=>`<div class="nbLr"><b>${esc(t)}</b><label title="Put this label in the column of every new scene"><input type="checkbox" data-st="${i}:${j}"${c.start.includes(t)?' checked':''}> starts in new scenes</label><button class="sm" data-lx="${i}:${j}" aria-label="Remove label ${esc(t)}">Remove</button></div>`).join(''):'<p class="mut" style="margin:4px 0 8px">No labels yet.</p>'}<div class="nbLa"><input data-la="${i}" placeholder="Add a label, e.g. LIGHTING IDEAS" autocomplete="off"><button class="sm pri" data-lg="${i}">Add</button></div></div>`:'');}).join('');};
   draw();
@@ -5508,7 +5520,7 @@ function nbDialog(){const s=scene(),pname=rootOf(s)?(fById(rootOf(s))||{}).name:
   L.addEventListener('pointerup',dgEnd);L.addEventListener('pointercancel',dgEnd);
   const addLabel=i=>{const inp=L.querySelector(`[data-la="${i}"]`),v=(inp&&inp.value||'').trim().replace(/:+$/,'').toUpperCase();if(!v)return;const c=cols[i];if(!c.labels.includes(v))c.labels.push(v);draw();save();const n=L.querySelector(`[data-la="${i}"]`);if(n)n.focus();};
   L.addEventListener('change',e=>{const d=e.target.dataset;
-   if(d.on!=null){const c=cols[+d.on];if(c.k==='q'){P.ui.nbQ=e.target.checked;saveLocal();if(mode==='nb')renderDocs(true);}else{c.on=e.target.checked?1:0;save();}}
+   if(d.on!=null){const c=cols[+d.on];if(c.k==='q'){uiSet('nbQ',e.target.checked);if(mode==='nb')renderDocs(true);}else{c.on=e.target.checked?1:0;save();}}
    else if(d.nm!=null){const c=cols[+d.nm],v=e.target.value.trim();if(!v){e.target.value=c.name;return;}c.name=v;save();}
    else if(d.st!=null){const [i,j]=d.st.split(':').map(Number),c=cols[i],t=c.labels[j];c.start=c.labels.filter(x=>x===t?e.target.checked:c.start.includes(x));save();}});
   L.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target.dataset.la!=null){e.preventDefault();addLabel(+e.target.dataset.la);}else if(e.target.dataset.nm!=null){e.preventDefault();e.target.blur();}});
@@ -5521,7 +5533,7 @@ function nbDialog(){const s=scene(),pname=rootOf(s)?(fById(rootOf(s))||{}).name:
   card.querySelector('#nbReset').onclick=()=>{nbSave(s,null);cols=nbCols(s);open=null;draw();if(mode==='nb')renderDocs(true);toast('Back to the starting columns and labels. Nothing that was written was removed.');};
  },'cfcard');}
 function renderNb(v){
- const s=scene(),x=txOf(s.id),st=storiesFor(s),cur=storyOf(s),q=!!P.ui.nbQ,cols=nbShown(s),tint=cur?shade(cur.color,.86):'#fff';
+ const s=scene(),x=txOf(s.id),st=storiesFor(s),cur=storyOf(s),q=!!uiOn('nbQ'),cols=nbShown(s),tint=cur?shade(cur.color,.86):'#fff';
  const live=k=>{const c=x&&x.nb&&x.nb[k];return c&&c.h!=null&&!c.del?c.h:null;},cellH=k=>{const h=live(k);if(h!=null)return h;if(k==='syn'&&s.synopsis)return `<p>${esc(s.synopsis)}</p>`;return nbTpl(cols.find(c=>c.k===k)||{k});};
  const hasQ=!q&&live('q')&&rtText(rtParse(live('q')));
  v.innerHTML=docHead(s,'nb')+`<div class="dvtools">${FMT_BAR}<span class="stl">Story</span>${st.map(t=>`<button class="stc${cur&&cur.id===t.id?' on':''}" data-story="${esc(t.id)}" title="Double-click (or press and hold) to rename"><i style="background:${esc(t.color)}"></i>${esc(t.name||t.id)}</button>`).join('')}<button class="stc sted" data-stedit="1" title="Name the stories">Edit…</button><button class="stc sted nbcb" data-nbcols="1" title="Choose, rename, reorder and add columns and their labels">Columns…</button><label class="dvq"><input type="checkbox" id="nbQ"${q?' checked':''}> Questions column${hasQ?' (has notes)':''}</label></div>
@@ -5609,7 +5621,7 @@ function bindDoc(v){
  /* rename a story where it is: double-click it, or press and hold it on the iPad */
  v.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-story]');if(!b||e.pointerType==='mouse')return;clearTimeout(stHold);stHold=setTimeout(()=>{stSwallow=true;storyRename(b.dataset.story);},550);});
  ['pointerup','pointercancel','pointerleave'].forEach(t=>v.addEventListener(t,()=>clearTimeout(stHold)));
- v.addEventListener('change',e=>{if(e.target.id==='nbQ'){P.ui.nbQ=e.target.checked;saveLocal();renderDocs(true);}});
+ v.addEventListener('change',e=>{if(e.target.id==='nbQ'){uiSet('nbQ',e.target.checked);renderDocs(true);}});
 }
 bindDoc($('#nbView'));bindDoc($('#stView'));
 try{document.execCommand('defaultParagraphSeparator',false,'p');}catch(e){}
@@ -5994,11 +6006,11 @@ async function exportPDF(o){
   expProd=o.prod===undefined?undefined:(o.prod||null);
   const np=()=>{if(n++)doc.addPage('letter',o.port?'portrait':'landscape');};
   for(let si=0;si<list.length;si++){const sc=list[si],written=(o.nb||o.st)&&(txHas(sc)||(o.nb&&!!String(sc.synopsis||'').trim()));if(folder&&!sc.items.length&&!written)continue;
-   let svgs=[],tp=0;if(written)tp=await pdfTextPages(doc,sc,o,np);const keep=P.sceneId,frK=P.ui.frames;P.sceneId=sc.id;P.ui.frames=o.pf!==false;
+   let svgs=[],tp=0;if(written)tp=await pdfTextPages(doc,sc,o,np);const keep=P.sceneId,frK=frForce;P.sceneId=sc.id;frForce=o.pf!==false;
    try{if(!sc.items.length&&written){}else if(!o.dia&&!o.list){}else if(o.layout==='compact'){svgs=compactPagesSVG(sc,o);}else{if(o.dia){const n=sc.pages.length;if(n<2)svgs.push(sheetSVG(sc,sc.pages[0].id,o.port,o.list,{fa:o.fa}));else{
      const box=o.zoom?null:planBox(sc,'all',o.fa),master=o.master||!o.split;
      if(master)svgs.push(sheetSVG(sc,'all',o.port,o.list,{label:`Master  ·  every move, all ${n} pages`,fa:o.fa}));
-     if(o.split)sc.pages.forEach((pg,i)=>{const nm=String(pg.name||'').trim(),lbl=`Page ${i+1} of ${n}`+(nm&&!/^page\s*\d+$/i.test(nm)?`  ·  ${nm}`:'');svgs.push(sheetSVG(sc,pg.id,o.port,o.list,{label:lbl,box:box||planBox(sc,pg.id,o.fa),fa:o.fa}));});}}if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}if(o.bd)svgs.push(...boardPagesSVG(sc,{port:o.port}));}finally{P.sceneId=keep;P.ui.frames=frK;}
+     if(o.split)sc.pages.forEach((pg,i)=>{const nm=String(pg.name||'').trim(),lbl=`Page ${i+1} of ${n}`+(nm&&!/^page\s*\d+$/i.test(nm)?`  ·  ${nm}`:'');svgs.push(sheetSVG(sc,pg.id,o.port,o.list,{label:lbl,box:box||planBox(sc,pg.id,o.fa),fa:o.fa}));});}}if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}if(o.bd)svgs.push(...boardPagesSVG(sc,{port:o.port}));}finally{P.sceneId=keep;frForce=frK;}
    if(svgs.length||tp)used++;
    for(const sv of svgs){const c=await rasterize(sv,W,H,1.4);np();doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,o.port?612:792,o.port?792:612);}
    if(folder&&list.length>2)toast(`Building PDF… scene ${si+1} of ${list.length}`);
@@ -6016,9 +6028,9 @@ function productionsDialog(after){const L=P.productions||[];
  const uses=pr=>P.folders.filter(f=>f.prod===pr.id).length;
  modal(`<h3>Productions</h3><p class="mut">The logo, note and contact lines at the top of every exported page. Give each production its folders, and their scenes export with it.</p>
   <div class="rgrp">${L.map(pr=>`<button class="rrow" data-p="${pr.id}">${pr.logo&&images[pr.logo]?`<img src="${images[pr.logo]}" alt="" style="height:30px;max-width:110px;object-fit:contain;margin-right:12px">`:''}<span><b>${esc(pr.name||'Untitled production')}</b><small>${uses(pr)?uses(pr)+' folder'+(uses(pr)>1?'s':''):'No folders yet'}</small></span><span style="flex:none;color:var(--mut)">Edit ›</span></button>`).join('')||'<div class="rrow"><span class="mut">No productions yet.</span></div>'}</div>
-  <div class="btns end"><button id="pNew">New production</button><button class="pri" data-x>Done</button></div>`,card=>{
-  card.querySelector('#pNew').onclick=()=>prodEdit(null,()=>productionsDialog(after));
-  card.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b)prodEdit(prodById(b.dataset.p),()=>productionsDialog(after));});
+  <div class="btns end"><button id="pNew">New production</button><button class="pri" data-x data-esc>Done</button></div>`,card=>{
+  card.querySelector('#pNew').onclick=()=>kidNext()||prodEdit(null,()=>productionsDialog(after));
+  card.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(b)kidNext()||prodEdit(prodById(b.dataset.p),()=>productionsDialog(after));});
   const x=card.querySelector('[data-x]');if(x&&after)x.addEventListener('click',()=>setTimeout(after,0));
  },'numcard');}
 function prodEdit(pr0,back){const isNew=!pr0,pr=Object.assign({id:uid()},PROD_DEF,{contacts:[{label:'Director',value:''},{label:'Phone',value:''},{label:'Email',value:''}]},pr0?JSON.parse(JSON.stringify(pr0)):{});
@@ -6050,7 +6062,7 @@ function prodEdit(pr0,back){const isNew=!pr0,pr=Object.assign({id:uid()},PROD_DE
   q('#pnFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const r=await loadLogo(f);pr.logo=addImage(r.data);pr.lw=r.w;pr.lh=r.h;q('#pnLogo').innerHTML=logoBox();q('#pnNoLogo').hidden=false;}catch(err){toast('That image couldn’t be used.');}};
   q('#pnNoLogo').onclick=()=>{delete pr.logo;delete pr.lw;delete pr.lh;q('#pnLogo').innerHTML=logoBox();q('#pnNoLogo').hidden=true;};
   q('#pnCancel').onclick=()=>{closeModal();if(back)back();};
-  if(q('#pnDel'))q('#pnDel').onclick=()=>{confirmBox('Delete this production?',`${pr.name||'It'} comes off any folders that use it. Scenes are not affected.`,'Delete',()=>{P.productions=(P.productions||[]).filter(x=>x.id!==pr.id);for(const f of P.folders)if(f.prod===pr.id)delete f.prod;prodSaved();if(back)back();});};
+  if(q('#pnDel'))q('#pnDel').onclick=()=>{kidNext();confirmBox('Delete this production?',`${pr.name||'It'} comes off any folders that use it. Scenes are not affected.`,'Delete',()=>{P.productions=(P.productions||[]).filter(x=>x.id!==pr.id);for(const f of P.folders)if(f.prod===pr.id)delete f.prod;prodSaved();if(back)back();});};
   q('#pnOk').onclick=()=>{readC();readS();pr.stories=pr.stories.filter(t=>t.name||STORIES.some(d=>d.id===t.id)).map(t=>Object.assign(t,{name:t.name||(STORIES.find(d=>d.id===t.id)||{}).name||'Story'}));
    Object.assign(pr,{name:q('#pnName').value.trim(),note:q('#pnNote').value.trim(),accent:q('#pnAcc').value,floorT:q('#pnFT').value.trim(),floorS:q('#pnFS').value.trim(),listT:q('#pnLT').value.trim(),listS:q('#pnLS').value.trim(),nbT:q('#pnNT').value.trim(),nbS:q('#pnNS').value.trim(),stT:q('#pnST').value.trim(),stS:q('#pnSS').value.trim()});
    pr.contacts=pr.contacts.filter(c=>c.label||c.value);
@@ -6297,7 +6309,7 @@ function animLayer(sc,N,frac){
    for(const i of tl.legs)paths+=arrow(it.marks[i-1],it.marks[i],col,false,20,!it.hard,'class="deco"');
    cams+=`<g data-id="${it.id}" data-mark="${tl.cur}" transform="translate(${p.x},${p.y})" opacity="${p.op}"><circle r="26" fill="transparent"/><g transform="rotate(${p.r})"><rect x="-16" y="-10" width="21" height="20" rx="4" fill="${col}" stroke="${dk}" stroke-width="1.6"/><path d="M5,-5L15.5,-10.5V10.5L5,5Z" fill="${col}" stroke="${dk}" stroke-width="1.6" stroke-linejoin="round"/></g><g class="deco" transform="translate(0,${-34})"><rect x="${-pw/2}" y="-9" width="${pw}" height="16" rx="2" fill="#2f5f8f"/><text class="pl2" y="2.8" text-anchor="middle">${tag}</text></g></g>`;}}
  return `<g>${paths}${props}${cams}${bodies}</g>`;}
-function animBase(sc){IMF='noActors';const a=itemsMarkup(sc);if(P.ui.timeOnly){IMF=null;return a;}IMF='onlyActors';const g=itemsMarkup(sc);IMF=null;return a+`<g class="deco" opacity=".16">${g}</g>`;}
+function animBase(sc){IMF='noActors';const a=itemsMarkup(sc);if(uiOn('timeOnly')){IMF=null;return a;}IMF='onlyActors';const g=itemsMarkup(sc);IMF=null;return a+`<g class="deco" opacity=".16">${g}</g>`;}
 /* animation view: each position is a spot you tap to put it in (or take it out of) the current time */
 function assignLayer(sc,N){let h='';const k=view.k||1;
  for(const it of pageItems(sc))if((it.type==='char'||it.type==='cam')&&it.marks&&it.marks.length){if(it.type==='char'&&!charById(it.charId))continue;
@@ -6325,9 +6337,9 @@ function play(){
   drawAnim();anim.raf=requestAnimationFrame(tick);};
  drawAnim();anim.raf=requestAnimationFrame(tick);}
 function renderAnimBar(){const el=$('#animBar');if(!el)return;const s=scene(),mx=maxStep(s),K=Math.max(mx+1,3);
- el.innerHTML=`<button id="aGear" class="${anim.step?'on':''}" title="${anim.step?'Animation view is on. Tap to go back to editing':'Tap to turn on the animation view'}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button><button id="aPlay" class="${anim.playing?'on':''}" title="${anim.playing?'Pause':'Play the blocking'} (Space)">${anim.playing?'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="3"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/></svg>'}</button><button id="aVis" class="${P.ui.timeOnly?'on':''}" title="${P.ui.timeOnly?'Showing only this time. Tap to show other times faded':'Other times shown faded. Tap to show only this time'}"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>${P.ui.timeOnly?'':'<path d="M4 20L20 4"/>'}</svg></button><span class="asteps">${(()=>{const L=tlOf(s).lab||{};return Array.from({length:K},(_,i)=>i+1).map(n=>(L[n]?`<span class="aslab" title="${esc(L[n])}">${esc(trunc(L[n],18))}</span>`:'')+`<button class="ast${anim.step===n?' cur':''}${n>mx?' dim':''}" data-n="${n}" title="${anim.step===n?'Edit time '+n:'Show time '+n}">${n}</button>`).join('');})()}</span>`;
+ el.innerHTML=`<button id="aGear" class="${anim.step?'on':''}" title="${anim.step?'Animation view is on. Tap to go back to editing':'Tap to turn on the animation view'}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button><button id="aPlay" class="${anim.playing?'on':''}" title="${anim.playing?'Pause':'Play the blocking'} (Space)">${anim.playing?'<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" stroke-width="3"/></svg>':'<svg viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z" fill="currentColor"/></svg>'}</button><button id="aVis" class="${uiOn('timeOnly')?'on':''}" title="${uiOn('timeOnly')?'Showing only this time. Tap to show other times faded':'Other times shown faded. Tap to show only this time'}"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>${uiOn('timeOnly')?'':'<path d="M4 20L20 4"/>'}</svg></button><span class="asteps">${(()=>{const L=tlOf(s).lab||{};return Array.from({length:K},(_,i)=>i+1).map(n=>(L[n]?`<span class="aslab" title="${esc(L[n])}">${esc(trunc(L[n],18))}</span>`:'')+`<button class="ast${anim.step===n?' cur':''}${n>mx?' dim':''}" data-n="${n}" title="${anim.step===n?'Edit time '+n:'Show time '+n}">${n}</button>`).join('');})()}</span>`;
  el.querySelector('#aPlay').onclick=play;el.querySelector('.asteps').onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;const n=+b.dataset.n;if(n===anim.step&&!anim.playing&&anim.frac>=1)timeMenu(b,n);else setStep(n);};
- el.querySelector('#aVis').onclick=()=>{P.ui.timeOnly=!P.ui.timeOnly;saveLocal();anim.base=null;if(!anim.step)setStep(1);else{renderAnimBar();drawAnim();}toast(P.ui.timeOnly?'Showing only what happens at this time.':'Other times are shown faded.');};
+ el.querySelector('#aVis').onclick=()=>{uiSet('timeOnly',!uiOn('timeOnly'));anim.base=null;if(!anim.step)setStep(1);else{renderAnimBar();drawAnim();}toast(uiOn('timeOnly')?'Showing only what happens at this time.':'Other times are shown faded.');};
  el.querySelector('#aGear').onclick=()=>{closePop();if(anim.step){setStep(0);toast('Back to editing.');}else setStep(1);};}
 function timeMenu(btn,N){const s=scene(),L=tlOf(s).lab||{},q=spdOf(s,N),hasAny=animActors(s).some(it=>it.marks.some(m=>+m.st===N));
  const bars=(k,v,off)=>`<input type="range" min="0" max="100" step="1" value="${v}" data-sk="${k}"${off?' disabled':''}><b class="lv">${v}</b>`;
@@ -6375,12 +6387,12 @@ function drawLayers(){const s=scene(),L=lay(s),all=LAYERS.every(([k])=>L.lock[k]
  const row=(key,name,val,lockOn,lockKey,dis)=>`<div class="lrow${dis?' dis':''}"><span class="ln">${name}</span><input type="range" min="1" max="100" step="1" value="${val}" data-op="${key}"${dis?' disabled':''}><b class="lv">${val}</b>${lockKey?`<button class="lk${lockOn?' on':''}" data-lock="${lockKey}" title="${lockOn?'Unlock':'Lock'} ${name}"${dis?' disabled':''}>${LOCK_SVG(lockOn)}</button>`:'<span class="lk"></span>'}</div>`;
  pop.innerHTML=`<h4>Layers</h4><div class="ls lays" style="width:350px"><div class="lrow lall"><span class="ln"><b>All layers</b></span><button class="lkall${all?' on':''}" data-lockall="1">${LOCK_SVG(all)}<span>${all?'Unlock all':'Lock all'}</span></button></div>
   <div class="hd">Layers <span class="hdr">opacity · lock</span></div>${LAYERS.map(([k,n])=>row(k,n,L.op[k]==null?100:L.op[k],L.lock[k],k)).join('')}
-  <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}<div class="lrow"><span class="ln" title="The shot description written next to each camera on the floor plan">Shot Descriptions</span><button class="lsw${P.ui.camDesc?' on':''}" data-camdesc="1" role="switch" aria-checked="${P.ui.camDesc?'true':'false'}">${P.ui.camDesc?'On':'Off'}</button></div><div class="lrow"><span class="ln" title="Pink guides line up set pieces and props, center them in a room and space them evenly. Hold Option while dragging to place freely.">Smart Guides</span><button class="lsw${P.ui.noSnap?'':' on'}" data-snap="1" role="switch" aria-checked="${P.ui.noSnap?'false':'true'}">${P.ui.noSnap?'Off':'On'}</button></div>${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
+  <div class="hd">Visibility</div>${row('lk','Locked Items',L.lk)}${row('desc','Shot Labels',L.desc)}<div class="lrow"><span class="ln" title="The shot description written next to each camera on the floor plan">Shot Descriptions</span><button class="lsw${uiOn('camDesc')?' on':''}" data-camdesc="1" role="switch" aria-checked="${uiOn('camDesc')?'true':'false'}">${uiOn('camDesc')?'On':'Off'}</button></div><div class="lrow"><span class="ln" title="Pink guides line up set pieces and props, center them in a room and space them evenly. Hold Option while dragging to place freely.">Smart Guides</span><button class="lsw${uiOn('noSnap')?'':' on'}" data-snap="1" role="switch" aria-checked="${uiOn('noSnap')?'false':'true'}">${uiOn('noSnap')?'Off':'On'}</button></div>${row('bg','Background Image',bg?Math.round((bg.op||1)*100):100,bg&&bg.locked,'bg',!bg)}
   <div class="pnote">A locked layer can’t be selected or moved, so you can work on top of it. Locking a layer fades it to 50%; unlocking brings back its opacity. Locked Items sets how faded anything locked looks.</div></div>`;
  const box=pop.querySelector('.lays');
  box.addEventListener('input',e=>{const r=e.target.closest('[data-op]');if(!r)return;const v=+r.value,k=r.dataset.op;r.nextElementSibling.textContent=v;setLayerVal(s,k,v);if(k==='bg')renderBg();else applyLayers();});
  box.addEventListener('change',e=>{if(e.target.closest('[data-op]'))commit({insp:false});});
- box.addEventListener('click',e=>{if(e.target.closest('[data-camdesc]')){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();drawLayers();return;}if(e.target.closest('[data-snap]')){P.ui.noSnap=!P.ui.noSnap;if(!P.ui.noSnap)delete P.ui.noSnap;saveLocal();drawLayers();return;}const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
+ box.addEventListener('click',e=>{if(e.target.closest('[data-camdesc]')){uiSet('camDesc',!uiOn('camDesc'));render();drawLayers();return;}if(e.target.closest('[data-snap]')){uiSet('noSnap',!uiOn('noSnap'));drawLayers();return;}const a=e.target.closest('[data-lockall]'),l=e.target.closest('[data-lock]');if(!a&&!l)return;s.layers=s.layers||{};s.layers.lock=Object.assign({},lay(s).lock);
   const fade=(k,on)=>{s.layers.op0=Object.assign({},s.layers.op0);if(k==='bg'){if(!s.bg)return;if(on){s.layers.op0.bg=Math.round((s.bg.op||1)*100);s.bg.op=Math.min(s.bg.op||1,.5);}else if(s.layers.op0.bg!=null){s.bg.op=s.layers.op0.bg/100;delete s.layers.op0.bg;}return;}
    s.layers.op=Object.assign({},lay(s).op);const cur=s.layers.op[k]==null?100:s.layers.op[k];if(on){s.layers.op0[k]=cur;s.layers.op[k]=Math.min(cur,50);}else if(s.layers.op0[k]!=null){s.layers.op[k]=s.layers.op0[k];delete s.layers.op0[k];}};
   if(a){const on=!all;for(const [k] of LAYERS){if(!!s.layers.lock[k]!==on)fade(k,on);s.layers.lock[k]=on;}if(s.bg){if(!!s.bg.locked!==on)fade('bg',on);s.bg.locked=on;}}
@@ -6449,26 +6461,28 @@ function slChoose(btn){const c=findCam(btn.dataset.id);if(!c)return;const s=c.s,
  draw();place();{const on=d.querySelector('.rad.on');if(on&&on.closest('.pk').scrollIntoView)on.closest('.pk').scrollIntoView({block:'nearest'});}setTimeout(()=>addEventListener('pointerdown',dropOut,true),0);}
 const pick1=(k,idv,v)=>`<button class="slpick sl1${v?'':' none'}" data-pick1="${k}" ${idv}><span>${esc(v||'—')}</span></button>`;
 function shotOptions(k){const used=new Set();for(const sc of P.scenes)for(const it of sc.items)if(it.type==='cam')for(const m of it.marks){if(k==='type'&&m.on)continue;const v=String(m[k]||'').trim();if(v&&!PRESET[k].includes(v))used.add(v);}return [...PRESET[k],...[...used].sort()];}
+let shotFrom=null;
 function shotPop(cx,cy){
  if(!sel||tool||offCanvas())return;const s=scene(),it=itemById(sel.id);if(!it||it.type!=='cam'){objPop(cx,cy);return;}
  popAt={x:cx,y:cy};const n=nVer(it),vi=verStart(it,sel.mark||0),m=it.marks[vi],many=rowsOf(s).filter(r=>r.vi===0).length>1;
  const val=v=>v?esc(trunc(String(v),24)):'<i>Not Set</i>',row=(k,v)=>`<button data-sf="pick" data-k="${k}">${SHOT_F[k]}<span class="pgv">${val(v)} ›</span></button>`;
- pop.innerHTML=`<h4>Shot Description</h4><div class="ls shotls" style="width:320px">
+ pop.innerHTML=`<h4>${shotFrom?'<button class="back">‹ Back</button>':''}Shot Description</h4><div class="ls shotls" style="width:320px">
   <div class="hd">Shot / Version</div><div class="sv2"><button data-sf="shots"${many?'':' disabled'}>Shot ${esc(shotCode(s,it))}<span class="pgv">›</span></button><button data-sf="vers"${n>1?'':' disabled'}>Version ${verCode(s,verNum(it,vi))}<span class="pgv">›</span></button></div>
   <div class="hd">This Version</div>${row('size',m.size)}${row('type',m.type)}${row('angle',m.angle)}${row('move',m.move)}
   <div class="hd">Description</div><button data-sf="desc" class="sdesc"><span>${m.desc?esc(trunc(String(m.desc),120)):'<i>Not Set</i>'}</span><span class="pgv">›</span></button>
   <div class="hd">Storyboard</div><button data-sf="frame">${m.sb?'Replace Main Frame…':'Add Storyboard Frame…'}</button>${m.sb?`<button data-sf="frame2">Add Another Frame…${(m.sbs||[]).length?`<span class="pgv">${sbAll(m).length} frames</span>`:''}</button>`:''}
-  <div class="hd">Label</div>${it.lab?'<button data-sf="labreset">Reattach Label to the Camera</button>':'<button data-sf="labfree">Detach Label</button>'}<button data-sf="camdesc">Show Descriptions on the Floor Plan<span class="chk${P.ui.camDesc?' on':''}">${P.ui.camDesc?'✓':''}</span></button>
+  <div class="hd">Label</div>${it.lab?'<button data-sf="labreset">Reattach Label to the Camera</button>':'<button data-sf="labfree">Detach Label</button>'}<button data-sf="camdesc">Show Descriptions on the Floor Plan<span class="chk${uiOn('camDesc')?' on':''}">${uiOn('camDesc')?'✓':''}</span></button>
   <div class="hd">Add / Remove</div><button data-sf="addver">Add Version…</button>${n>1?`<button data-sf="delver">${IC.x}Remove This Version</button>`:''}<button data-sf="del">${IC.x}Delete From Shot List</button></div>`;
  pop.classList.add('on');popFor=null;placePopAt(cx,cy);
+ {const bb=pop.querySelector('h4 .back');if(bb)bb.onclick=()=>objPop(popAt.x,popAt.y);}
  pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-sf]');if(!b||b.disabled)return;const a=b.dataset.sf,back=()=>shotPop(popAt.x,popAt.y);
   if(a==='pick')shotPick(b.dataset.k);
   else if(a==='shots')shotList(false);
   else if(a==='vers')shotList(true);
-  else if(a==='desc'){const at=popAt;modal(`<h3>Description</h3><p class="mut">Shot ${esc(shotCode(s,it))}${n>1?' · version '+verCode(s,verNum(it,vi)):''}</p><label class="fld"><textarea id="sdT" rows="5">${esc(m.desc||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const t=card.querySelector('#sdT');t.focus();t.setSelectionRange(t.value.length,t.value.length);card.querySelector('#ok').onclick=()=>{m.desc=t.value;closeModal();commit();shotPop(at.x,at.y);};});}
+  else if(a==='desc'){const at=popAt;kidNext(()=>shotPop(at.x,at.y));modal(`<h3>Description</h3><p class="mut">Shot ${esc(shotCode(s,it))}${n>1?' · version '+verCode(s,verNum(it,vi)):''}</p><label class="fld"><textarea id="sdT" rows="5">${esc(m.desc||'')}</textarea></label><div class="btns end"><button data-x>Cancel</button><button class="pri" id="ok">Save</button></div>`,card=>{const t=card.querySelector('#sdT');t.focus();t.setSelectionRange(t.value.length,t.value.length);card.querySelector('#ok').onclick=()=>{m.desc=t.value;closeModal();commit();shotPop(at.x,at.y);};});}
   else if(a==='frame'){closePop();act('sbAdd',{dataset:{id:it.id,v:String(vi)}});}
   else if(a==='frame2'){closePop();act('sbMore',{dataset:{id:it.id,v:String(vi)}});}
-  else if(a==='camdesc'){P.ui.camDesc=!P.ui.camDesc;saveLocal();render();back();}
+  else if(a==='camdesc'){uiSet('camDesc',!uiOn('camDesc'));render();back();}
   else if(a==='labreset'){delete it.lab;closePop();commit();toast('Label is back with its camera.');}
   else if(a==='labfree'){labDetach(it,0);closePop();commit();toast('Label detached. Drag it where you want it.');}
   else if(a==='addver'){addVersion(it,vi);}
@@ -6482,7 +6496,7 @@ function shotPick(k){const it=itemById(sel.id);if(!it)return;const m=it.marks[se
  pop.innerHTML=`<h4><button class="back">‹ Back</button>${T}</h4><div class="ls" style="width:320px">${body}<div class="hd">Or</div><button data-v="__own">Type Your Own…</button><button data-v="">Not Set<span class="rad${cur?'':' on'}"></span></button></div>`;
  const at=popAt,back=()=>shotPop(at.x,at.y);pop.querySelector('.back').onclick=back;placePopAt(at.x,at.y);
  pop.querySelector('.ls').onclick=e=>{const b=e.target.closest('[data-v]');if(!b)return;const v=b.dataset.v;
-  if(v==='__own'){askText(T,'Your own '+T.toLowerCase(),cur||'',nv=>{m[k]=ownAdd(k,nv)||nv;if(k==='type')delete m.on;commit();back();});return;}
+  if(v==='__own'){kidNext(()=>{shotPop(at.x,at.y);shotPick(k);});askText(T,'Your own '+T.toLowerCase(),cur||'',nv=>{m[k]=ownAdd(k,nv)||nv;if(k==='type')delete m.on;commit();back();});return;}
   m[k]=v;if(k==='type'){delete m.on;commit();if(whoKind(v)){typeAsk(scene(),it,sel.mark||0,back);return;}}else commit();back();};
 }
 function shotList(versions){const s=scene(),it=itemById(sel.id);if(!it)return;const at=popAt,back=()=>shotPop(at.x,at.y),R=rowsOf(s).filter(r=>versions?r.it===it:r.vi===0);
@@ -6496,12 +6510,12 @@ let firstDown=null,shiftSolo=false;
 function menuFor(el,x,y){if(setOn||tool||offCanvas())return;{const al=!(el&&el.dataset&&el.dataset.lab)?attachedLabelAt(x,y):null;if(al)el=al;}if(!el||!el.dataset||!el.dataset.id)el=labelAt(x,y);if(!el||!el.dataset||!el.dataset.id){closePop();return;}
  const id=el.dataset.id,mk=el.dataset.mark!=null?+el.dataset.mark:null,pj=el.dataset.pan?+el.dataset.pan:0;
  if(id!=='__bg'&&!itemById(id))return;msel=null;sel=pj?{id,mark:mk,pan:pj}:{id,mark:mk};if(el.dataset.badge!=null)sel.badge=true;if(el.dataset.frame){sel.frame=true;const fk=+(el.dataset.fk||0);if(fk)sel.fk=fk;renderUI();renderShotSel();sbPop(x,y);return;}renderUI();
- if(el.dataset.lab&&itemById(id).type==='cam'){sel.lab=true;renderUI();renderShotSel();shotPop(x,y);return;}if(el.dataset.lab){sel.lab=true;renderUI();}objPop(x,y);}
+ if(el.dataset.lab&&itemById(id).type==='cam'){sel.lab=true;renderUI();renderShotSel();shotFrom=null;shotPop(x,y);return;}if(el.dataset.lab){sel.lab=true;renderUI();}objPop(x,y);}
 function selScreenPos(){const it=sel&&sel.id!=='__bg'?itemById(sel.id):null,r=svg.getBoundingClientRect();let w={x:0,y:0};
  if(it){if(it.marks){const m=it.marks[sel.mark||0]||it.marks[0];w={x:m.x,y:m.y};}else if(it.type==='wall')w={x:(it.x1+it.x2)/2,y:(it.y1+it.y2)/2};else w={x:it.x,y:it.y};}else return {x:r.left+r.width/2,y:r.top+r.height/2};
  return {x:r.left+view.x+w.x*view.k,y:r.top+view.y+w.y*view.k};}
 svg.addEventListener('contextmenu',e=>{e.preventDefault();menuFor(e.target.closest('[data-id]'),e.clientX,e.clientY);});
-$('#shots').addEventListener('contextmenu',e=>{const r=e.target.closest('.sr[data-id]');if(!r)return;e.preventDefault();if(tool||offCanvas())return;msel=null;sel={id:r.dataset.id,mark:+r.dataset.v||0};renderUI();renderShotSel();shotPop(e.clientX,e.clientY);});
+$('#shots').addEventListener('contextmenu',e=>{const r=e.target.closest('.sr[data-id]');if(!r)return;e.preventDefault();if(tool||offCanvas())return;msel=null;sel={id:r.dataset.id,mark:+r.dataset.v||0};renderUI();renderShotSel();shotFrom=null;shotPop(e.clientX,e.clientY);});
 addEventListener('keydown',e=>{if(e.key==='Shift'){if(!e.repeat)shiftSolo=true;}else shiftSolo=false;},true);
 addEventListener('pointerdown',()=>{shiftSolo=false;},true);
 addEventListener('keyup',e=>{if(e.key!=='Shift'||!shiftSolo)return;shiftSolo=false;const a=document.activeElement;
@@ -6613,20 +6627,23 @@ function finishLasso(poly,cx,cy){
  sel=null;inspOpen=false;renderInsp();msel=new Set(hits.map(h=>h.id));renderUI();multiPop(cx,cy);
 }
 function groupPgTxt(its){const t=new Set(its.map(i=>pagesSummary(i)));return t.size===1?[...t][0]:'Mixed';}
+let mselBack=null;function mselKey(){return msel?[...msel].sort().join(','):'';}
 function multiPop(cx,cy){
  const its=mselItems();if(!its.length){msel=null;return;}popAt={x:cx,y:cy};
  const n=its.length,allLocked=its.every(i=>i.locked),cnt=t=>its.filter(i=>i.type===t).length,B=(o,l,i)=>`<button data-o="${o}">${i||''}${l}</button>`;
  const kinds=[['cam','Only Cameras'],['char','Only Characters']].filter(([t])=>cnt(t)&&cnt(t)<n);
  const other=its.filter(i=>!ACTOR(i.type)).length;
  const grp=oneGroup(its),gprops=its.filter(i=>!i.marks&&i.type!=='wall'&&i.type!=='axis'&&i.x!=null),gk=grp?groupMk():null;
- pop.innerHTML=`<h4>${grp?'Group of '+n:n+' Items Selected'}</h4><div class="ls" style="width:290px">${grp&&gprops.length?`<div class="duo mvd">${B('gmove','Moves To…')}${B('gfrom','Comes From…')}</div>`:''}<div class="hd">Move</div><div class="pnote">Drag any one of them to move them all.</div>${B('mrot','Rotate…')}${gk?B('gdelpos','Delete Position '+(mselTap.mk+1)+' for the Group'):''}<div class="hd">Arrange</div>${grp?B('mungroup','Ungroup'):n>1?B('mgroup','Group'):''}${B('mdup','Duplicate All')}${its.some(i=>(BOX(i.type)||i.type==='wall'||i.type==='text')&&i.kind!=='image'&&i.kind!=='photopin')?B('mysave','Save as My Prop…'):''}${B('mlock',allLocked?'Unlock All':'Lock All')}${cnt('cam')?B('medit',`Change ${cnt('cam')>1?'These Shots':'This Shot'}… (⌘I)`):''}${scene().pages.length>1?`<div class="hd">Pages</div><button data-o="mpages">Pages for All Selected<span class="pgv">${esc(groupPgTxt(its))} ›</span></button>`:''}${kinds.length||(other&&other<n)?'<div class="hd">Narrow selection</div>':''}${kinds.map(([t,l])=>B('only-'+t,l)).join('')}${other&&other<n?B('only-other','Only Props & Set'):''}<div class="hd">Selection</div>${B('mclear','Clear Selection')}<div class="dv"></div><button data-o="mdel" class="dng">Delete These ${n}</button></div>`;
+ const bk=mselBack&&mselBack.key===mselKey()?mselBack:null;
+ pop.innerHTML=`<h4>${bk?'<button class="back">‹ Back</button>':''}${grp?'Group of '+n:n+' Items Selected'}</h4><div class="ls" style="width:290px">${grp&&gprops.length?`<div class="duo mvd">${B('gmove','Moves To…')}${B('gfrom','Comes From…')}</div>`:''}<div class="hd">Move</div><div class="pnote">Drag any one of them to move them all.</div>${B('mrot','Rotate…')}${gk?B('gdelpos','Delete Position '+(mselTap.mk+1)+' for the Group'):''}<div class="hd">Arrange</div>${grp?B('mungroup','Ungroup'):n>1?B('mgroup','Group'):''}${B('mdup','Duplicate All')}${its.some(i=>(BOX(i.type)||i.type==='wall'||i.type==='text')&&i.kind!=='image'&&i.kind!=='photopin')?B('mysave','Save as My Prop…'):''}${B('mlock',allLocked?'Unlock All':'Lock All')}${cnt('cam')?B('medit',`Change ${cnt('cam')>1?'These Shots':'This Shot'}… (⌘I)`):''}${scene().pages.length>1?`<div class="hd">Pages</div><button data-o="mpages">Pages for All Selected<span class="pgv">${esc(groupPgTxt(its))} ›</span></button>`:''}${kinds.length||(other&&other<n)?'<div class="hd">Narrow selection</div>':''}${kinds.map(([t,l])=>B('only-'+t,l)).join('')}${other&&other<n?B('only-other','Only Props & Set'):''}<div class="hd">Selection</div>${B('mclear','Clear Selection')}<div class="dv"></div><button data-o="mdel" class="dng">Delete These ${n}</button></div>`;
  pop.classList.add('on');popFor=null;
  {let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const it of its){const b=msBox(it);if(!b)continue;x0=Math.min(x0,b.x0);y0=Math.min(y0,b.y0);x1=Math.max(x1,b.x1);y1=Math.max(y1,b.y1);}
   const W=$('#wrap').clientWidth,H=$('#wrap').clientHeight,pw=pop.offsetWidth,ph=pop.offsetHeight,sx0=x0*view.k+view.x,sx1=x1*view.k+view.x,sy0=y0*view.k+view.y;
   let left=sx1+16;if(left+pw>W-8)left=sx0-pw-16;if(left<8)left=W-pw-8;pop.style.bottom='auto';pop.style.left=clamp(left,8,Math.max(8,W-pw-8))+'px';pop.style.top=clamp(sy0,8,Math.max(8,H-ph-8))+'px';}
+ {const bb=pop.querySelector('h4 .back');if(bb)bb.onclick=()=>{mselBack=null;if(bk.one&&itemById(bk.one.id)){msel=null;sel=bk.one;renderUI();objPop(cx,cy);}else{msel=new Set((bk.ids||[]).filter(i=>itemById(i)));renderUI();if(msel.size)multiPop(cx,cy);else{msel=null;closePop();}}};}
  pop.querySelector('.ls').onclick=e=>{const x=e.target.closest('[data-o]');if(!x)return;const o=x.dataset.o,s=scene();
   if(o==='mpages'){pagesSub(true);return;}
-  if(o.startsWith('only-')){const t=o.slice(5);msel=new Set(its.filter(i=>t==='other'?!ACTOR(i.type):i.type===t).map(i=>i.id));renderUI();multiPop(cx,cy);return;}
+  if(o.startsWith('only-')){const t=o.slice(5);mselBack={ids:[...msel]};msel=new Set(its.filter(i=>t==='other'?!ACTOR(i.type):i.type===t).map(i=>i.id));mselBack.key=mselKey();renderUI();multiPop(cx,cy);return;}
   closePop();
   if(o==='mclear'){clearMsel();return;}
   if(o==='mgroup'){groupSel();return;}
@@ -6770,7 +6787,7 @@ svg.addEventListener('pointermove',e=>{
  if(g.type==='drag'||g.type==='label'||g.type==='frame'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<(g.hold?9:4))return;if(!g.moved){g.moved=true;g.hold=false;dragging=true;$('#ctx').classList.remove('on');}
   const dx=w.x-g.last.x,dy=w.y-g.last.y;
   if(g.id==='__bg'){const b=scene().bg;b.x+=dx;b.y+=dy;}
-  else{const it=itemById(g.id);if(it){if(g.type==='label'){if(g.alab&&!g.freed){g.freed=true;labStartFree(it,g.mk);}if(it.type==='cam'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else{const h=labHost(it,g.mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;if(h&&h.lab)h.lab={x:h.lab.x+dx/k,y:h.lab.y+dy/k};}}else if(g.type==='frame'){const m=it.marks[g.mk],fk=g.fk||0;if(!g.free){const c=fPos(it,g.mk,m,frameLayout(scene(),scene().pageId),fk);g.free={x:c.x,y:c.y};}g.free.x+=dx;g.free.y+=dy;fSetPos(m,fk,e.altKey?(g.guides=null,g.free):frameSnap(scene(),it,g.mk,m,fk,g.free,g));}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else if(BOX(it.type)&&!g.mk&&it.kind!=='dollytrack'&&it.w&&it.h){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;const q=(e.altKey||P.ui.noSnap)?(g.guides=null,g.free):boxSnap(scene(),it,g.free,g);it.x=q.x;it.y=q.y;}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
+  else{const it=itemById(g.id);if(it){if(g.type==='label'){if(g.alab&&!g.freed){g.freed=true;labStartFree(it,g.mk);}if(it.type==='cam'){const p=camLabelPos(it,it.marks[0],labLines(it.marks[0],0,it.marks.length).length);it.lab={x:p.x+dx,y:p.y+dy};}else{const h=labHost(it,g.mk),k=it.type==='char'&&(charById(it.charId)||{}).extra?.78:1;if(h&&h.lab)h.lab={x:h.lab.x+dx/k,y:h.lab.y+dy/k};}}else if(g.type==='frame'){const m=it.marks[g.mk],fk=g.fk||0;if(!g.free){const c=fPos(it,g.mk,m,frameLayout(scene(),scene().pageId),fk);g.free={x:c.x,y:c.y};}g.free.x+=dx;g.free.y+=dy;fSetPos(m,fk,e.altKey?(g.guides=null,g.free):frameSnap(scene(),it,g.mk,m,fk,g.free,g));}else if(isWallPiece(it)&&!g.mk){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;snapPiece(scene(),it,g.free);}else if(it.type==='wall'){wallDrag(g,it,dx,dy);}else if(BOX(it.type)&&!g.mk&&it.kind!=='dollytrack'&&it.w&&it.h){if(!g.free)g.free={x:it.x,y:it.y};g.free.x+=dx;g.free.y+=dy;const q=(e.altKey||uiOn('noSnap'))?(g.guides=null,g.free):boxSnap(scene(),it,g.free,g);it.x=q.x;it.y=q.y;}else{moveItem(it,g.mk,dx,dy);if(it.type==='cam'&&e.shiftKey&&g.mk!=null){const m=it.marks[g.mk];if(m.sba)m.sba={x:m.sba.x+dx,y:m.sba.y+dy};}}}}
   g.last=w;renderCanvas();return;}
  if(g.type==='track'){if(Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<5)return;const it=itemById(g.id),a=positions(it)[g.i-1],b=posAt(it,g.i);b.cp=b.cp||[];b.cp.push(toTD(a,b,g.w0));gesture={type:'handle',h:`cp:${g.i}:${b.cp.length-1}`,moved:true};dragging=true;$('#ctx').classList.remove('on');dragHandle(gesture.h,w);renderCanvas();return;}
  if(g.type==='badge'){if(!g.moved&&Math.hypot(e.clientX-g.sx,e.clientY-g.sy)<4)return;g.moved=true;dragging=true;const it=itemById(g.id),w=toWorld(e.clientX,e.clientY);if(it){const c0=it.type==='char'?it.marks[runOf(it,g.mk)[0]]:it.marks[g.mk],ang=Math.round(Math.atan2(w.y-c0.y,w.x-c0.x)*180/Math.PI/5)*5;if(it.type==='char')it.marks[g.mk].rot=ang;else if(g.bj&&it.marks[g.mk].pans)it.marks[g.mk].pans[g.bj-1].rot=ang;else it.marks[g.mk].rot=ang;}renderCanvas();return;}
@@ -6836,7 +6853,7 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 /* ---------- toolbar + keys ---------- */
 $('#bMenu').onclick=()=>menu();$('#bAdd').onclick=addMenu;$('#bPages').onclick=pagesMenu;
 $('#bLayers').onclick=layersPop;$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;$('#bFit').onclick=fit;
-$('#bFr').onclick=()=>{P.ui.frames=!frameOn();saveLocal();renderTop();renderCanvas();if(frameOn()&&!pageItems(scene()).some(i=>i.type==='cam'&&i.marks.some(m=>m.sb)))toast('No storyboard frames yet. Select a camera and tap Frame.');};
+$('#bFr').onclick=()=>{uiSet('frames',!frameOn());renderTop();renderCanvas();if(frameOn()&&!pageItems(scene()).some(i=>i.type==='cam'&&i.marks.some(m=>m.sb)))toast('No storyboard frames yet. Select a camera and tap Frame.');};
 const narrow=()=>matchMedia('(max-width:640px)').matches;
 $('#bSide').onclick=()=>{const a=$('#app');if(narrow())a.classList.toggle('side-open');else{a.classList.toggle('side-off');requestAnimationFrame(()=>{placeCtx();});}};
 $('#bHide').onclick=()=>{const a=$('#app');if(narrow())a.classList.remove('side-open');else a.classList.add('side-off');};
@@ -6848,7 +6865,7 @@ if(0){const dv=null;let drag=null;
  const up=()=>{if(drag){drag=null;saveLocal();renderUI();}};dv.addEventListener('pointerup',up);dv.addEventListener('pointercancel',up);}
 addEventListener('keydown',e=>{
  const t=e.target,typing=(t.matches&&t.matches('input,textarea,select'))||!!t.isContentEditable;
- if(!modalEl.hidden){if(e.key==='Escape'){if(br&&br.sub&&$('#br')){br.sub=null;brRender();}else closeModal();}return;}
+ if(!modalEl.hidden){if(e.key==='Escape'){if(br&&br.sub&&$('#br')){br.sub=null;brRender();}else modalEsc();}return;}
  if(e.key==='Escape'&&document.querySelector('#drop.mm')){closeDrop();return;}
  if(e.key==='Escape'&&pop.classList.contains('on')){closePop();return;}
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='o'){e.preventDefault();if(e.shiftKey||setOn)openBrowser();else libSet(true,true);return;}
