@@ -532,8 +532,8 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 #libL .lbh{padding:10px 10px 3px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut)}
 #libL .lbe{padding:6px 10px;font-size:13px;color:var(--mut)}
 #libL .lbsep{flex:none;height:1px;margin:6px;background:var(--line)}
-#lib .lbb{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 10px;border-top:1px solid var(--line)}
-#lib .lbb button{flex:1 1 auto;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--ink);font-size:13.5px;font-weight:600}
+#lib .lbb{display:flex;gap:6px;padding:2px 10px 8px}
+#lib .lbb button{flex:1 1 0;min-width:0;height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--chip);color:var(--ink);font-size:13.5px;font-weight:600}
 #lib .lbb button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
 
 /* Library rows: the open scene's row, the options button, and their menu */
@@ -636,7 +636,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121142940';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121145721';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3790,7 +3790,7 @@ function libList(){const q=libQ.trim().toLowerCase();
   +'<div class="lbsep"></div><button class="lbx" data-la="tpls">Templates</button><button class="lbx" data-la="trash">Trash</button>';}
 function renderLib(){const a=$('#app'),el=$('#lib');if(!el)return;const on=libOn()&&!setOn;a.classList.toggle('lib-on',on);
  const sb=$('#sceneBtn');if(sb)sb.setAttribute('aria-expanded',on?'true':'false');if(!on)return;
- if(!el.firstChild){el.innerHTML='<div class="lbtop"><b>Library</b><button id="libHide" aria-label="Hide the Library" title="Hide the Library">‹</button></div><div class="lbq"><input id="libq" type="search" placeholder="Search scenes" aria-label="Search scenes" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="lbtopdrop" data-ldrop="root"><span class="ds">Drop here to take it out of its folder</span><span class="df">Drop here for the top level</span></div></div><div id="libL"></div><div class="lbb"><button class="pri" data-la="new">New Scene</button><button data-la="newfolder">New Folder</button><button data-la="org">Organize…</button></div>';libHtml=null;}
+ if(!el.firstChild){el.innerHTML='<div class="lbtop"><b>Library</b><button id="libHide" aria-label="Hide the Library" title="Hide the Library">‹</button></div><div class="lbb"><button class="pri" data-la="new">New Scene</button><button data-la="newfolder">New Folder</button></div><div class="lbq"><input id="libq" type="search" placeholder="Search scenes" aria-label="Search scenes" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="lbtopdrop" data-ldrop="root"><span class="ds">Drop here to take it out of its folder</span><span class="df">Drop here for the top level</span></div></div><div id="libL"></div>';libHtml=null;}
  const h=libList();if(h!==libHtml){$('#libL').innerHTML=h;libHtml=h;}}
 function libPick(id){const t=P.scenes.find(s=>s.id===id);if(!t)return;
  if(id!==P.sceneId){const o=P.ui.libOpen=P.ui.libOpen||{};for(const f of fPath(sFolder(t)))o[f.id]=true;try{flushNotes();if(txTimer)txFlush();}catch(e){}openScene(id);}
@@ -3822,7 +3822,7 @@ function libMenu(rect,kind,id,sub){closePop();closeDrop();const x=kind==='f'?fBy
  d.style.maxHeight=Math.max(200,innerHeight-16)+'px';d.style.left=Math.max(8,Math.min(innerWidth-d.offsetWidth-8,rect.left))+'px';d.style.top=Math.max(8,Math.min(innerHeight-d.offsetHeight-8,rect.bottom+4))+'px';
  const open1=fid=>{(P.ui.libOpen=P.ui.libOpen||{})[fid]=true;};
  const ACT={info:()=>sceneInfo(x),dup:()=>{const n=duplicateScene(x);commit();toast(`Made ${sceneLabel(n)}.`);},
-  trash:()=>{trashScenes([x.id]);commit();fit();toast(`${sceneLabel(x)} moved to Trash. Organize… › Trash to get it back.`);},
+  trash:()=>{trashScenes([x.id]);commit();fit();toast(`${sceneLabel(x)} moved to Trash. Trash is at the bottom of the Library.`);},
   fnew:()=>{open1(x.id);newScene(x.id);},fsub:()=>libName('New folder inside '+x.name,'','Create',v=>{P.folders.push({id:uid(),name:v,parent:x.id});open1(x.id);commit();},v=>fTaken(v,x.id)?fDupMsg(v):''),
   frename:()=>libName('Rename folder',x.name,'Save',v=>{x.name=v;commit();},v=>fTaken(v,fParent(x),x.id)?fDupMsg(v):''),foverview:()=>overviewDialog(x.id),
   fdel:()=>{const n=countIn(x.id),k=fDesc(x.id).size-1;confirmBox(`Delete “${x.name}”?`,(n?`Its ${plural(n,'scene')} go to the Trash, where you can put them back. `:'')+(k?`The ${plural(k,'folder')} inside it ${k===1?'is':'are'} removed too.`:'')+(!n&&!k?'The folder is empty.':''),'Delete folder',()=>{const nm=x.name;deleteFolder(x.id);commit();toast(`Folder “${nm}” deleted.`);});},
@@ -3901,9 +3901,17 @@ function fScenes(id){id=id||null;return liveScenes().filter(s=>sFolder(s)===id).
 const nmKey=v=>String(v||'').trim().replace(/\s+/g,' ').toLowerCase();
 const sKey=s=>nmKey(s.number)+'|'+nmKey(s.title||s.heading||'Untitled');
 function sTaken(s,folder){folder=(folder===undefined?sFolder(s):folder)||null;const k=sKey(s);return P.scenes.some(q=>q.id!==s.id&&!q.trashed&&!q.tpl&&(sFolder(q)||null)===folder&&sKey(q)===k);}
-function sUnique(s){if(s.tpl||s.trashed||!sTaken(s))return false;const base=String(s.title||s.heading||'Untitled').trim();for(let n=2;n<500;n++){s.title=base+' '+n;if(!sTaken(s))break;}return true;}
+function sUnique(s){if(s.tpl||s.trashed||!sTaken(s))return false;const base=String(s.title||s.heading||'Untitled').trim();for(let n=1;n<500;n++){s.title=base+' ('+n+')';if(!sTaken(s))break;}return true;}
 function fTaken(name,parent,except){const k=nmKey(name);parent=parent||null;return P.folders.some(f=>f.id!==except&&(fParent(f)||null)===parent&&nmKey(f.name)===k);}
-function fFree(name,parent,except){if(!fTaken(name,parent,except))return name;for(let n=2;n<500;n++)if(!fTaken(name+' '+n,parent,except))return name+' '+n;return name;}
+function fFree(name,parent,except){if(!fTaken(name,parent,except))return name;for(let n=1;n<500;n++)if(!fTaken(name+' ('+n+')',parent,except))return name+' ('+n+')';return name;}
+/* names that are already doubled when the app opens (made before this rule, or arrived from the other device): one of each keeps its name and the rest get (1), (2)…
+   Which one keeps it is decided by id, never by position or time, so two devices holding the same scenes make the very same change and their copies still match. */
+function fixNames(){const out=[],G={},F={},byId=(a,b)=>a.id<b.id?-1:a.id>b.id?1:0;
+ for(const f of P.folders){const k=(fParent(f)||'')+'|'+nmKey(f.name);(F[k]=F[k]||[]).push(f);}
+ for(const k of Object.keys(F).sort()){const g=F[k];if(g.length<2)continue;g.sort(byId);for(const f of g.slice(1)){f.name=fFree(f.name,fParent(f),f.id);out.push(f.name);}}
+ for(const s of P.scenes){if(s.tpl||s.trashed||s.ph)continue;const k=(sFolder(s)||'')+'|'+sKey(s);(G[k]=G[k]||[]).push(s);} /* the untouched starter scene is never renamed: a title would make it look like real work */
+ for(const k of Object.keys(G).sort()){const g=G[k];if(g.length<2)continue;g.sort(byId);for(const x of g.slice(1))if(sUnique(x))out.push(sceneLabel(x));}
+ return out;}
 const fDupMsg=v=>`A folder named “${v}” is already here. Choose another name.`;
 function sceneLabel(s){return (s.number?'Sc. '+s.number+' · ':'')+(s.title||s.heading||'Untitled').toUpperCase();}
 function rootOf(s){const p=fPath(sFolder(s));return p.length?p[0].id:null;}
@@ -4265,7 +4273,7 @@ function openScene(id){if(!P.scenes.some(s=>s.id===id&&!s.trashed))return;stopPl
 function trashScenes(ids){const now=Date.now();for(const s of P.scenes)if(ids.includes(s.id))s.trashed=now;msel=null;ensureLive();}
 function restoreScenes(ids){for(const s of P.scenes)if(ids.includes(s.id)){delete s.trashed;if(!sFolder(s))delete s.folder;sUnique(s);}}
 function killScenes(ids){P.scenes=P.scenes.filter(s=>!ids.includes(s.id));ensureLive();}
-function duplicateScene(s){let j=JSON.stringify(stripScene(s));for(const id of [s.id,...s.items.map(i=>i.id)])j=j.split('"'+id+'"').join('"'+uid()+'"');const n=JSON.parse(j);delete n.trashed;n.title=(s.title||s.heading||'Untitled')+' (copy)';migrateScene(n);P.scenes.push(n);sUnique(n);txCopy(s.id,n.id);return n;}
+function duplicateScene(s){let j=JSON.stringify(stripScene(s));for(const id of [s.id,...s.items.map(i=>i.id)])j=j.split('"'+id+'"').join('"'+uid()+'"');const n=JSON.parse(j);delete n.trashed;{const base=s.title||s.heading||'Untitled';n.title=base+' (copy)';for(let k=2;k<500&&sTaken(n);k++)n.title=base+' (copy '+k+')';}migrateScene(n);P.scenes.push(n);sUnique(n);txCopy(s.id,n.id);return n;}
 function deleteFolder(id){const d=fDesc(id),now=Date.now();for(const s of P.scenes)if(!s.trashed&&d.has(sFolder(s)))s.trashed=now;P.folders=P.folders.filter(f=>!d.has(f.id));ensureLive();}
 const fmtDay=t=>new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric',year:new Date(t).getFullYear()===new Date().getFullYear()?undefined:'numeric'});
 const plural=(n,w)=>n+' '+w+(n===1?'':'s');
@@ -6742,7 +6750,7 @@ function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split
 function stgFill(){const el=document.getElementById('stgTxt');if(!el||!navigator.storage||!navigator.storage.estimate)return;const f=n=>n>=1073741824?(n/1073741824).toFixed(n<10737418240?1:0)+' GB':n>=1048576?(n/1048576).toFixed(n<10485760?1:0)+' MB':Math.max(1,Math.round(n/1024))+' KB';
  navigator.storage.estimate().then(e=>{if(e&&e.quota&&document.body.contains(el))el.textContent=` Storage on this device: ${f(e.usage||0)} used of about ${f(e.quota)} the app can use.`;}).catch(()=>{});}
 let started=false;
-function start(big,bigSync){if(started)return;started=true;copyInit();load(big,bigSync);setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();
+function start(big,bigSync){if(started)return;started=true;copyInit();load(big,bigSync);let nmFix=[];try{nmFix=fixNames();}catch(e){console.error(e);}setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();if(nmFix.length){saveLocal();setTimeout(()=>toast(`${nmFix.length===1?'One name was':nmFix.length+' names were'} used twice in the same folder, so a number was added: ${nmFix.slice(0,3).map(n=>'“'+n+'”').join(', ')}${nmFix.length>3?' and '+(nmFix.length-3)+' more':''}.`),1500);}
  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}}
 /* the scenes are in the large store but it will not open: never start empty over them without being told to */
 /* ---------- one working copy per browser ----------
