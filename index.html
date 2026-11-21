@@ -636,7 +636,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121145721';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261121154704';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1741,7 +1741,35 @@ function delWins(id,del){if(!del)return false;const T=P.tomb||{},sa=(T.sa||{})[i
 const stripScene=s=>{const o=Object.assign({},s);delete o.pageId;return o;};
 let outdated=false;
 function showUpdate(msg){if(document.getElementById('updBar'))return;const d=document.createElement('div');d.id='updBar';d.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:900;background:#1c1c1e;color:#fff;padding:10px 14px;border-radius:12px;font:14px/1.4 -apple-system,system-ui,sans-serif;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.25)';
- d.innerHTML='<span></span><button style="font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:#2f6fde;color:#fff">Reload</button>';d.firstChild.textContent=msg;d.querySelector('button').onclick=()=>{try{flushNotes();if(typeof txFlush==='function')txFlush();saveLocal();}catch(e){}const t0=Date.now(),go=()=>{if((pIn>0||imgIn>0)&&Date.now()-t0<5000){setTimeout(go,150);return;}location.reload();};go();};document.body.appendChild(d);}
+ d.innerHTML='<span></span><button style="font:inherit;font-weight:600;border:0;border-radius:8px;padding:6px 12px;background:#2f6fde;color:#fff">Reload</button>';d.firstChild.textContent=msg;d.querySelector('button').onclick=()=>appReload(false);document.body.appendChild(d);}
+/* ---------- staying current ----------
+   A window that is already open learns of a new version in two ways: the browser fetches it in the background (asked again every so often while the
+   window is in view, and whenever it comes back into view), or the other device turns out to be newer. Either way the app reloads itself at a moment
+   that costs nothing: you have just come back to it, or you have not touched it for a few minutes. In the middle of something (typing, a dialog or
+   menu open, a tool running, a file being chosen, work still being written) it waits and shows the Reload bar instead. Never offline, and never
+   twice in quick succession. Everything is saved before it reloads. */
+const UPD=(o=>Object.assign(o,Object.assign({away:30000,idle:300000,quiet:20000,every:600000,gap:120000,tick:30000},o)))(window.BB_UPD||{}); /* milliseconds; a test page may hand in its own */
+let updPending=false,updMsg='',updTag='',updHidAt=0,updAct=Date.now(),updQuiet=Date.now(),updFile=0,updAsk=Date.now();
+function appReload(auto){try{flushNotes();if(typeof txFlush==='function')txFlush();saveLocal();}catch(e){}
+ const t0=Date.now(),go=()=>{if((pIn>0||imgIn>0)&&Date.now()-t0<5000){setTimeout(go,150);return;}try{if(auto){sessionStorage.setItem('blk.upd',String(Date.now()));sessionStorage.setItem('blk.updT',String(Date.now()));if(updTag)sessionStorage.setItem('blk.updTag',updTag);}}catch(e){}location.reload();};go();}
+function updSafe(){let last=0;try{last=+sessionStorage.getItem('blk.upd')||0;if(updTag&&sessionStorage.getItem('blk.updTag')===updTag)return false;}catch(e){}
+ const a=document.activeElement,typing=!!a&&(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)||a.isContentEditable);
+ return navigator.onLine!==false&&Date.now()-last>UPD.gap&&!gesture&&!penT&&!penPend.length&&!tool&&!typing&&!(pIn>0||imgIn>0)&&!(updFile&&Date.now()-updFile<600000)&&modalEl.hidden!==false&&!document.querySelector('#pop.on,#drop,#br');}
+function updMark(msg,tag){if(!updPending){updPending=true;updMsg=msg;updTag=tag||'';}
+ if(document.visibilityState==='hidden')return; /* decided on the way back */
+ if(updAct<=updQuiet&&Date.now()-updQuiet<UPD.quiet&&updSafe()){appReload(true);return;} /* just arrived and nothing touched yet */
+ showUpdate(updMsg);}
+/* the page's own version against the newest offline copy the browser now holds: at launch the page is usually already the new one, and then there is nothing to do */
+async function updFound(){let newest='';try{if(window.BB_VERSION&&window.caches){const ks=(await caches.keys()).filter(k=>/^bb-\d+$/.test(k)).sort();if(ks.length){newest=ks[ks.length-1];if(newest<='bb-'+window.BB_VERSION)return;}}}catch(e){}
+ updMark('A new version of the app is ready.',newest);}
+function updCheck(force){if(!('serviceWorker' in navigator)||(!force&&Date.now()-updAsk<UPD.every))return;updAsk=Date.now();try{navigator.serviceWorker.getRegistration().then(r=>{if(r)r.update().catch(()=>{});}).catch(()=>{});}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){updHidAt=Date.now();return;}
+ const away=updHidAt?Date.now()-updHidAt:0;updHidAt=0;updQuiet=Date.now();
+ if(updPending){if(away>=UPD.away&&updSafe())appReload(true);else showUpdate(updMsg);}else updCheck();});
+for(const ev of ['pointerdown','keydown','wheel','touchstart'])addEventListener(ev,()=>{updAct=Date.now();},{capture:true,passive:true});
+document.addEventListener('click',e=>{const t=e.target;if(t&&t.tagName==='INPUT'&&t.type==='file')updFile=Date.now();},true);
+for(const ev of ['change','cancel'])document.addEventListener(ev,e=>{const t=e.target;if(t&&t.tagName==='INPUT'&&t.type==='file')updFile=0;},true);
+if(typeof setInterval==='function')setInterval(()=>{if(document.visibilityState==='hidden')return;if(updPending){if(Date.now()-updAct>=UPD.idle&&updSafe())appReload(true);}else updCheck();},UPD.tick);
 /* opened as its own app on a computer: fill the screen at launch (a browser tab, an iPad and a phone are left alone) */
 function fillScreen(){try{const mq=q=>!!(window.matchMedia&&matchMedia(q).matches);
  if(mq('(display-mode: browser)')||!(mq('(display-mode: standalone)')||mq('(display-mode: window-controls-overlay)')||mq('(display-mode: minimal-ui)')))return false;
@@ -1749,7 +1777,7 @@ function fillScreen(){try{const mq=q=>!!(window.matchMedia&&matchMedia(q).matche
  const sc=window.screen,w=sc.availWidth,h=sc.availHeight;if(!w||!h)return false;if(window.outerWidth>=w-8&&window.outerHeight>=h-8)return false;
  window.moveTo(sc.availLeft||0,sc.availTop||0);window.resizeTo(w,h);return true;}catch(e){return false;}}
 fillScreen();
-if('serviceWorker' in navigator){let hadSW=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW)showUpdate('A new version of the app is ready.');hadSW=true;});}
+if('serviceWorker' in navigator){let hadSW=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadSW)updFound();hadSW=true;});}
 function docs(){const d={meta:{characters:P.characters,folders:P.folders,productions:P.productions||[],labels:P.labels||{},prefs:P.prefs||{},locations:P.locations||[],tomb:P.tomb||{},imgs:[...new Set([...Object.keys(images),...(sync.imgK||[])])].sort(),sceneOrder:P.scenes.map(s=>s.id)}};if(window.BB_VERSION)d.meta.appV=window.BB_VERSION;for(const s of P.scenes){d['scene-'+s.id]={scene:stripScene(s)};const t=txDoc(s.id);if(t)d['txt-'+s.id]=t;}return d;}
 function baseline(){lastJson={};const d=docs();for(const k in d)lastJson[k]=JSON.stringify(d[k]);}
 const markDirty=k=>{if(!sync.dirty.includes(k))sync.dirty.push(k);};
@@ -2119,7 +2147,7 @@ function applyRemote(snap){gMem.clear();
   changed=true;
  }
  if(meta&&metaBack){sync.stamps.meta=Math.max(Date.now(),(meta.updatedAt||0)+1);markDirty('meta');changed=true;setTimeout(()=>{saveLocal();schedulePush(500);},30);}
- if(meta&&meta.appV&&window.BB_VERSION&&String(meta.appV)>String(window.BB_VERSION)&&!outdated){outdated=true;showUpdate('This copy is out of date and has stopped sending changes to your other devices. Reload to update; your work here is saved.');}
+ if(meta&&meta.appV&&window.BB_VERSION&&String(meta.appV)>String(window.BB_VERSION)&&!outdated){outdated=true;updMark('This copy is out of date and has stopped sending changes to your other devices. Reload to update; your work here is saved.','v'+meta.appV);}
  if(meta&&Array.isArray(meta.imgs)){const u=new Set(sync.imgK||[]);for(const i of meta.imgs)u.add(i);sync.imgK=[...u].sort();}
  if(meta)try{imgWant(meta);}catch(e){}
  if(join){const rim=new Set((meta&&meta.imgs)||[]);for(const k in images)if(!seen.has('img-'+k)&&!rim.has(k)){if(!sync.stamps['img-'+k])sync.stamps['img-'+k]=Date.now();markDirty('img-'+k);}sync.uid=acct;changed=true;}
@@ -6029,13 +6057,13 @@ function menu(sub){
     +(onPlan?B('tidylab','Tidy Labels on This Page'):'')+SEP+B('trash','Move This Scene to Trash','','dng');
   else if(sub==='import')body=B('import','Import a Script…')+B('docx','Import a Breakdown and Strategy…');
   else if(sub==='export')body=B('pdf','Export PDF…','⌘P')+B('png','Download This Page as an Image')+B('video','Save the Blocking as a Video…')+SEP+B('prods','Productions & Letterheads…');
-  else body=(fbAuth?B('account',fbUser?'Sync Account ('+esc(fbUser.email||'')+')':'Sign In to Sync…'):'')+B('ready','Ready for Set Check…')+SEP+B('savever','Save a Version Now…')+B('versions','Earlier Versions…')+SEP+B('backup','Back Up Everything')+B('restore','Restore from Backup…')
+  else body=(fbAuth?B('account',fbUser?'Sync Account ('+esc(fbUser.email||'')+')':'Sign In to Sync…'):'')+B('ready','Ready for Set Check…')+SEP+B('savever','Save a Version Now…')+B('versions','Earlier Versions…')+SEP+B('backup','Back Up Everything')+B('restore','Restore from Backup…')+SEP+B('reload','Reload the App')
     +`<div class="pnote">${window.BB_VERSION?'Version '+window.BB_VERSION.replace(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d).*/,'$1-$2-$3 $4:$5')+' UTC. ':''}${fbAuth?(fbUser?'Your scenes sync to every device where you’re signed in. Edits made offline are kept on the device and sent when you’re back online.':'Sign in to sync between your Mac and iPad. Until then, everything is saved on this device only.'):coll?'Scenes sync through your Claude account to any device where you open this page signed in. Edits made offline are kept on the device and sent when you’re back online.':(location.protocol==='file:'?'Everything is saved on this computer. Back up regularly so you have a copy outside the app.':'Sync isn’t available in this view, so everything is saved on this device only. Back up regularly.')}<span id="stgTxt"></span></div>`;
   h=`<h4><button class="back" data-g="">‹ Back</button>${({scene:'This Scene',import:'Import',export:'Export',data:'Sync & Backup'})[sub]}</h4>`+body;}
  const d=document.createElement('div');d.id='drop';d.className='mm main';d.innerHTML=h;document.body.appendChild(d);
  const r=b.getBoundingClientRect();d.style.top=(r.bottom+6)+'px';d.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';d.style.left=Math.max(8,Math.min(innerWidth-d.offsetWidth-8,r.left))+'px';
  if(sub==='data')stgFill();
- const ACT={account:accountDialog,versions:versionsDialog,info:sceneInfo,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,video:exportVideo,overview:()=>overviewDialog(sFolder(s)),backup,restore:()=>$('#fJson').click(),
+ const ACT={reload:()=>appReload(false),account:accountDialog,versions:versionsDialog,info:sceneInfo,pdf:exportDialog,prods:()=>productionsDialog(),png:exportPNG,video:exportVideo,overview:()=>overviewDialog(sFolder(s)),backup,restore:()=>$('#fJson').click(),
    open:()=>openBrowser(),docx:()=>$('#fDocx').click(),keys:keysDialog,tidylab:tidyLabels,ready:readyDialog,savever:saveVersionNow,savetpl:saveTemplateDialog,usetpl:pickTemplateDialog,saveloc:saveLocDialog,useloc:useLocDialog,locmenu:locManage,import:importScript,new:()=>newScene(),
    trash:()=>{trashScenes([s.id]);commit();fit();toast(`${sceneLabel(s)} moved to Trash. Open Scene… › Trash to get it back.`);}};
  d.addEventListener('click',e=>{const g=e.target.closest('[data-g]');if(g){menu(g.dataset.g||null);return;}const x=e.target.closest('[data-m]');if(!x)return;closeDrop();ACT[x.dataset.m]();});
@@ -6750,7 +6778,7 @@ function render(opt){opt=opt||{};refreshLists();if((mode==='list'||mode==='split
 function stgFill(){const el=document.getElementById('stgTxt');if(!el||!navigator.storage||!navigator.storage.estimate)return;const f=n=>n>=1073741824?(n/1073741824).toFixed(n<10737418240?1:0)+' GB':n>=1048576?(n/1048576).toFixed(n<10485760?1:0)+' MB':Math.max(1,Math.round(n/1024))+' KB';
  navigator.storage.estimate().then(e=>{if(e&&e.quota&&document.body.contains(el))el.textContent=` Storage on this device: ${f(e.usage||0)} used of about ${f(e.quota)} the app can use.`;}).catch(()=>{});}
 let started=false;
-function start(big,bigSync){if(started)return;started=true;copyInit();load(big,bigSync);let nmFix=[];try{nmFix=fixNames();}catch(e){console.error(e);}setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();if(nmFix.length){saveLocal();setTimeout(()=>toast(`${nmFix.length===1?'One name was':nmFix.length+' names were'} used twice in the same folder, so a number was added: ${nmFix.slice(0,3).map(n=>'“'+n+'”').join(', ')}${nmFix.length>3?' and '+(nmFix.length-3)+' more':''}.`),1500);}
+function start(big,bigSync){if(started)return;started=true;copyInit();load(big,bigSync);let nmFix=[];try{nmFix=fixNames();}catch(e){console.error(e);}setTimeout(keysDraw,0);if(ftInstall())saveLocal();cur=snapshot();if(P.ui.vm==='scout'){scoutOn=true;$('#app').classList.add('scout-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='scout'));}else if(P.ui.setOn){setOn=true;$('#app').classList.add('set-on');document.querySelectorAll('#mdSw [data-md]').forEach(b=>b.classList.toggle('on',b.dataset.md==='set'));}render();initImages();if(!setOn&&!scoutOn&&(P.ui.mode==='list'||P.ui.mode==='nb'||P.ui.mode==='st'))setMode(P.ui.mode);requestAnimationFrame(fit);initSync();try{const u=+sessionStorage.getItem('blk.updT')||0;sessionStorage.removeItem('blk.updT');if(u&&Date.now()-u<20000)setTimeout(()=>toast('Updated to the newest version.'),900);}catch(e){}if(nmFix.length){saveLocal();setTimeout(()=>toast(`${nmFix.length===1?'One name was':nmFix.length+' names were'} used twice in the same folder, so a number was added: ${nmFix.slice(0,3).map(n=>'“'+n+'”').join(', ')}${nmFix.length>3?' and '+(nmFix.length-3)+' more':''}.`),1500);}
  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});}catch(e){}}
 /* the scenes are in the large store but it will not open: never start empty over them without being told to */
 /* ---------- one working copy per browser ----------
