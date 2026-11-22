@@ -654,7 +654,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122200723';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122205107';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -2757,7 +2757,7 @@ function boxShape(it){
 /* ---------- Overhead from an Address: the real streets, lots, houses and woods round a place, drawn the app's way.
    Each piece is an ordinary Set piece that carries its own outline (it.geo), so it moves, turns, locks, groups, prints and syncs like any other ---------- */
 const GEO={maphouse:1,mapstreets:1,maplots:1,mapwood:1,mapwater:1},GEON=10000;
-Object.assign(LIB,{maphouse:{n:'Building',w:700,h:500,s:'<rect class="pf" x="6" y="12" width="88" height="76"/>'},mapstreets:{n:'Streets',w:2000,h:2000,s:'<path class="pl" d="M0,50H100M50,0V100"/>'},maplots:{n:'Ground and Lot Lines',w:2000,h:2000,s:'<path class="pl" d="M10,10H90V90H10Z"/>'},mapwood:{n:'Woods',w:900,h:900,s:'<circle class="pf" cx="50" cy="50" r="44"/>'},mapwater:{n:'Water',w:900,h:900,s:'<circle class="pf" cx="50" cy="50" r="44"/>'}});
+Object.assign(LIB,{maphouse:{n:'Building',w:700,h:500,s:'<rect class="pf" x="6" y="12" width="88" height="76"/>'},mapstreets:{n:'Streets',w:2000,h:2000,s:'<path class="pl" d="M0,50H100M50,0V100"/>'},maplots:{n:'Ground and Lot Lines',w:2000,h:2000,s:'<path class="pl" d="M10,10H90V90H10Z"/>'},mapwood:{n:'Trees',w:900,h:900,s:'<circle class="pf" cx="50" cy="50" r="44"/>'},mapwater:{n:'Water',w:900,h:900,s:'<circle class="pf" cx="50" cy="50" r="44"/>'}});
 for(const k in GEO)PLACE.add(k);
 PCOL.maphouse='#6b6f78';
 const geoPts=(a,w,h)=>{const o=[];for(let i=0;i+1<(a||[]).length;i+=2)o.push([(a[i]/GEON-.5)*w,(a[i+1]/GEON-.5)*h]);return o;};
@@ -2770,13 +2770,13 @@ function geoHalf(P,c,n){const o=[],d=p=>(p[0]-c[0])*n[0]+(p[1]-c[1])*n[1];for(le
 function geoWorld(it){const a=rad(it.rot||0),c=Math.cos(a),s=Math.sin(a),m=it.mir?-1:1;return geoPts(it.geo&&it.geo.p,it.w,it.h).map(([x,y])=>[it.x+m*x*c-y*s,it.y+m*x*s+y*c]);}
 const GNS='vector-effect="non-scaling-stroke"';
 ND.maphouse=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},P=geoPts(g.p||[0,0,GEON,0,GEON,GEON,0,GEON],w,h);if(P.length<3)return '';
- const d=geoD(P,1),k=geoK(it||{w,h}),edge=dk(c,.4),sh=`<path d="${d}" fill="#000" opacity=".16" stroke="none" transform="translate(${nf(o.sx*19*k)},${nf(o.sy*19*k)})"/>`,no='';
+ const d=geoD(P,1),k=geoK(it||{w,h}),edge='#2b2f36',sh=`<path d="${d}" fill="#000" opacity=".16" stroke="none" transform="translate(${nf(o.sx*19*k)},${nf(o.sy*19*k)})"/>`,no='';
  if(geoArea(P)<170000*k*k)return `${sh}<path d="${d}" fill="${lt(c,.14)}" stroke="${edge}" stroke-width="1" stroke-linejoin="round" ${GNS}/>${no}`;
  /* the ridge runs along the longest wall; the slope facing away from the light sits in shade */
  let L=0,u=[1,0];for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],l=Math.hypot(b[0]-a[0],b[1]-a[1]);if(l>L){L=l;u=[(b[0]-a[0])/l,(b[1]-a[1])/l];}}
  const cx=P.reduce((a,p)=>a+p[0],0)/P.length,cy=P.reduce((a,p)=>a+p[1],0)/P.length;let n=[-u[1],u[0]];if(n[0]*2.2+n[1]*3<0)n=[-n[0],-n[1]];
  const H=geoHalf(P,[cx,cy],n),T=P.map(p=>(p[0]-cx)*u[0]+(p[1]-cy)*u[1]),rk=P.length>4?.5:.78,t0=Math.min(...T)*rk,t1=Math.max(...T)*rk;
- return `${sh}<path d="${d}" fill="${c}" stroke="none"/>${H.length>2?`<path d="${geoD(H,1)}" fill="${dk(c,.17)}" stroke="none"/>`:''}<path d="${d}" fill="none" stroke="${edge}" stroke-width="1" stroke-linejoin="round" ${GNS}/><path d="M${nf(cx+u[0]*t0)},${nf(cy+u[1]*t0)}L${nf(cx+u[0]*t1)},${nf(cy+u[1]*t1)}" fill="none" stroke="${dk(c,.45)}" stroke-width="1.2" stroke-linecap="round" ${GNS}/>${no}`;};
+ return `${sh}<path d="${d}" fill="${c}" stroke="none"/>${H.length>2?`<path d="${geoD(H,1)}" fill="${dk(c,.23)}" stroke="none"/>`:''}<path d="${d}" fill="none" stroke="${edge}" stroke-width="1" stroke-linejoin="round" ${GNS}/><path d="M${nf(cx+u[0]*t0)},${nf(cy+u[1]*t0)}L${nf(cx+u[0]*t1)},${nf(cy+u[1]*t1)}" fill="none" stroke="${dk(c,.5)}" stroke-width="1" stroke-linecap="round" ${GNS}/>${no}`;};
 /* every street in one piece, so sidewalks, curbs and asphalt lie in the right order where streets meet */
 ND.mapstreets=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},k=geoK(it||{w,h});let a='',b='',e='',f='',t='';
  for(const q of g.s||[]){const P=geoPts(q.p,w,h),d=geoD(P),wd=q.wd*k,sw=q.sw?114*k:0;if(P.length<2)continue;
@@ -2788,12 +2788,23 @@ ND.mapstreets=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},k=geoK(it||{w,h});let a=''
  return `<g fill="none" stroke-linecap="round" stroke-linejoin="round">${a}${b}${e}${f}</g>${t}`;};
 ND.maplots=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},d=(g.q||[]).map(p=>geoD(geoPts(p,w,h),1)).join(''),B=g.b?geoPts(g.b,w,h):null;
  if(g.m){const fs=Math.min(w,h)*.2;return `<path d="${d}" fill="none" stroke="#2f6fde" stroke-width="2.5" stroke-linejoin="round" ${GNS}/><text x="0" y="${nf(fs*.36)}" text-anchor="middle" font-size="${nf(fs)}" font-weight="800" font-family="-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif" fill="#fff" stroke="#1c1c1e" stroke-width="${nf(fs*.18)}" stroke-linejoin="round" paint-order="stroke" pointer-events="none"${it&&it.rot?` transform="rotate(${-it.rot})"`:''}>${esc(g.m)}</text>`;}
- if(g.x){const ln=B?geoD(B,1)+d:d;return ln?`<path d="${ln}" fill="none" stroke="#000" stroke-opacity=".4" stroke-width="2.6" stroke-linejoin="round" ${GNS}/><path d="${ln}" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.1" stroke-linejoin="round" ${GNS}/>`:'';}
- return (B?`<path d="${geoD(B,1)}" fill="#c3d9b6" stroke="#a3bd95" stroke-width="1" stroke-linejoin="round" pointer-events="stroke" ${GNS}/>`:'')+(d?`<path d="${d}" fill="#b4cfa5" stroke="none" pointer-events="none"/><path d="${d}" fill="none" stroke="#7f9c70" stroke-width="1" stroke-linejoin="round" ${GNS}/>`:'');};
+ if(g.n)return geoBadge(-w/2,-h/2,h/620);
+ const bd='';
+ if(g.x){const ln=B?geoD(B,1)+d:d;return (ln?`<path d="${ln}" fill="none" stroke="#000" stroke-opacity=".4" stroke-width="2.6" stroke-linejoin="round" ${GNS}/><path d="${ln}" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="1.1" stroke-linejoin="round" ${GNS}/>`:'')+bd;}
+ return (B?`<path d="${geoD(B,1)}" fill="#eef0e6" stroke="#d3d6c8" stroke-width="1" stroke-linejoin="round" pointer-events="stroke" ${GNS}/>`:'')+(d?`<path d="${d}" fill="#b4cfa5" stroke="none" pointer-events="none"/><path d="${d}" fill="none" stroke="#7f9c70" stroke-width="1" stroke-linejoin="round" ${GNS}/>`:'')+bd;};
+/* north and scale, a small piece of its own on top of everything, in the bottom left corner. Grouped with the rest, so it turns with the map and north stays true */
+function geoBadge(x,y,k){const u=100*FT*k,p=150*k,hh=620*k,ww=u+1100*k,ax=x+p+170*k,ay=y+hh/2,bx=x+p+520*k,by=y+hh*.64,fs=205*k,F='font-family="-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif" stroke="none"';
+ return `<g pointer-events="none"><rect x="${nf(x)}" y="${nf(y)}" width="${nf(ww)}" height="${nf(hh)}" rx="${nf(110*k)}" fill="#fff" fill-opacity=".93" stroke="#c9ccbf" stroke-width="1" ${GNS}/><path d="M${nf(ax)},${nf(ay-215*k)}L${nf(ax+105*k)},${nf(ay+60*k)}L${nf(ax)},${nf(ay-10*k)}L${nf(ax-105*k)},${nf(ay+60*k)}Z" fill="#1c1c1e" stroke="none"/><text x="${nf(ax)}" y="${nf(ay+250*k)}" text-anchor="middle" font-size="${nf(fs*.9)}" font-weight="800" fill="#1c1c1e" ${F}>N</text><path d="M${nf(bx)},${nf(by-55*k)}V${nf(by)}H${nf(bx+u)}V${nf(by-55*k)}" fill="none" stroke="#1c1c1e" stroke-width="1.4" ${GNS}/><text x="${nf(bx)}" y="${nf(by-140*k)}" font-size="${nf(fs)}" font-weight="650" fill="#1c1c1e" ${F}>100 ft</text></g>`;}
 const ovhGround=s=>((s&&s.items)||[]).filter(i=>i.kind==='maplots'&&i.geo&&i.geo.b);
-const ovhPhotoOn=s=>ovhGround(s).some(i=>i.geo.x);
-function ovhPhotoToggle(){const s=scene(),G=ovhGround(s),on=!ovhPhotoOn(s);for(const i of G){i.geo=Object.assign({},i.geo);if(on)i.geo.x=1;else delete i.geo.x;}commit({insp:false});render({insp:false});}
-ND.mapwood=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},P=geoPts(g.p,w,h);if(P.length<3)return '';const k=geoK(it||{w,h});let tr='';
+const ovhPhotoOn=s=>ovhGround(s).some(i=>i.geo.x);const ovhDressed=i=>i.kind==='mapwood'&&i.geo&&!!(i.geo.tr||i.geo.bu);
+function ovhPhotoToggle(){const s=scene(),G=[...ovhGround(s),...s.items.filter(ovhDressed)],on=!ovhPhotoOn(s);for(const i of G){i.geo=Object.assign({},i.geo);if(on)i.geo.x=1;else delete i.geo.x;}commit({insp:false});render({insp:false});}
+const GREENS=['#6fa35c','#79ab63','#659a52'];
+ND.mapwood=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},P=geoPts(g.p,w,h);
+ if(g.tr||g.bu){if(g.x)return '';const k=geoK(it||{w,h});let a='',b='',e='';
+  for(let i=0,A=g.bu||[];i+2<A.length;i+=3){const x=(A[i]/GEON-.5)*w,y=(A[i+1]/GEON-.5)*h,r=A[i+2]*k;a+=`<circle cx="${nf(x+o.sx*4)}" cy="${nf(y+o.sy*4)}" r="${nf(r)}" fill="#000" opacity=".13" stroke="none"/><circle cx="${nf(x)}" cy="${nf(y)}" r="${nf(r)}" fill="#5c9150" stroke="#3a6130" stroke-width="1" ${GNS}/><circle cx="${nf(x-r*.2)}" cy="${nf(y-r*.24)}" r="${nf(r*.45)}" fill="#74a665" stroke="none"/>`;}
+  for(let i=0,A=g.tr||[],n=0;i+2<A.length;i+=3,n++){const x=(A[i]/GEON-.5)*w,y=(A[i+1]/GEON-.5)*h,r=A[i+2]*k;b+=`<circle cx="${nf(x+o.sx*13)}" cy="${nf(y+o.sy*13)}" r="${nf(r)}" fill="#000" opacity=".14" stroke="none"/>`;e+=`<circle cx="${nf(x)}" cy="${nf(y)}" r="${nf(r)}" fill="${GREENS[n%3]}" stroke="#3f6b33" stroke-width="1" ${GNS}/><circle cx="${nf(x-r*.22)}" cy="${nf(y-r*.24)}" r="${nf(r*.5)}" fill="#8cbc78" stroke="none"/>`;}
+  return a+b+e;}
+ if(P.length<3)return '';const k=geoK(it||{w,h});let tr='';
  if(g.t){let sd=0;for(const ch of String((it&&it.id)||'w'))sd=(sd*31+ch.charCodeAt(0))>>>0;const rnd=()=>{sd=(sd+0x6D2B79F5)>>>0;let z=sd;z=Math.imul(z^z>>>15,z|1);z^=z+Math.imul(z^z>>>7,z|61);return ((z^z>>>14)>>>0)/4294967296;};
   const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),want=clamp(Math.round(geoArea(P)/(250000*k*k)),3,46);
   for(let n=0,tries=0;n<want&&tries<900;tries++){const p=[x0+rnd()*(x1-x0),y0+rnd()*(y1-y0)],r=(200+rnd()*130)*k;if(!geoIn(p,P))continue;n++;
@@ -2810,9 +2821,35 @@ function ovhItems(D,cx,cy){const U=3.28084*FT,gid=uid(),out=[],abs=P=>P.map(p=>[
  const lots=(D.lots||[]).filter(P=>P.length>2).map(abs),Hm=D.half||OVH_HALF,sq=abs([[-Hm,-Hm],[Hm,-Hm],[Hm,Hm],[-Hm,Hm]]);piece('maplots',[sq,...lots],enc=>({geo:Object.assign({b:enc(sq)},lots.length?{q:lots.map(enc)}:{})}));
  for(const a of D.areas||[]){if(a.P.length<3)continue;const P=abs(a.P);piece(a.k==='water'?'mapwater':'mapwood',[P],enc=>({geo:Object.assign({p:enc(P)},a.k==='wood'?{t:1}:{}),label:a.nm||''}));}
  const st=(D.streets||[]).filter(q=>q.P.length>1).map(q=>Object.assign({},q,{A:abs(q.P)}));if(st.length)piece('mapstreets',st.map(q=>q.A),enc=>({geo:{s:st.map(q=>Object.assign({p:enc(q.A),wd:+(q.wd*U).toFixed(1)},q.sw?{sw:1}:{},q.cl?{cl:1}:{},q.nm?{nm:q.nm}:{}))}}));
+ if(D.dress!==false){const G=ovhDress(D),all=[...G.T,...G.Bu];if(all.length){const ext=abs(all.flatMap(t=>[[t[0]-t[2],t[1]-t[2]],[t[0]+t[2],t[1]+t[2]]])),pk=A=>enc=>A.flatMap(t=>[...enc(abs([[t[0],t[1]]])),Math.round(t[2]*U)]);
+   piece('mapwood',[ext],enc=>({geo:Object.assign({},G.T.length?{tr:pk(G.T)(enc)}:{},G.Bu.length?{bu:pk(G.Bu)(enc)}:{})}));}}
  (D.houses||[]).forEach((H,i)=>{if(H.length<3)return;const P=abs(H);let hs=0;for(const p of H)hs=(hs*33+Math.round(p[0]*7+p[1]*13))>>>0;piece('maphouse',[P],enc=>({geo:{p:enc(P)},fill:OVH_ROOF[hs%OVH_ROOF.length]}));});
  if(D.mark&&D.mark.P&&D.mark.P.length>2){const T=abs(D.mark.P);piece('maplots',[T],enc=>({geo:{q:[enc(T)],m:String(D.mark.no)}}));}
+ {const bw=100*FT+1100,bh=620,bx=cx-Hm*U+260,by=cy+Hm*U-260-bh;piece('maplots',[[[bx,by],[bx+bw,by+bh]]],()=>({geo:{n:1}}));}
  return out;}
+/* trees and bushes by rule: none of this is in any map data. Seeded by the place, so the same address always dresses the same way */
+function ovhDress(D){const H=D.half||OVH_HALF;let sd=((Math.round((D.lat||0)*1e4)*73856093)^(Math.round((D.lon||0)*1e4)*19349663))>>>0;
+ const rnd=()=>{sd=(sd+0x6D2B79F5)>>>0;let z=sd;z=Math.imul(z^z>>>15,z|1);z^=z+Math.imul(z^z>>>7,z|61);return ((z^z>>>14)>>>0)/4294967296;};
+ const BB=(D.houses||[]).map(P=>{const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]);return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];});
+ const nearB=(p,m)=>BB.some(b=>p[0]>b[0]-m&&p[0]<b[2]+m&&p[1]>b[1]-m&&p[1]<b[3]+m);
+ const dSeg=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/l)):0;return Math.hypot(p[0]-a[0]-dx*t,p[1]-a[1]-dy*t);};
+ const ST=D.streets||[],edge=q=>q.wd/2+(q.sw?1.9:0),onStreet=(p,m)=>ST.some(q=>{for(let i=0;i+1<q.P.length;i++)if(dSeg(p,q.P[i],q.P[i+1])<edge(q)+m)return true;return false;});
+ const inAreas=p=>(D.areas||[]).some(a=>geoIn(p,a.P)),T=[],Bu=[],far=(p,r)=>T.every(t=>Math.hypot(t[0]-p[0],t[1]-p[1])>(t[2]+r)*.85),out=(p,m)=>Math.abs(p[0])>H-m||Math.abs(p[1])>H-m;
+ /* along the streets, between the sidewalk and the lots */
+ for(const q of ST){if(!q.sw)continue;let carry=5+rnd()*8;for(let i=0;i+1<q.P.length;i++){const a=q.P[i],b=q.P[i+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<1)continue;const u=[(b[0]-a[0])/L,(b[1]-a[1])/L],n=[-u[1],u[0]];let d=carry;
+   for(;d<L;d+=13+rnd()*8)for(const side of [-1,1]){if(rnd()<.2)continue;const off=edge(q)+1.7,p=[a[0]+u[0]*d+n[0]*off*side,a[1]+u[1]*d+n[1]*off*side],r=2.5+rnd()*1.3;if(out(p,2)||onStreet(p,1.2)||nearB(p,1.5)||inAreas(p)||!far(p,r))continue;T.push([p[0],p[1],r]);}
+   carry=d-L;}}
+ /* in the yards: by lot where there are lot lines, otherwise near each house */
+ const yard=(p,r)=>!(out(p,2)||nearB(p,r+1)||onStreet(p,3)||inAreas(p)||!far(p,r));
+ if((D.lots||[]).length)for(const Lp of D.lots){const A=geoArea(Lp);if(A<120)continue;const n=A<450?(rnd()<.75?1:0):A<1100?1+(rnd()<.5?1:0):2+Math.floor(rnd()*3),xs=Lp.map(p=>p[0]),ys=Lp.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+   for(let k=0,tries=0;k<n&&tries<40;tries++){const p=[x0+rnd()*(x1-x0),y0+rnd()*(y1-y0)],r=2.6+rnd()*2.2;if(![[0,0],[2.5,0],[-2.5,0],[0,2.5],[0,-2.5]].every(v=>geoIn([p[0]+v[0],p[1]+v[1]],Lp))||!yard(p,r))continue;T.push([p[0],p[1],r]);k++;}}
+ else for(const b of BB){if(rnd()<.35)continue;for(let tries=0;tries<12;tries++){const an=rnd()*6.2832,d=7+rnd()*8,p=[(b[0]+b[2])/2+Math.cos(an)*d,(b[1]+b[3])/2+Math.sin(an)*d],r=2.6+rnd()*2.2;if(!yard(p,r))continue;T.push([p[0],p[1],r]);break;}}
+ /* bushes against the longer walls */
+ (D.houses||[]).forEach((P,hi)=>{if(geoArea(P)<60)return;const c=ovhCen(P),E=P.map((a,i)=>{const b=P[(i+1)%P.length];return {a,b,l:Math.hypot(b[0]-a[0],b[1]-a[1])};}).filter(e=>e.l>4).sort((x,y)=>y.l-x.l).slice(0,3);
+  for(const e of E){if(rnd()<.45)continue;const u=[(e.b[0]-e.a[0])/e.l,(e.b[1]-e.a[1])/e.l],m=[(e.a[0]+e.b[0])/2,(e.a[1]+e.b[1])/2];let n=[-u[1],u[0]];if((m[0]-c[0])*n[0]+(m[1]-c[1])*n[1]<0)n=[-n[0],-n[1]];
+   const cnt=2+Math.floor(rnd()*3),t0=.12+rnd()*.2;for(let k=0;k<cnt;k++){const t=t0+k*(.78-t0)/Math.max(1,cnt-1)+(rnd()-.5)*.05,r=.7+rnd()*.5,p=[e.a[0]+(e.b[0]-e.a[0])*t+n[0]*(r+.25),e.a[1]+(e.b[1]-e.a[1])*t+n[1]*(r+.25)];
+    if(out(p,1)||geoIn(p,P)||onStreet(p,.5)||BB.some((b,j)=>j!==hi&&p[0]>b[0]&&p[0]<b[2]&&p[1]>b[1]&&p[1]<b[3]))continue;Bu.push([p[0],p[1],r]);}}});
+ return {T,Bu};}
 /* ---- reading the map services. Nothing here runs until Draw is tapped ---- */
 async function ovhGet(url,ms,blob){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),ms||25000);try{const r=await fetch(url,blob?{signal:ac.signal}:{signal:ac.signal,headers:{Accept:'application/json'}});if(!r.ok)throw new Error('http '+r.status);return blob?await r.blob():await r.json();}finally{clearTimeout(t);}}
 const OVH_W={motorway:14,trunk:13,primary:13,secondary:11,tertiary:10,unclassified:9.1,residential:9.1,living_street:8,motorway_link:7,trunk_link:7,primary_link:7,secondary_link:7,tertiary_link:7,service:4.2};
@@ -2878,13 +2915,14 @@ async function ovhApply(D){const s=scene(),c=s.items.length?viewCenter():{x:0,y:
 function ovhDialog(){const s=scene(),has=!!(s.bgId&&s.bg);mNext=()=>{addMenu();gridMenu('set');};
  modal(`<h3>Overhead from an address</h3><p class="mut" style="margin:-4px 0 10px">Draws about two blocks around an address: the streets, houses and woods and, in New Jersey, the lot lines. The pieces arrive grouped and locked, north up.</p>
   <label class="fld">Address<input id="ohA" placeholder="e.g. 435 Parkside Road, Plainfield, NJ" autocomplete="off" autocapitalize="words" enterkeyhint="go"></label>
+  <label class="imopt"><input type="checkbox" id="ohT" checked> Dress it with trees and bushes <span class="mut">· placed by rule, not where the real ones are</span></label>
   <label class="imopt"><input type="checkbox" id="ohP" checked> Put the aerial photo underneath${has?' <span class="mut">· replaces this scene’s background image</span>':''}</label>
   <p class="mut" style="font-size:12.5px;margin:8px 0 0">Tapping Draw sends the address to OpenStreetMap to find it, then asks OpenStreetMap, FEMA, the U.S. Geological Survey and the State of New Jersey for the map around that spot. Nothing is sent before then. It needs a connection. Map data © OpenStreetMap contributors.</p>
   <div id="ohS" class="mut" role="status" aria-live="polite" style="min-height:20px;margin-top:8px;font-weight:600"></div>
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="ohGo">Draw</button></div>`,card=>{const inp=card.querySelector('#ohA'),go=card.querySelector('#ohGo'),st=card.querySelector('#ohS');let busy=false;
   const run=async()=>{const a=inp.value.trim();if(busy)return;if(a.length<5){st.textContent='Type the street address, town and state.';inp.focus();return;}
    busy=true;go.disabled=true;go.textContent='Drawing…';
-   try{const D=await ovhFetch(a,{photo:card.querySelector('#ohP').checked},t=>{st.textContent=t;});st.textContent='Drawing it…';const sid=scene().id;if(sid!==s.id)throw new Error('moved');const r=await ovhApply(D);mStack=[];closeModal();
+   try{const D=await ovhFetch(a,{photo:card.querySelector('#ohP').checked},t=>{st.textContent=t;});st.textContent='Drawing it…';D.dress=card.querySelector('#ohT').checked;const sid=scene().id;if(sid!==s.id)throw new Error('moved');const r=await ovhApply(D);mStack=[];closeModal();
     const got=[D.streets.length?plural(new Set(D.streets.map(q=>q.nm).filter(Boolean)).size||1,'street'):'',D.houses.length?plural(D.houses.length,'building'):'',D.lots.length?plural(D.lots.length,'lot'):'',r.photo?'the aerial photo':''].filter(Boolean).join(', ');
     toast(`Drawn: ${got}.${D.mark?' The lot for '+D.mark.label+' is outlined in blue.':D.nj?'':' Lot lines are only available in New Jersey so far.'}${D.miss.length?' Not available here: '+D.miss.join(', ')+'.':''} It’s grouped and locked; tap it to unlock or ungroup.${r.photo?' To see the aerial photo under it, turn on Aerial Photo in Layers.':''}`);}
    catch(e){busy=false;go.disabled=false;go.textContent='Draw';const m=e&&e.message;st.textContent=m==='notfound'?'That address wasn’t found. Add the town and state, or check the spelling.':m==='empty'?'Nothing is mapped around that address yet.':m==='moved'?'The scene changed while this was working. Try again.':'The map services couldn’t be reached. Check the connection and try again.';}};
