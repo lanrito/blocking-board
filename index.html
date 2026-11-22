@@ -428,7 +428,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 .nmerr{margin:8px 0 0;color:#b42318;font-size:13.5px;line-height:1.4}
 .duo.pz{gap:5px}.duo.pz button{font-size:13px;min-height:38px;padding:0 2px}#pop .ls .duo.pz button.on,#pop .ls .duo.pz button.on:hover{background:var(--accent);border-color:var(--accent);color:#fff}
 .gs{display:flex;gap:8px;align-items:center}.gs input{flex:1;min-width:0}
-#favEd{flex:none;height:40px;padding:0 12px;border-radius:9px;border:1px solid var(--pl);background:var(--pc);color:var(--pi);font-size:14px;font-weight:600;white-space:nowrap}#favEd.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#pop .gwide{display:block;width:calc(100% - 20px);margin:0 10px 8px;height:40px;padding:0 12px;border-radius:9px;border:1px solid var(--pl);background:var(--pc);color:var(--pi);font-size:14px;font-weight:600;text-align:left}#favEd{flex:none;height:40px;padding:0 12px;border-radius:9px;border:1px solid var(--pl);background:var(--pc);color:var(--pi);font-size:14px;font-weight:600;white-space:nowrap}#favEd.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .grid [data-my],.grid.faved [data-k]{position:relative}
 .grid.faved [data-k]::after{content:'☆';position:absolute;top:5px;right:8px;font-size:18px;line-height:1;color:#9aa0a8}.grid.faved [data-k].isfav::after{content:'★';color:#e0a100}
 .grid.faved [data-my]::after{content:'Edit';position:absolute;top:7px;right:8px;font-size:11px;font-weight:700;color:var(--accent)}
@@ -654,7 +654,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122182415';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122192033';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -2745,7 +2745,7 @@ function parkingSVG(w,h){const sd=18*FT,sw=9*FT,ai=24*FT,M=2*sd+ai,lw=.4*FT,f=v=
  return g+isl+`<path d="${d}" fill="none" stroke="${RD.wht}" stroke-width="${f(lw)}"/><path d="${stop}" fill="none" stroke="#c9c5bb" stroke-width="${f(lw*2.2)}" stroke-dasharray="${f(sw*.62)} ${f(sw*.38)}"/><path d="${ar}" fill="none" stroke="${RD.wht}" stroke-opacity=".85" stroke-width="${f(lw*1.3)}" stroke-linecap="round" stroke-linejoin="round"/>`;}
 function boxShape(it){
  if(it.kind==='dollytrack')return trackShape(it);
- if(ND[it.kind]&&it.type!=='mask')return `<g${it.mir?' transform="scale(-1,1)"':''}><rect x="${-it.w/2}" y="${-it.h/2}" width="${it.w}" height="${it.h}" fill="transparent"/>${ND[it.kind](it.w,it.h,propCol(it),shOff(it),it)}</g>`;
+ if(ND[it.kind]&&it.type!=='mask')return `<g${it.mir?' transform="scale(-1,1)"':''}>${GEO[it.kind]?'':`<rect x="${-it.w/2}" y="${-it.h/2}" width="${it.w}" height="${it.h}" fill="transparent"/>`}${ND[it.kind](it.w,it.h,propCol(it),shOff(it),it)}</g>`;
  if(LIB[it.kind]&&LIB[it.kind].f)return `<g transform="translate(${-it.w/2},${-it.h/2})"><rect width="${it.w}" height="${it.h}" fill="transparent"/>${LIB[it.kind].f(it.w,it.h)}</g>`;
  const L=LIB[it.kind]||LIB.sqtable;let s=L.s;
  if(it.kind==='image'&&it.img&&images[it.img])s=`<image href="${images[it.img]}" width="100" height="100" preserveAspectRatio="none"/><rect class="pl" width="100" height="100"/>`;
@@ -2754,6 +2754,137 @@ function boxShape(it){
  let sd='';if((it.type==='prop'||it.type==='light')&&!NOSHD[it.kind]&&it.w>0&&it.h>0){const o=shOff(it);sd=`<g class="shd" transform="translate(${nf(o.sx*100/it.w)},${nf(o.sy*100/it.h)})">${L.s}</g>`;}
  return `<g transform="translate(${it.mir?it.w/2:-it.w/2},${-it.h/2}) scale(${(it.mir?-1:1)*it.w/100},${it.h/100})"><rect width="100" height="100" fill="transparent"/>${sd}${s}</g>`;
 }
+/* ---------- Overhead from an Address: the real streets, lots, houses and woods round a place, drawn the app's way.
+   Each piece is an ordinary Set piece that carries its own outline (it.geo), so it moves, turns, locks, groups, prints and syncs like any other ---------- */
+const GEO={maphouse:1,mapstreets:1,maplots:1,mapwood:1,mapwater:1},GEON=10000;
+Object.assign(LIB,{maphouse:{n:'Building',w:700,h:500,s:'<rect class="pf" x="6" y="12" width="88" height="76"/>'},mapstreets:{n:'Streets',w:2000,h:2000,s:'<path class="pl" d="M0,50H100M50,0V100"/>'},maplots:{n:'Ground and Lot Lines',w:2000,h:2000,s:'<path class="pl" d="M10,10H90V90H10Z"/>'},mapwood:{n:'Woods',w:900,h:900,s:'<circle class="pf" cx="50" cy="50" r="44"/>'},mapwater:{n:'Water',w:900,h:900,s:'<circle class="pf" cx="50" cy="50" r="44"/>'}});
+for(const k in GEO)PLACE.add(k);
+PCOL.maphouse='#6b6f78';
+const geoPts=(a,w,h)=>{const o=[];for(let i=0;i+1<(a||[]).length;i+=2)o.push([(a[i]/GEON-.5)*w,(a[i+1]/GEON-.5)*h]);return o;};
+const geoD=(P,z)=>P.length?'M'+P.map(p=>nf(p[0])+','+nf(p[1])).join('L')+(z?'Z':''):'';
+const geoK=it=>Math.sqrt(Math.abs((it.w/(it.bw||it.w))*(it.h/(it.bh||it.h))))||1;
+const geoArea=P=>{let a=0;for(let i=0;i<P.length;i++){const p=P[i],q=P[(i+1)%P.length];a+=p[0]*q[1]-q[0]*p[1];}return Math.abs(a)/2;};
+const geoIn=(p,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;};
+/* the part of polygon P on the n side of the line through c */
+function geoHalf(P,c,n){const o=[],d=p=>(p[0]-c[0])*n[0]+(p[1]-c[1])*n[1];for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],da=d(a),db=d(b);if(da>=0)o.push(a);if((da>=0)!==(db>=0)){const t=da/(da-db);o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}}return o;}
+function geoWorld(it){const a=rad(it.rot||0),c=Math.cos(a),s=Math.sin(a),m=it.mir?-1:1;return geoPts(it.geo&&it.geo.p,it.w,it.h).map(([x,y])=>[it.x+m*x*c-y*s,it.y+m*x*s+y*c]);}
+const GNS='vector-effect="non-scaling-stroke"';
+ND.maphouse=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},P=geoPts(g.p||[0,0,GEON,0,GEON,GEON,0,GEON],w,h);if(P.length<3)return '';
+ const d=geoD(P,1),k=geoK(it||{w,h}),edge=dk(c,.4),sh=`<path d="${d}" fill="#000" opacity=".16" stroke="none" transform="translate(${nf(o.sx*19*k)},${nf(o.sy*19*k)})"/>`,no='';
+ if(geoArea(P)<170000*k*k)return `${sh}<path d="${d}" fill="${lt(c,.14)}" stroke="${edge}" stroke-width="1" stroke-linejoin="round" ${GNS}/>${no}`;
+ /* the ridge runs along the longest wall; the slope facing away from the light sits in shade */
+ let L=0,u=[1,0];for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],l=Math.hypot(b[0]-a[0],b[1]-a[1]);if(l>L){L=l;u=[(b[0]-a[0])/l,(b[1]-a[1])/l];}}
+ const cx=P.reduce((a,p)=>a+p[0],0)/P.length,cy=P.reduce((a,p)=>a+p[1],0)/P.length;let n=[-u[1],u[0]];if(n[0]*2.2+n[1]*3<0)n=[-n[0],-n[1]];
+ const H=geoHalf(P,[cx,cy],n),T=P.map(p=>(p[0]-cx)*u[0]+(p[1]-cy)*u[1]),rk=P.length>4?.5:.78,t0=Math.min(...T)*rk,t1=Math.max(...T)*rk;
+ return `${sh}<path d="${d}" fill="${c}" stroke="none"/>${H.length>2?`<path d="${geoD(H,1)}" fill="${dk(c,.17)}" stroke="none"/>`:''}<path d="${d}" fill="none" stroke="${edge}" stroke-width="1" stroke-linejoin="round" ${GNS}/><path d="M${nf(cx+u[0]*t0)},${nf(cy+u[1]*t0)}L${nf(cx+u[0]*t1)},${nf(cy+u[1]*t1)}" fill="none" stroke="${dk(c,.45)}" stroke-width="1.2" stroke-linecap="round" ${GNS}/>${no}`;};
+/* every street in one piece, so sidewalks, curbs and asphalt lie in the right order where streets meet */
+ND.mapstreets=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},k=geoK(it||{w,h});let a='',b='',e='',f='',t='';
+ for(const q of g.s||[]){const P=geoPts(q.p,w,h),d=geoD(P),wd=q.wd*k,sw=q.sw?114*k:0;if(P.length<2)continue;
+  if(sw)a+=`<path d="${d}" stroke="${RD.walk}" stroke-width="${nf(wd+2*sw)}"/>`;b+=`<path d="${d}" stroke="${RD.curb}" stroke-width="${nf(wd+8*k)}"/>`;e+=`<path d="${d}" stroke="${RD.asph}" stroke-width="${nf(wd)}"/>`;
+  if(q.cl)f+=`<path d="${d}" stroke="${RD.yel}" stroke-width="${nf(9*k)}"/><path d="${d}" stroke="${RD.asph}" stroke-width="${nf(2.6*k)}"/>`;
+  if(q.nm){let bi=0,bl=0;for(let i=0;i+1<P.length;i++){const l=Math.hypot(P[i+1][0]-P[i][0],P[i+1][1]-P[i][1]);if(l>bl){bl=l;bi=i;}}
+   const fs=clamp(wd*.3,40,170),nm=String(q.nm).toUpperCase();if(bl>nm.length*fs*.72){const p=P[bi],r=P[bi+1],mx=(p[0]+r[0])/2,my=(p[1]+r[1])/2;let an=Math.atan2(r[1]-p[1],r[0]-p[0])*180/Math.PI;if(an>90)an-=180;if(an<-90)an+=180;
+    t+=`<text x="${nf(mx)}" y="${nf(my+fs*.35)}" transform="rotate(${nf(an)} ${nf(mx)} ${nf(my)})" text-anchor="middle" font-size="${nf(fs)}" font-weight="700" letter-spacing="${nf(fs*.08)}" font-family="-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif" fill="#f1f2f3" fill-opacity=".86" stroke="none" pointer-events="none">${esc(nm)}</text>`;}}}
+ return `<g fill="none" stroke-linecap="round" stroke-linejoin="round">${a}${b}${e}${f}</g>${t}`;};
+ND.maplots=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},d=(g.q||[]).map(p=>geoD(geoPts(p,w,h),1)).join(''),B=g.b?geoPts(g.b,w,h):null;
+ if(g.m){const fs=Math.min(w,h)*.2;return `<path d="${d}" fill="none" stroke="#2f6fde" stroke-width="2.5" stroke-linejoin="round" ${GNS}/><text x="0" y="${nf(fs*.36)}" text-anchor="middle" font-size="${nf(fs)}" font-weight="800" font-family="-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif" fill="#fff" stroke="#1c1c1e" stroke-width="${nf(fs*.18)}" stroke-linejoin="round" paint-order="stroke" pointer-events="none"${it&&it.rot?` transform="rotate(${-it.rot})"`:''}>${esc(g.m)}</text>`;}
+ return (B?`<path d="${geoD(B,1)}" fill="#c3d9b6" stroke="#a3bd95" stroke-width="1" stroke-linejoin="round" pointer-events="stroke" ${GNS}/>`:'')+(d?`<path d="${d}" fill="#b4cfa5" stroke="none" pointer-events="none"/><path d="${d}" fill="none" stroke="#7f9c70" stroke-width="1" stroke-linejoin="round" ${GNS}/>`:'');};
+ND.mapwood=(w,h,c,o,it)=>{const g=(it&&it.geo)||{},P=geoPts(g.p,w,h);if(P.length<3)return '';const k=geoK(it||{w,h});let tr='';
+ if(g.t){let sd=0;for(const ch of String((it&&it.id)||'w'))sd=(sd*31+ch.charCodeAt(0))>>>0;const rnd=()=>{sd=(sd+0x6D2B79F5)>>>0;let z=sd;z=Math.imul(z^z>>>15,z|1);z^=z+Math.imul(z^z>>>7,z|61);return ((z^z>>>14)>>>0)/4294967296;};
+  const xs=P.map(p=>p[0]),ys=P.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),want=clamp(Math.round(geoArea(P)/(250000*k*k)),3,46);
+  for(let n=0,tries=0;n<want&&tries<900;tries++){const p=[x0+rnd()*(x1-x0),y0+rnd()*(y1-y0)],r=(200+rnd()*130)*k;if(!geoIn(p,P))continue;n++;
+   tr+=`<circle cx="${nf(p[0]+o.sx*10)}" cy="${nf(p[1]+o.sy*10)}" r="${nf(r)}" fill="#000" opacity=".13" stroke="none"/><circle cx="${nf(p[0])}" cy="${nf(p[1])}" r="${nf(r)}" fill="#6fa35c" stroke="#3f6b33" stroke-width="1" ${GNS}/><circle cx="${nf(p[0]-r*.22)}" cy="${nf(p[1]-r*.24)}" r="${nf(r*.5)}" fill="#86b872" stroke="none"/>`;}}
+ return `<path d="${geoD(P,1)}" fill="#a9c79a" stroke="#8aa87b" stroke-width="1" stroke-linejoin="round" ${GNS}/>${tr}`;};
+ND.mapwater=(w,h,c,o,it)=>{const P=geoPts(((it&&it.geo)||{}).p,w,h);return P.length<3?'':`<path d="${geoD(P,1)}" fill="#a8cfe6" stroke="#6f9fbd" stroke-width="1" stroke-linejoin="round" ${GNS}/>`;};
+
+const OVH_HALF=130,OVH_ROOF=['#6b6f78','#7b4a40','#5f6b63','#666b74','#8a6a55','#5f7183','#74695f','#59616d'];
+/* D is in meters from the middle, x east and y south. Returns the pieces, ready to push into a scene, centered on (cx,cy) */
+function ovhItems(D,cx,cy){const U=3.28084*FT,gid=uid(),out=[],abs=P=>P.map(p=>[cx+p[0]*U,cy+p[1]*U]);
+ const piece=(kind,groups,extra)=>{let x0=1e12,y0=1e12,x1=-1e12,y1=-1e12;for(const P of groups)for(const p of P){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1]);}
+  const w=Math.max(1,x1-x0),h=Math.max(1,y1-y0),enc=P=>{const a=[];for(const p of P)a.push(Math.round((p[0]-x0)/w*GEON),Math.round((p[1]-y0)/h*GEON));return a;};
+  const it=Object.assign({id:uid(),type:'prop',kind,x:+((x0+x1)/2).toFixed(1),y:+((y0+y1)/2).toFixed(1),w:+w.toFixed(1),h:+h.toFixed(1),bw:+w.toFixed(1),bh:+h.toFixed(1),rot:0,label:'',pgs:null,locked:true,gid},extra(enc));out.push(it);return it;};
+ const lots=(D.lots||[]).filter(P=>P.length>2).map(abs),Hm=D.half||OVH_HALF,sq=abs([[-Hm,-Hm],[Hm,-Hm],[Hm,Hm],[-Hm,Hm]]);piece('maplots',[sq,...lots],enc=>({geo:Object.assign({b:enc(sq)},lots.length?{q:lots.map(enc)}:{})}));
+ for(const a of D.areas||[]){if(a.P.length<3)continue;const P=abs(a.P);piece(a.k==='water'?'mapwater':'mapwood',[P],enc=>({geo:Object.assign({p:enc(P)},a.k==='wood'?{t:1}:{}),label:a.nm||''}));}
+ const st=(D.streets||[]).filter(q=>q.P.length>1).map(q=>Object.assign({},q,{A:abs(q.P)}));if(st.length)piece('mapstreets',st.map(q=>q.A),enc=>({geo:{s:st.map(q=>Object.assign({p:enc(q.A),wd:+(q.wd*U).toFixed(1)},q.sw?{sw:1}:{},q.cl?{cl:1}:{},q.nm?{nm:q.nm}:{}))}}));
+ (D.houses||[]).forEach((H,i)=>{if(H.length<3)return;const P=abs(H);let hs=0;for(const p of H)hs=(hs*33+Math.round(p[0]*7+p[1]*13))>>>0;piece('maphouse',[P],enc=>({geo:{p:enc(P)},fill:OVH_ROOF[hs%OVH_ROOF.length]}));});
+ if(D.mark&&D.mark.P&&D.mark.P.length>2){const T=abs(D.mark.P);piece('maplots',[T],enc=>({geo:{q:[enc(T)],m:String(D.mark.no)}}));}
+ return out;}
+/* ---- reading the map services. Nothing here runs until Draw is tapped ---- */
+async function ovhGet(url,ms,blob){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),ms||25000);try{const r=await fetch(url,blob?{signal:ac.signal}:{signal:ac.signal,headers:{Accept:'application/json'}});if(!r.ok)throw new Error('http '+r.status);return blob?await r.blob():await r.json();}finally{clearTimeout(t);}}
+const OVH_W={motorway:14,trunk:13,primary:13,secondary:11,tertiary:10,unclassified:9.1,residential:9.1,living_street:8,motorway_link:7,trunk_link:7,primary_link:7,secondary_link:7,tertiary_link:7,service:4.2};
+function ovhWays(j){const N={},out=[];for(const e of (j&&j.elements)||[])if(e.type==='node')N[e.id]=[e.lat,e.lon];
+ for(const e of (j&&j.elements)||[]){if(e.type!=='way'||!e.tags)continue;const g=e.geometry?e.geometry.map(p=>[p.lat,p.lon]):(e.nodes||[]).map(id=>N[id]).filter(Boolean);if(g.length>1)out.push({t:e.tags,g});}return out;}
+function ovhClipLine(P,H){/* keeps the parts of a line inside the square of half-size H */const out=[];let cur=null;const ins=p=>Math.abs(p[0])<=H&&Math.abs(p[1])<=H;
+ const cut=(a,b)=>{let t0=0,t1=1;const dx=b[0]-a[0],dy=b[1]-a[1];for(const [p,q] of [[-dx,a[0]+H],[dx,H-a[0]],[-dy,a[1]+H],[dy,H-a[1]]]){if(p===0){if(q<0)return null;}else{const r=q/p;if(p<0){if(r>t1)return null;if(r>t0)t0=r;}else{if(r<t0)return null;if(r<t1)t1=r;}}}return [[a[0]+dx*t0,a[1]+dy*t0],[a[0]+dx*t1,a[1]+dy*t1]];};
+ for(let i=0;i+1<P.length;i++){const c=cut(P[i],P[i+1]);if(!c){cur=null;continue;}if(!cur||!ins(P[i])){cur=[c[0]];out.push(cur);}cur.push(c[1]);if(!ins(P[i+1]))cur=null;}
+ return out.filter(q=>q.length>1);}
+function ovhClipPoly(P,H){let Q=P;for(const [n,c] of [[[1,0],[-H,0]],[[-1,0],[H,0]],[[0,1],[0,-H]],[[0,-1],[0,H]]]){Q=geoHalf(Q,c,n);if(Q.length<3)return [];}return Q;}
+const ovhCen=P=>[P.reduce((a,p)=>a+p[0],0)/P.length,P.reduce((a,p)=>a+p[1],0)/P.length];
+function ovhRings(fc){const out=[];for(const f of (fc&&fc.features)||[]){const g=f.geometry;if(!g)continue;const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[];for(const p of polys)if(p[0]&&p[0].length>3)out.push({r:p[0].map(c=>[c[1],c[0]]),a:f.properties||{}});}return out;}
+/* which lot an address like "435 Parkside Road" sits on, when the lot is listed as "429-35 PARKSIDE ROAD" */
+function ovhLotHit(loc,num,key){const m=/^\s*(\d+)(?:\s*-\s*(\d+))?\s+(.*)$/.exec(String(loc||''));if(!m||!num)return false;const lo=+m[1];let hi=lo;if(m[2])hi=m[2].length<m[1].length?+(m[1].slice(0,m[1].length-m[2].length)+m[2]):+m[2];
+ return num>=Math.min(lo,hi)&&num<=Math.max(lo,hi)&&(!key||m[3].toUpperCase().includes(key));}
+async function ovhFetch(addr,opt,step){opt=opt||{};step=step||(()=>{});const miss=[];
+ step('Finding the address…');
+ let hit;try{hit=(await ovhGet('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=1&q='+encodeURIComponent(addr),20000))[0];}catch(e){throw new Error('net');}
+ if(!hit||!isFinite(+hit.lat))throw new Error('notfound');
+ let lat=+hit.lat,lon=+hit.lon;const ad=hit.address||{},nj=ad['ISO3166-2-lvl4']==='US-NJ'||ad.state==='New Jersey',us=(ad.country_code||'')==='us';
+ const num=+((/^\s*(\d+)/.exec(addr)||[])[1]||ad.house_number||0)||0,key=String(ad.road||'').toUpperCase().replace(/[^A-Z0-9 ]/g,'').split(' ').filter(Boolean)[0]||'';
+ const box=(la,lo,half)=>{const dla=half/111132,dlo=half/(111320*Math.cos(la*Math.PI/180));return [lo-dlo,la-dla,lo+dlo,la+dla];};
+ const esri=(base,b,fields,where)=>base+'/query?f=geojson&where='+encodeURIComponent(where||'1=1')+'&outFields='+fields+'&geometryType=esriGeometryEnvelope&inSR=4326&outSR=4326&spatialRel=esriSpatialRelIntersects&geometry='+encodeURIComponent(b.join(','));
+ const NJP='https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/arcgis/rest/services/Parcels_Composite_NJ_WM/FeatureServer/0';
+ let target=null;
+ if(nj&&num&&key){step('Finding the lot…');try{const fc=await ovhGet(esri(NJP,box(lat,lon,300),'PROP_LOC',`PROP_LOC LIKE '%${key}%'`),20000);let best=null;
+   for(const r of ovhRings(fc)){if(!ovhLotHit(r.a.PROP_LOC,num,key))continue;const c=ovhCen(r.r),d=Math.hypot(c[0]-lat,(c[1]-lon)*Math.cos(lat*Math.PI/180));if(!best||d<best.d)best={d,c,r:r.r};}
+   if(best){lat=best.c[0];lon=best.c[1];target=best.r;}}catch(e){}}
+ const H=OVH_HALF,b=box(lat,lon,H),kx=111320*Math.cos(lat*Math.PI/180),ky=111132,M=g=>g.map(p=>[(p[1]-lon)*kx,-(p[0]-lat)*ky]),bb=`${b[1]},${b[0]},${b[3]},${b[2]}`;
+ step('Getting the streets, houses and lots…');
+ const osmQ='[out:json][timeout:20];(way[highway]('+bb+');way[natural~"^(wood|water)$"]('+bb+');way[landuse~"^(forest|grass|recreation_ground|cemetery)$"]('+bb+');way[leisure~"^(park|garden|swimming_pool)$"]('+bb+');way[building]('+bb+'););out geom;';
+ const osm=ovhGet('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(osmQ),9000).catch(()=>ovhGet('https://api.openstreetmap.org/api/0.6/map.json?bbox='+b.join(','),24000));
+ const fema=us?ovhGet(esri('https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/USA_Structures_View/FeatureServer/0',b,'OBJECTID'),24000):Promise.reject(0);
+ const lotsQ=nj?ovhGet(esri(NJP,box(lat,lon,H+20),'PROP_LOC'),24000):Promise.reject(0);
+ const photoU=nj?'https://img.nj.gov/imagerywms/Natural2020?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=Natural2020&STYLES=&SRS=EPSG:4326&BBOX='+b.join(',')+'&WIDTH=1400&HEIGHT=1400&FORMAT=image/jpeg':'https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPImagery/ImageServer/exportImage?bbox='+b.join(',')+'&bboxSR=4326&imageSR=4326&size=1400,1400&format=jpg&f=image';
+ const photoQ=opt.photo&&us?ovhGet(photoU,40000,true):Promise.reject(0);
+ const [rO,rF,rL,rP]=await Promise.allSettled([osm,fema,lotsQ,photoQ]);
+ const D={lat,lon,name:hit.display_name||addr,half:H,streets:[],areas:[],houses:[],lots:[],mark:null,photo:null,miss,nj,src:{}};
+ let osmB=[];
+ if(rO.status==='fulfilled'){const named={};
+  for(const w of ovhWays(rO.value)){const t=w.t,P=M(w.g),closed=P.length>3&&Math.hypot(P[0][0]-P[P.length-1][0],P[0][1]-P[P.length-1][1])<.5;
+   if(t.highway&&OVH_W[t.highway]&&t.area!=='yes'){const lanes=+t.lanes||0,drive=t.highway==='service',wd=Math.max(drive?(t.service==='driveway'?3.2:4.2):OVH_W[t.highway],lanes?lanes*3.4+1.5:0);
+    for(const seg of ovhClipLine(P,H)){const q={P:seg,wd,sw:!drive&&!/_link$|motorway|trunk/.test(t.highway),cl:/^(primary|secondary|tertiary|trunk)$/.test(t.highway),nm:''};D.streets.push(q);if(t.name){let L=0;for(let i=0;i+1<seg.length;i++)L+=Math.hypot(seg[i+1][0]-seg[i][0],seg[i+1][1]-seg[i][1]);if(!named[t.name]||L>named[t.name].L)named[t.name]={L,q};}}}
+   else if(closed&&t.building){const c=ovhCen(P);if(Math.abs(c[0])<=H&&Math.abs(c[1])<=H)osmB.push(P.slice(0,-1));}
+   else if(closed&&(t.natural==='wood'||t.landuse==='forest')){const Q=ovhClipPoly(P.slice(0,-1),H);if(Q.length>2)D.areas.push({k:'wood',P:Q,nm:''});}
+   else if(closed&&(t.natural==='water'||t.leisure==='swimming_pool')){const Q=ovhClipPoly(P.slice(0,-1),H);if(Q.length>2)D.areas.push({k:'water',P:Q,nm:t.leisure==='swimming_pool'?'Pool':''});}
+   else if(closed&&(/^(park|garden)$/.test(t.leisure||'')||/^(grass|recreation_ground|cemetery|meadow|village_green)$/.test(t.landuse||''))){const Q=ovhClipPoly(P.slice(0,-1),H);if(Q.length>2)D.areas.push({k:'park',P:Q,nm:t.name||''});}}
+  for(const k in named)named[k].q.nm=k;D.streets.sort((a,b)=>a.wd-b.wd);D.areas.sort((a,b)=>(a.k==='water')-(b.k==='water'));}
+ else miss.push('streets');
+ const thin=P=>{if(P.length>60){const st=Math.ceil(P.length/60);P=P.filter((p,i)=>i%st===0);}return P;};
+ if(rF.status==='fulfilled'){for(const r of ovhRings(rF.value)){const P=M(r.r).slice(0,-1),c=ovhCen(P);if(P.length>2&&Math.abs(c[0])<=H&&Math.abs(c[1])<=H)D.houses.push(thin(P));}D.src.houses='FEMA';}
+ if(!D.houses.length&&osmB.length){D.houses=osmB.map(thin);D.src.houses='OpenStreetMap';}
+ if(!D.houses.length)miss.push('houses');
+ if(rL.status==='fulfilled'){for(const r of ovhRings(rL.value)){const P=M(r.r).slice(0,-1),c=ovhCen(P);if(P.length>2&&Math.abs(c[0])<=H+15&&Math.abs(c[1])<=H+15)D.lots.push(thin(P));}}else if(nj)miss.push('lot lines');
+ if(target)D.mark={P:M(target).slice(0,-1),no:num,label:(num+' '+(ad.road||'')).trim()};
+ if(rP.status==='fulfilled'&&rP.value&&rP.value.size>2000&&/^image\//.test(rP.value.type||'image/jpeg'))D.photo=rP.value;else if(opt.photo)miss.push('aerial photo');
+ if(!D.streets.length&&!D.houses.length)throw new Error('empty');
+ return D;}
+async function ovhApply(D){const s=scene(),c=s.items.length?viewCenter():{x:0,y:0},U=3.28084*FT,its=ovhItems(D,c.x,c.y);let photo=false;
+ if(D.photo){try{const {data,w,h}=await shrinkImage(D.photo,1400,235000),id=addImage(data),side=2*D.half*U;delete s.bgOrig;s.bgId=id;s.bg={x:c.x-side/2,y:c.y-side/2,w,h,s:side/w,op:1,locked:true};photo=true;}catch(e){D.miss.push('aerial photo');}}
+ s.items.push(...its);try{sunPlaceSet(s,{lat:+D.lat.toFixed(4),lon:+D.lon.toFixed(4),tz:sunNear(D.lat,D.lon)[3],place:String(D.name).split(',').slice(0,3).join(',').trim()});s.sun.north=0;}catch(e){}
+ sel=null;msel=null;commit();fit();return {n:its.length,photo};}
+function ovhDialog(){const s=scene(),has=!!(s.bgId&&s.bg);mNext=()=>{addMenu();gridMenu('set');};
+ modal(`<h3>Overhead from an address</h3><p class="mut" style="margin:-4px 0 10px">Draws about two blocks around an address: the streets, houses and woods and, in New Jersey, the lot lines. The pieces arrive grouped and locked, north up.</p>
+  <label class="fld">Address<input id="ohA" placeholder="e.g. 435 Parkside Road, Plainfield, NJ" autocomplete="off" autocapitalize="words" enterkeyhint="go"></label>
+  <label class="imopt"><input type="checkbox" id="ohP" checked> Put the aerial photo underneath${has?' <span class="mut">· replaces this scene’s background image</span>':''}</label>
+  <p class="mut" style="font-size:12.5px;margin:8px 0 0">Tapping Draw sends the address to OpenStreetMap to find it, then asks OpenStreetMap, FEMA, the U.S. Geological Survey and the State of New Jersey for the map around that spot. Nothing is sent before then. It needs a connection. Map data © OpenStreetMap contributors.</p>
+  <div id="ohS" class="mut" role="status" aria-live="polite" style="min-height:20px;margin-top:8px;font-weight:600"></div>
+  <div class="btns end"><button data-x>Cancel</button><button class="pri" id="ohGo">Draw</button></div>`,card=>{const inp=card.querySelector('#ohA'),go=card.querySelector('#ohGo'),st=card.querySelector('#ohS');let busy=false;
+  const run=async()=>{const a=inp.value.trim();if(busy)return;if(a.length<5){st.textContent='Type the street address, town and state.';inp.focus();return;}
+   busy=true;go.disabled=true;go.textContent='Drawing…';
+   try{const D=await ovhFetch(a,{photo:card.querySelector('#ohP').checked},t=>{st.textContent=t;});st.textContent='Drawing it…';const sid=scene().id;if(sid!==s.id)throw new Error('moved');const r=await ovhApply(D);mStack=[];closeModal();
+    const got=[D.streets.length?plural(new Set(D.streets.map(q=>q.nm).filter(Boolean)).size||1,'street'):'',D.houses.length?plural(D.houses.length,'building'):'',D.lots.length?plural(D.lots.length,'lot'):'',r.photo?'the aerial photo':''].filter(Boolean).join(', ');
+    toast(`Drawn: ${got}.${D.mark?' The lot for '+D.mark.label+' is outlined in blue.':D.nj?'':' Lot lines are only available in New Jersey so far.'}${D.miss.length?' Not available here: '+D.miss.join(', ')+'.':''} It’s grouped and locked; tap it to unlock or ungroup.`);}
+   catch(e){busy=false;go.disabled=false;go.textContent='Draw';const m=e&&e.message;st.textContent=m==='notfound'?'That address wasn’t found. Add the town and state, or check the spelling.':m==='empty'?'Nothing is mapped around that address yet.':m==='moved'?'The scene changed while this was working. Try again.':'The map services couldn’t be reached. Check the connection and try again.';}};
+  go.onclick=run;inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run();}});if(matchMedia('(pointer:fine)').matches)inp.focus();});}
 /* ---------- Night Look: the plan under darkness, lit only where its lights throw. Per scene, travels with the scene to every device ---------- */
 let nightForce=null;
 const nightCfg=s=>nightForce===false?null:(s&&s.night&&s.night.on?s.night:null);
@@ -3571,8 +3702,8 @@ function gridMenu(cat){
  let body;
  if(C.sec){const my=swapFor||cat!=='prop'?[]:myList(),rec=(P.ui.recent||[]).filter(k=>LIB[k]&&C.k.includes(k));body=(my.length?`<div class="gh">My props</div>${my.map(v=>`<button data-my="${esc(v.key)}" data-n="${esc(v.name.toLowerCase())}">${myIcon(v)}<span>${esc(v.name)}</span></button>`).join('')}`:'')+(favs.length||ed?`<div class="gh">Favorites</div>${favs.length?favs.map(cell).join(''):`<div class="gnote">Tap any ${cat==='set'?'piece':'prop'} below to add it here.</div>`}`:'')+(rec.length?`<div class="gh">Recently used</div>${rec.map(cell).join('')}`:'')+C.sec.map(([t,ks])=>`<div class="gh">${t}</div>${ks.map(cell).join('')}`).join('');}
  else body=C.k.map(cell).join('');
- pop.innerHTML=`<div class="stk"><h4><button class="back">‹ Back</button>${C.t}</h4>${C.sec?`<div class="gs"><input id="gsq" type="search" placeholder="${cat==='set'?'Search set pieces':'Search props'}" autocomplete="off">${swapFor?'':`<button id="favEd"${ed?' class="on"':''}>${ed?'Done':'Edit Favorites'}</button>`}</div>`:''}</div><div class="grid${ed?' faved':''}">${body}</div>`;
- {const fe=pop.querySelector('#favEd');if(fe)fe.onclick=()=>{favEdit=!favEdit;gridMenu(cat);};}
+ pop.innerHTML=`<div class="stk"><h4><button class="back">‹ Back</button>${C.t}</h4>${C.sec?`<div class="gs"><input id="gsq" type="search" placeholder="${cat==='set'?'Search set pieces':'Search props'}" autocomplete="off">${swapFor?'':`<button id="favEd"${ed?' class="on"':''}>${ed?'Done':'Edit Favorites'}</button>`}</div>`:''}${cat==='set'&&!swapFor?'<button id="ovhB" class="gwide">Overhead from an Address…</button>':''}</div><div class="grid${ed?' faved':''}">${body}</div>`;
+ {const fe=pop.querySelector('#favEd');if(fe)fe.onclick=()=>{favEdit=!favEdit;gridMenu(cat);};const ob=pop.querySelector('#ovhB');if(ob)ob.onclick=()=>{closePop();ovhDialog();};}
  pop.querySelector('.back').onclick=swapFor?()=>{swapFor=null;objPop(popAt.x,popAt.y);}:addMenu2;if(swapFor){const h4=pop.querySelector('h4');if(h4)h4.lastChild.textContent='Change Type';}
  const q=pop.querySelector('#gsq');
  if(q){q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase(),seen=new Set();pop.querySelectorAll('.grid [data-k],.grid [data-my]').forEach(b=>{const id=b.dataset.k||b.dataset.my,show=!v||(b.dataset.n.includes(v)&&!seen.has(id));if(v&&show)seen.add(id);b.style.display=show?'':'none';});pop.querySelectorAll('.gh,.gnote').forEach(h=>h.style.display=v?'none':'');});if(matchMedia('(pointer:fine)').matches)q.focus();}
@@ -3663,7 +3794,7 @@ function objPop(cx,cy){
     +(it.type==='wall'&&!it.locked?sec('Wall',(wallJoined(s,it)?B('selrun','Move All Joined Walls')+(unhook===it.id?'':B('wunhook','Unhook This Wall')):'')+(unhook===it.id||wallAway(it)?B('wrehook','Rehook This Wall'):'')+B('wcorner','Add a Corner Here')+([1,2].some(e=>wallJoint(s,it,e).length===1)?B('wuncorner','Remove Nearest Corner'):'')+B('wextrude','Add Side Walls')):'')
     +(it.kind==='dollytrack'&&Math.abs(trackK(it))>1e-7?sec('Track',B('tstraight','Straighten Track')):'')+(it.wall?sec('Wall',(WALLK[it.kind]>0?B('wflip','Flip to Other Side'):'')+B('wdetach','Detach from Wall')):'')
     +(()=>{const a=it.type==='prop'||it.type==='set'||it.type==='light'||it.type==='ink'?B('label',it.label?'Edit Label…':'Add Label…'):'',b=labCan(it)?(labIsFree(it)?B('labback','Reattach Label'):B('labfree','Detach Label')):'';return sec('Label',a&&b?duo(a,b):a+b);})()
-    +(it.type==='ink'?sec('Drawing',B('inkmore','Draw More on This')+B('rsize','Reset Size')+ck('keepar','Keep Proportions',it.ar))+colorGrid(INK_COLS,(it.strokes[0]||{}).c,'ink'):sec('Shape',(isBox&&it.kind!=='dollytrack'?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+(ROOFK[it.kind]?ck('roof','Roof On',roofOn(it)):'')+(HLK[it.kind]&&nightCfg(scene())?ck('hl','Headlights On',!!it.hl):'')+ck('scal','Allow Resizing',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Details…')))
+    +(it.type==='ink'?sec('Drawing',B('inkmore','Draw More on This')+B('rsize','Reset Size')+ck('keepar','Keep Proportions',it.ar))+colorGrid(INK_COLS,(it.strokes[0]||{}).c,'ink'):sec('Shape',(isBox&&it.kind!=='dollytrack'&&!GEO[it.kind]?B('ctype','Change Type…')+B('rsize','Reset Size')+ck('mirror','Mirror',it.mir)+(ROOFK[it.kind]?ck('roof','Roof On',roofOn(it)):'')+(HLK[it.kind]&&nightCfg(scene())?ck('hl','Headlights On',!!it.hl):'')+ck('scal','Allow Resizing',!it.fixed)+(it.fixed?'':ck('keepar','Keep Proportions',it.ar)):'')+B('edit','Details…')))
     +(isBox&&it.kind!=='dollytrack'&&it.type!=='set'||isBox&&PCOL[it.kind]?colorGrid([PCOL[it.kind]||'#CFD8E3','#7A4E2D','#E5484D','#F77F00','#F5C518','#4E9A4A','#3E63DD','#2B2D33'],it.fill&&hex7(it.fill)!=='#CFD8E3'?it.fill:(PCOL[it.kind]||'#CFD8E3'),'prop'):'')+pages
     +sec('Arrange',(mates.length>1?B('ungroup','Ungroup'):'')+duo(B('dup','Duplicate'),lk)+duo(B('front','Bring to Front'),B('back','Send to Back')))
     +end(sel.mark?R('delmark','Delete Position '+(sel.mark+1))+R('del','Delete the Whole '+esc(name)+' ('+np+' Positions)'):R('del',np>1?'Delete '+esc(name)+' (All '+np+' Positions)':'Delete '+esc(name)));}
@@ -4326,7 +4457,7 @@ function aimName(sc,a){if(!a)return '';if(a.id){const o=sc.items.find(q=>q.id===
 /* ---------- smart guides for set pieces and props: edges, centers, the middle of a room, even spacing ---------- */
 function aabb(it,p){const a=rad(it.rot||0),c=Math.abs(Math.cos(a)),n=Math.abs(Math.sin(a)),hw=(it.w*c+it.h*n)/2,hh=(it.w*n+it.h*c)/2,x=p?p.x:it.x,y=p?p.y:it.y;return {x0:x-hw,x1:x+hw,cx:x,y0:y-hh,y1:y+hh,cy:y,hw,hh};}
 function boxSnap(sc,it,p,g){const tol=8/view.k,me=aabb(it,p),R=[],W=[];
- for(const o of pageItems(sc)){if(o===it)continue;if(BOX(o.type)&&o.kind!=='dollytrack'&&!movesProp(o)&&o.w&&o.h)R.push(aabb(o));else if(o.type==='wall')W.push(o);}
+ for(const o of pageItems(sc)){if(o===it)continue;if(BOX(o.type)&&o.kind!=='dollytrack'&&!GEO[o.kind]&&!movesProp(o)&&o.w&&o.h)R.push(aabb(o));else if(o.type==='wall')W.push(o);}
  const ov=(a,b,ax)=>ax==='x'?(a.y0<b.y1&&b.y0<a.y1):(a.x0<b.x1&&b.x0<a.x1);
  const solve=ax=>{const lo=ax+'0',hi=ax+'1',c='c'+ax,half=ax==='x'?me.hw:me.hh,v=p[ax],C=[];
   for(const r of R)for(const [mk,off] of [[lo,-half],[c,0],[hi,half]])for(const kk of [lo,c,hi])C.push({d:r[kk]-(v+off),at:r[kk],k:'al',r});
@@ -6571,6 +6702,7 @@ function sunShadows(s,S){if(!S||S.alt<1)return '';const u=sunVec(S.az,S.north),K
  for(const it of pageItems(s)){
   if(it.type==='char'){if(anim.step)continue;for(const m of it.marks||[])if(!m.t)cast(ring(m.x,m.y,10,10,0,10),sunHeight(it,m));}
   else if(it.type==='wall'){const L=Math.hypot(it.x2-it.x1,it.y2-it.y1)||1,nx=-(it.y2-it.y1)/L*(it.t||8)/2,ny=(it.x2-it.x1)/L*(it.t||8)/2;cast([[it.x1+nx,it.y1+ny],[it.x2+nx,it.y2+ny],[it.x2-nx,it.y2-ny],[it.x1-nx,it.y1-ny]],9);}
+  else if(GEO[it.kind]){if(it.kind==='maphouse'&&it.geo){const W=geoWorld(it);if(W.length>2)cast(W,20);}}
   else if((it.type==='prop'||it.type==='set'||it.type==='light')&&it.w>0&&it.h>0){const h=sunHeight(it);if(!h)continue;if(SUN_ROUND[it.kind])cast(ring(it.x,it.y,it.w/2,it.h/2,it.rot,12),h);else{const a=rad(it.rot||0),c=Math.cos(a),sn=Math.sin(a);cast([[-1,-1],[1,-1],[1,1],[-1,1]].map(([qx,qy])=>{const px=qx*it.w/2,py=qy*it.h/2;return [it.x+px*c-py*sn,it.y+px*sn+py*c];}),h);}}}
  const str=clamp(S.alt/22,.4,1),op=steps.length===1?[.17]:steps.length===2?[.08,.09]:[.05,.055,.065];
  return D.map((d,i)=>d?`<path class="deco" d="${d}" fill="#1c1c1e" fill-opacity="${(op[i]*str).toFixed(3)}" pointer-events="none"/>`:'').join('');}
