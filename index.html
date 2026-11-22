@@ -654,7 +654,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122062750';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122065446';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1543,7 +1543,7 @@ const CATS={
   ['Crime scene',['policetape','evmarker','barricade','body']],
   ['Street',['streetlamp','hydrant','cone','trashcan','dumpster','mailbox','busstop','stroller']],
   ['Nature & animals',['tree','bush','hedge','rock','pond','dog','cat','horse']],
-  ['Parks & outdoors',['picnictable','swingset','slide','fountain','pool','campfire','dock']],
+  ['Parks & outdoors',['picnictable','swingset','slide','campfire']],
   ['Hand props',['image','book','briefcase','suitcase','bag','box','keys','cash','flashlight','camprop','knife','bat']],
   ['Weapons',['gun','rifle','shotgun','sword','dynamite','bomb']],
   ['Explosions & fire',['explosion','blast','sparks','fire','smoke','blastradius']],
@@ -1551,14 +1551,14 @@ const CATS={
   ['Arrows',['arrow','carrow']]]},
  set:{t:'Add Set',sec:[
   ['Walls & doors',['walltool','window','dooropen','doorclosed','dbldooropen','dbldoorclosed','opening','bars','stairs','column','pillar','railing','fence','archway','curtain','elevator']],
-  ['Streets & ground',['street','avenue','inter4','interT','sidewalk','crosswalk','parking']],
+  ['Streets, ground & water',['street','avenue','inter4','interT','sidewalk','crosswalk','parking','fountain','pool','dock']],
   ['Buildings (seen from above)',['househip','housegable','houseL','garage','rowhouse','rowblock','apartment','office','warehouse','store','gasstation','church']]]},
  light:{t:'Add Lighting',k:['fresnel','ledpanel','softbox','kino','practical','sun']},
  note:{t:'Add Annotation',k:['text','mask','arrow','carrow']},
 };
 /* streets, ground and buildings are the place, so they are offered under Add Set and sit on the Set layer.
    They are still saved as the same kind of piece as before, so plans made earlier need no change */
-const PLACE=new Set(['street','avenue','inter4','interT','sidewalk','crosswalk','parking','househip','housegable','houseL','garage','rowhouse','rowblock','apartment','office','warehouse','store','gasstation','church']);
+const PLACE=new Set(['street','avenue','inter4','interT','sidewalk','crosswalk','parking','fountain','pool','dock','househip','housegable','houseL','garage','rowhouse','rowblock','apartment','office','warehouse','store','gasstation','church']);
 CATS.prop.k=[...new Set(CATS.prop.sec.flatMap(x=>x[1]))];CATS.set.k=[...new Set(CATS.set.sec.flatMap(x=>x[1]))];
 const menuOf=k=>CATS.set.k.includes(k)?'set':CATS.light.k.includes(k)?'light':'prop';
 const catOf=k=>PLACE.has(k)?'prop':menuOf(k);
