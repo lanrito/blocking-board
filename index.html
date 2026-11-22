@@ -654,7 +654,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122054710';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122062750';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -1541,8 +1541,6 @@ const CATS={
   ['Emergency vehicles',['police','policesuv','policemoto','swat','ambulance','fireengine','laddertruck','policeheli','medevac']],
   ['Transit',['subwaycar','traincar','turnstile','platform']],
   ['Crime scene',['policetape','evmarker','barricade','body']],
-  ['Streets & sidewalks',['street','avenue','inter4','interT','sidewalk','crosswalk','parking']],
-  ['Buildings (seen from above)',['househip','housegable','houseL','garage','rowhouse','rowblock','apartment','office','warehouse','store','gasstation','church']],
   ['Street',['streetlamp','hydrant','cone','trashcan','dumpster','mailbox','busstop','stroller']],
   ['Nature & animals',['tree','bush','hedge','rock','pond','dog','cat','horse']],
   ['Parks & outdoors',['picnictable','swingset','slide','fountain','pool','campfire','dock']],
@@ -1551,12 +1549,19 @@ const CATS={
   ['Explosions & fire',['explosion','blast','sparks','fire','smoke','blastradius']],
   ['Film gear',['actormark','dollytrack','dolly','crane','cstand','lightstand','flag','silk','applebox','dirchair','boom','village','soundcart','generator','tent','equipment']],
   ['Arrows',['arrow','carrow']]]},
- set:{t:'Add Set',k:['walltool','window','dooropen','doorclosed','dbldooropen','dbldoorclosed','opening','bars','stairs','column','pillar','railing','fence','archway','curtain','elevator']},
+ set:{t:'Add Set',sec:[
+  ['Walls & doors',['walltool','window','dooropen','doorclosed','dbldooropen','dbldoorclosed','opening','bars','stairs','column','pillar','railing','fence','archway','curtain','elevator']],
+  ['Streets & ground',['street','avenue','inter4','interT','sidewalk','crosswalk','parking']],
+  ['Buildings (seen from above)',['househip','housegable','houseL','garage','rowhouse','rowblock','apartment','office','warehouse','store','gasstation','church']]]},
  light:{t:'Add Lighting',k:['fresnel','ledpanel','softbox','kino','practical','sun']},
  note:{t:'Add Annotation',k:['text','mask','arrow','carrow']},
 };
-const catOf=k=>CATS.set.k.includes(k)?'set':CATS.light.k.includes(k)?'light':'prop';
-CATS.prop.k=[...new Set(CATS.prop.sec.flatMap(x=>x[1]))];
+/* streets, ground and buildings are the place, so they are offered under Add Set and sit on the Set layer.
+   They are still saved as the same kind of piece as before, so plans made earlier need no change */
+const PLACE=new Set(['street','avenue','inter4','interT','sidewalk','crosswalk','parking','househip','housegable','houseL','garage','rowhouse','rowblock','apartment','office','warehouse','store','gasstation','church']);
+CATS.prop.k=[...new Set(CATS.prop.sec.flatMap(x=>x[1]))];CATS.set.k=[...new Set(CATS.set.sec.flatMap(x=>x[1]))];
+const menuOf=k=>CATS.set.k.includes(k)?'set':CATS.light.k.includes(k)?'light':'prop';
+const catOf=k=>PLACE.has(k)?'prop':menuOf(k);
 const FONT='-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif';
 const SVG_CSS=`text{font-family:${FONT}}
 .pf{fill:#cfd8e3;stroke:#4b5563;stroke-width:1.25px;vector-effect:non-scaling-stroke}
@@ -3440,7 +3445,7 @@ function addMenu(){
 }
 let swapFor=null,favEdit=false;
 /* favorites and saved props follow the account: one entry each in P.prefs (fav_<kind>, myprop_<id>), so two devices' additions combine */
-const favList=()=>Object.keys(P.prefs||{}).filter(k=>k.startsWith('fav_')&&P.prefs[k].v&&LIB[k.slice(4)]&&CATS.prop.k.includes(k.slice(4))).sort((a,b)=>P.prefs[a].t-P.prefs[b].t).map(k=>k.slice(4));
+const favList=cat=>Object.keys(P.prefs||{}).filter(k=>k.startsWith('fav_')&&P.prefs[k].v&&LIB[k.slice(4)]&&CATS[cat==='set'?'set':'prop'].k.includes(k.slice(4))).sort((a,b)=>P.prefs[a].t-P.prefs[b].t).map(k=>k.slice(4));
 const myList=()=>Object.keys(P.prefs||{}).filter(k=>k.startsWith('myprop_')&&P.prefs[k].v&&Array.isArray(P.prefs[k].v.its)).map(k=>({key:k,name:String(P.prefs[k].v.name||'My prop'),its:P.prefs[k].v.its})).sort((a,b)=>a.name.localeCompare(b.name));
 function myBox(its){let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;const add=(x,y)=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
  for(const it of its){if(it.type==='wall'){add(it.x1,it.y1);add(it.x2,it.y2);}else{const a=rad(it.rot||0),w=(it.w||60)/2,h=(it.h||24)/2,ex=Math.abs(w*Math.cos(a))+Math.abs(h*Math.sin(a)),ey=Math.abs(w*Math.sin(a))+Math.abs(h*Math.cos(a));add(it.x-ex,it.y-ey);add(it.x+ex,it.y+ey);}}
@@ -3463,12 +3468,12 @@ function myPropEdit(key){const v=prefGet(key);if(!v)return;
   card.querySelector('#ok').onclick=()=>{const name=i.value.trim();if(!name)return;closeModal();prefSet(key,Object.assign({},v,{name}));toast('Renamed.');};
   card.querySelector('#del').onclick=()=>{closeModal();prefSet(key,null);toast(`“${v.name}” is removed from My Props.`);};});}
 function gridMenu(cat){
- const favs=CATS[cat].sec?favList():[],fset=new Set(favs),ed=favEdit&&!swapFor&&!!CATS[cat].sec;
+ const favs=CATS[cat].sec?favList(cat):[],fset=new Set(favs),ed=favEdit&&!swapFor&&!!CATS[cat].sec;
  const C=CATS[cat],cell=k=>`<button data-k="${k}"${fset.has(k)?' class="isfav"':''} data-n="${esc((k==='walltool'?'Wall Tool':LIB[k].n).toLowerCase())}">${iconSVG(k)}<span>${k==='walltool'?'Wall Tool':esc(LIB[k].n)}</span></button>`;
  let body;
- if(C.sec){const my=swapFor?[]:myList(),rec=(P.ui.recent||[]).filter(k=>LIB[k]&&CATS.prop.k.includes(k));body=(my.length?`<div class="gh">My props</div>${my.map(v=>`<button data-my="${esc(v.key)}" data-n="${esc(v.name.toLowerCase())}">${myIcon(v)}<span>${esc(v.name)}</span></button>`).join('')}`:'')+(favs.length||ed?`<div class="gh">Favorites</div>${favs.length?favs.map(cell).join(''):'<div class="gnote">Tap any prop below to add it here.</div>'}`:'')+(rec.length?`<div class="gh">Recently used</div>${rec.map(cell).join('')}`:'')+C.sec.map(([t,ks])=>`<div class="gh">${t}</div>${ks.map(cell).join('')}`).join('');}
+ if(C.sec){const my=swapFor||cat!=='prop'?[]:myList(),rec=(P.ui.recent||[]).filter(k=>LIB[k]&&C.k.includes(k));body=(my.length?`<div class="gh">My props</div>${my.map(v=>`<button data-my="${esc(v.key)}" data-n="${esc(v.name.toLowerCase())}">${myIcon(v)}<span>${esc(v.name)}</span></button>`).join('')}`:'')+(favs.length||ed?`<div class="gh">Favorites</div>${favs.length?favs.map(cell).join(''):`<div class="gnote">Tap any ${cat==='set'?'piece':'prop'} below to add it here.</div>`}`:'')+(rec.length?`<div class="gh">Recently used</div>${rec.map(cell).join('')}`:'')+C.sec.map(([t,ks])=>`<div class="gh">${t}</div>${ks.map(cell).join('')}`).join('');}
  else body=C.k.map(cell).join('');
- pop.innerHTML=`<div class="stk"><h4><button class="back">‹ Back</button>${C.t}</h4>${C.sec?`<div class="gs"><input id="gsq" type="search" placeholder="Search props" autocomplete="off">${swapFor?'':`<button id="favEd"${ed?' class="on"':''}>${ed?'Done':'Edit Favorites'}</button>`}</div>`:''}</div><div class="grid${ed?' faved':''}">${body}</div>`;
+ pop.innerHTML=`<div class="stk"><h4><button class="back">‹ Back</button>${C.t}</h4>${C.sec?`<div class="gs"><input id="gsq" type="search" placeholder="${cat==='set'?'Search set pieces':'Search props'}" autocomplete="off">${swapFor?'':`<button id="favEd"${ed?' class="on"':''}>${ed?'Done':'Edit Favorites'}</button>`}</div>`:''}</div><div class="grid${ed?' faved':''}">${body}</div>`;
  {const fe=pop.querySelector('#favEd');if(fe)fe.onclick=()=>{favEdit=!favEdit;gridMenu(cat);};}
  pop.querySelector('.back').onclick=swapFor?()=>{swapFor=null;objPop(popAt.x,popAt.y);}:addMenu2;if(swapFor){const h4=pop.querySelector('h4');if(h4)h4.lastChild.textContent='Change Type';}
  const q=pop.querySelector('#gsq');
@@ -3476,7 +3481,7 @@ function gridMenu(cat){
  pop.querySelector('.grid').addEventListener('click',e=>{const y=e.target.closest('[data-my]');if(y){if(ed)myPropEdit(y.dataset.my);else myPropDrop(y.dataset.my);return;}
   const x=e.target.closest('[data-k]');if(!x)return;const k=x.dataset.k;
   if(ed){if(k==='walltool')return;const all=[...pop.querySelectorAll(`.grid [data-k="${k}"]`)],last=all[all.length-1]===x,t0=x.getBoundingClientRect().top,st=pop.scrollTop;prefSet('fav_'+k,fset.has(k)?null:1);gridMenu(cat);pop.scrollTop=st;if(last){const n=[...pop.querySelectorAll(`.grid [data-k="${k}"]`)].pop();if(n)pop.scrollTop+=n.getBoundingClientRect().top-t0;}return;}
-  if(swapFor){const it=itemById(swapFor);swapFor=null;if(it&&k!=='walltool'&&k!=='image'){const L=LIB[k];it.kind=k;it.w=L.w;it.h=L.h;delete it.fill;closePop();commit();}return;}
+  if(swapFor){const it=itemById(swapFor);swapFor=null;if(it&&k!=='walltool'&&k!=='image'){const L=LIB[k];it.kind=k;if(it.type==='prop'||it.type==='set')it.type=catOf(k);it.w=L.w;it.h=L.h;delete it.fill;closePop();commit();}return;}
   if(k==='walltool'){sel=null;startTool({t:'wall',last:null});}else if(k==='image'){closePop();$('#fProp').click();}else addBox(k);});
  const wr=$('#wrap').getBoundingClientRect();pop.style.left=clamp(parseFloat(pop.style.left)||8,8,Math.max(8,wr.width-pop.offsetWidth-8))+'px';
 }
@@ -3610,7 +3615,7 @@ function objAct(o){
   case 'dupcam':addCamTo(it.setupId);break;
   case 'movefrom':startTool({t:'pfrom',id:it.id});break;
   case 'ungroup':{for(const o of gMates(s,it))delete o.gid;commit();toast('Ungrouped. Each piece is on its own again.');break;}
-  case 'ctype':{swapFor=it.id;openPop('',$('#bAdd'));gridMenu(catOf(it.kind)==='set'?'set':catOf(it.kind)==='light'?'light':'prop');return;}
+  case 'ctype':{swapFor=it.id;openPop('',$('#bAdd'));gridMenu(menuOf(it.kind));return;}
   case 'rsize':{const L=LIB[it.kind]||{};if(L.w){it.w=L.w;it.h=L.h;}commit();break;}
   case 'mirror':it.mir=!it.mir;if(!it.mir)delete it.mir;commit();objPop(popAt.x,popAt.y);break;
   case 'roof':{const v=!roofOn(it);if(ROOFDEF[it.kind]){if(v)delete it.roof;else it.roof=false;}else if(v)it.roof=true;else delete it.roof;}commit();objPop(popAt.x,popAt.y);break;
@@ -6322,14 +6327,20 @@ function sunLit(m,S){const D=S.day;if(S.alt<=-.833)return {k:'down',t:'Sun is do
  return {k:'side',t:'Side-lit',c:'#6a7482',sub:'Sun from camera '+(f.right?'right':'left')+' · '+when};}
 function sunHeight(it,m){if(it.type==='char')return m&&m.pose==='lie'?1:m&&m.pose==='kneel'?3.5:m&&m.pose==='sit'?4.3:5.7;if(it.type==='wall')return 9;const h=SUN_H[it.kind];if(h!=null)return h;return it.type==='prop'?3:it.type==='light'?7:0;}
 function sunHull(P){P=P.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]),lo=[],up=[];for(const p of P){while(lo.length>1&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p);}for(let i=P.length-1;i>=0;i--){const p=P[i];while(up.length>1&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p);}return lo.slice(0,-1).concat(up.slice(0,-1));}
-function sunShadows(s,S){if(!S||S.alt<1)return '';const u=sunVec(S.az,S.north),k=Math.min(1/Math.tan(rad(S.alt)),40),f=v=>v.toFixed(1);let d='';
- const cast=(pts,hft)=>{if(!(hft>0))return;const L=Math.min(hft*k,150)*FT,dx=-u.x*L,dy=-u.y*L,H=sunHull(pts.concat(pts.map(p=>[p[0]+dx,p[1]+dy])));if(H.length>2)d+='M'+H.map(p=>f(p[0])+','+f(p[1])).join('L')+'Z';};
+/* A shadow is as long as the piece is tall divided by the tangent of the sun's height: 1.4x at 35 degrees, 4x at 14, 14x at 4.
+   On open flat ground that is real, but a very long shadow is soft, faint and usually broken up by whatever is around, so a hard bar
+   that long reads as wrong. So: the true length up to SUN_REACH times the height, drawn in three steps that fade away from the piece,
+   and fainter overall as the sun gets low */
+const SUN_REACH=4,sunLen=alt=>1/Math.tan(rad(Math.max(alt,.5)));
+function sunShadows(s,S){if(!S||S.alt<1)return '';const u=sunVec(S.az,S.north),K=sunLen(S.alt),f=v=>v.toFixed(1),steps=[...new Set([SUN_REACH,SUN_REACH*.62,SUN_REACH*.32].map(q=>+Math.min(K,q).toFixed(3)))],D=steps.map(()=>'');
+ const cast=(pts,hft)=>{if(!(hft>0))return;steps.forEach((k,i)=>{const L=hft*k*FT,dx=-u.x*L,dy=-u.y*L,H=sunHull(pts.concat(pts.map(p=>[p[0]+dx,p[1]+dy])));if(H.length>2)D[i]+='M'+H.map(p=>f(p[0])+','+f(p[1])).join('L')+'Z';});};
  const ring=(x,y,rx,ry,rot,n)=>{const a=rad(rot||0),c=Math.cos(a),sn=Math.sin(a),o=[];for(let i=0;i<n;i++){const t=i/n*2*Math.PI,px=Math.cos(t)*rx,py=Math.sin(t)*ry;o.push([x+px*c-py*sn,y+px*sn+py*c]);}return o;};
  for(const it of pageItems(s)){
   if(it.type==='char'){if(anim.step)continue;for(const m of it.marks||[])if(!m.t)cast(ring(m.x,m.y,10,10,0,10),sunHeight(it,m));}
   else if(it.type==='wall'){const L=Math.hypot(it.x2-it.x1,it.y2-it.y1)||1,nx=-(it.y2-it.y1)/L*(it.t||8)/2,ny=(it.x2-it.x1)/L*(it.t||8)/2;cast([[it.x1+nx,it.y1+ny],[it.x2+nx,it.y2+ny],[it.x2-nx,it.y2-ny],[it.x1-nx,it.y1-ny]],9);}
   else if((it.type==='prop'||it.type==='set'||it.type==='light')&&it.w>0&&it.h>0){const h=sunHeight(it);if(!h)continue;if(SUN_ROUND[it.kind])cast(ring(it.x,it.y,it.w/2,it.h/2,it.rot,12),h);else{const a=rad(it.rot||0),c=Math.cos(a),sn=Math.sin(a);cast([[-1,-1],[1,-1],[1,1],[-1,1]].map(([qx,qy])=>{const px=qx*it.w/2,py=qy*it.h/2;return [it.x+px*c-py*sn,it.y+px*sn+py*c];}),h);}}}
- return d?`<path class="deco" d="${d}" fill="#1c1c1e" fill-opacity=".17" pointer-events="none"/>`:'';}
+ const str=clamp(S.alt/22,.4,1),op=steps.length===1?[.17]:steps.length===2?[.08,.09]:[.05,.055,.065];
+ return D.map((d,i)=>d?`<path class="deco" d="${d}" fill="#1c1c1e" fill-opacity="${(op[i]*str).toFixed(3)}" pointer-events="none"/>`:'').join('');}
 /* on the plan: the sun's path through the day as a ring inside the part you are looking at (so it is always on screen), where it is now, which way north is, and a tag on each camera */
 function sunOverlay(){const s=scene(),S=sunNow(s);if(!S||mode!=='diagram')return '';const k=view.k,D=S.day,vr=svg.getBoundingClientRect(),vw=vr.width||800,vh=vr.height||600,pb=$('#sunBar'),pw=pb&&!pb.hidden&&pb.offsetHeight>220&&vw>720?pb.offsetWidth+12:0,cx=(pw+(vw-pw)/2-view.x)/k,cy=(vh/2-view.y)/k,R=Math.max(90,Math.min(vw-pw,vh)/2-74)/k,f=v=>v.toFixed(1),A='#b9831a';
  const at=(az,r)=>{const u=sunVec(az,S.north);return [cx+u.x*r,cy+u.y*r,u];},txt=(x,y,t,ux,o)=>`<text x="${f(x)}" y="${f(y)}" text-anchor="${ux>.35?'start':ux<-.35?'end':'middle'}" font-size="${f(12/k)}" font-weight="700" fill="${(o&&o.fill)||'#6e4a08'}" stroke="#fff" stroke-width="${f(3/k)}" paint-order="stroke">${t}</text>`;
@@ -6353,7 +6364,7 @@ function sunToggle(on){const s=scene();s.sun=s.sun||{};if(on==null)on=!s.sun.on;
  else delete s.sun.on;commit({insp:false});render({insp:false});}
 function sunWords(S){const D=S.day,o=[];
  if(!D.up)o.push('The sun does not rise here on this day.');else if(S.alt<=-.833)o.push(`The sun is down at ${sunT(S.t)}.`);
- else o.push(`Sun from the <b>${SUN_DIR[Math.round(S.az/22.5)%16]}</b>, <b>${Math.round(S.alt)}°</b> up.`+(S.alt>=1?` Shadows about <b>${(1/Math.tan(rad(S.alt))).toFixed(1)}×</b> as long as things are tall.`:''));
+ else{const K=sunLen(S.alt);o.push(`Sun from the <b>${SUN_DIR[Math.round(S.az/22.5)%16]}</b>, <b>${Math.round(S.alt)}°</b> up.`+(S.alt<1?'':K<=SUN_REACH?` Shadows about <b>${K.toFixed(1)}×</b> as long as things are tall.`:` A low sun: on open, flat ground shadows run about <b>${Math.round(K)}×</b> the height, but that long they are soft and usually broken up, so they are drawn faint and stopped at ${SUN_REACH}×.`));}
  const e=[];if(D.rise!=null)e.push('Sunrise '+sunT(D.rise));if(D.up)e.push('high point '+sunT(D.noon));if(D.set!=null)e.push('sunset '+sunT(D.set));if(e.length)o.push(e.join(' · '));
  const g=[];if(D.g1!=null&&D.rise!=null)g.push('until '+sunT(D.g1));if(D.g2!=null&&D.set!=null)g.push('from '+sunT(D.g2));if(g.length)o.push('Golden hour '+g.join(' and '));
  return o.map(x=>`<div>${x}</div>`).join('');}
@@ -6570,7 +6581,7 @@ function stepSub(){const it=itemById(sel.id);if(!it||!it.marks)return;const i=se
 
 /* ---------- layers: lock and opacity ---------- */
 const LAYERS=[['char','Characters'],['arrow','Arrows'],['cam','Cameras'],['sb','Storyboards'],['prop','Props'],['set','Set'],['light','Lighting'],['ink','Drawings'],['label','Labels']];
-function layerOf(it){return it.type==='char'?'char':it.type==='cam'?'cam':it.type==='prop'?'prop':it.type==='light'?'light':it.type==='ink'?'ink':(it.type==='set'||it.type==='wall'||it.type==='mask')?'set':'label';}
+function layerOf(it){return it.type==='char'?'char':it.type==='cam'?'cam':it.type==='prop'?(PLACE.has(it.kind)?'set':'prop'):it.type==='light'?'light':it.type==='ink'?'ink':(it.type==='set'||it.type==='wall'||it.type==='mask')?'set':'label';}
 function lay(s){const L=(s&&s.layers)||{};return {lock:L.lock||{},op:L.op||{},lk:L.lk==null?100:L.lk,desc:L.desc==null?100:L.desc};}
 function layerLocked(it){return !!lay(scene()).lock[layerOf(it)];}
 function layerCss(s,exp){const L=lay(s);let c=`.L-lk{--lk:${L.lk/100}}.L-desc{opacity:${L.desc/100}}`;
