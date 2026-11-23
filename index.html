@@ -428,7 +428,7 @@ input.stt:focus{border-color:#d6d5d0;background:#f6f5f1;outline:none}
 .nmerr{margin:8px 0 0;color:#b42318;font-size:13.5px;line-height:1.4}
 .duo.pz{gap:5px}.duo.pz button{font-size:13px;min-height:38px;padding:0 2px}#pop .ls .duo.pz button.on,#pop .ls .duo.pz button.on:hover{background:var(--accent);border-color:var(--accent);color:#fff}
 .gs{display:flex;gap:8px;align-items:center}.gs input{flex:1;min-width:0}
-#pop .grow2{display:flex;gap:8px;margin:0 10px 8px}#pop .grow2 .gwide{flex:1 1 0;width:auto;margin:0;min-width:0;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#pop .bsz{display:flex;gap:8px;padding:8px 12px 4px}#pop .bsz label{flex:1 1 0;font-size:12px;font-weight:600;color:var(--pm)}#pop .bsz span{display:flex;align-items:center;margin-top:4px;height:40px;border:1.5px solid var(--accent);border-radius:8px;background:#fff;padding:0 10px}#pop .bsz input{flex:1 1 0;min-width:0;width:100%;border:0;outline:0;background:none;font-size:16px;font-weight:700;color:#1c1c1e;padding:0}#pop .bsz i{font-style:normal;color:#5f5f64;font-weight:500;font-size:13px}#pop .gwide{display:block;width:calc(100% - 20px);margin:0 10px 8px;height:42px;padding:0 12px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:15px;font-weight:650;text-align:center}#favEd{flex:none;height:40px;padding:0 12px;border-radius:9px;border:1px solid var(--pl);background:var(--pc);color:var(--pi);font-size:14px;font-weight:600;white-space:nowrap}#favEd.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#pop .grow2{display:flex;gap:8px;margin:0 10px 8px}.dppg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:12px;max-height:56vh;overflow:auto;padding:2px}.dppg button{display:block;padding:6px;height:auto;border:1.5px solid var(--line);border-radius:10px;background:#fff;font-size:12.5px;color:var(--mut)}.dppg button:hover{border-color:var(--accent)}.dppg canvas{display:block;width:100%;height:auto;margin-bottom:4px;border-radius:4px}.dprow{display:flex;gap:14px;align-items:flex-start;margin-top:10px}.dprow canvas{flex:none;width:150px;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}.dprow .fld{margin-top:0}#pop .grow2 .gwide{flex:1 1 0;width:auto;margin:0;min-width:0;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#pop .bsz{display:flex;gap:8px;padding:8px 12px 4px}#pop .bsz label{flex:1 1 0;font-size:12px;font-weight:600;color:var(--pm)}#pop .bsz span{display:flex;align-items:center;margin-top:4px;height:40px;border:1.5px solid var(--accent);border-radius:8px;background:#fff;padding:0 10px}#pop .bsz input{flex:1 1 0;min-width:0;width:100%;border:0;outline:0;background:none;font-size:16px;font-weight:700;color:#1c1c1e;padding:0}#pop .bsz i{font-style:normal;color:#5f5f64;font-weight:500;font-size:13px}#pop .gwide{display:block;width:calc(100% - 20px);margin:0 10px 8px;height:42px;padding:0 12px;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:15px;font-weight:650;text-align:center}#favEd{flex:none;height:40px;padding:0 12px;border-radius:9px;border:1px solid var(--pl);background:var(--pc);color:var(--pi);font-size:14px;font-weight:600;white-space:nowrap}#favEd.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .grid [data-my],.grid.faved [data-k]{position:relative}
 .grid.faved [data-k]::after{content:'☆';position:absolute;top:5px;right:8px;font-size:18px;line-height:1;color:#9aa0a8}.grid.faved [data-k].isfav::after{content:'★';color:#e0a100}
 .grid.faved [data-my]::after{content:'Edit';position:absolute;top:7px;right:8px;font-size:11px;font-weight:700;color:var(--accent)}
@@ -650,11 +650,11 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <input type="file" id="fProp" accept="image/*" hidden>
 <input type="file" id="fSb" accept="image/*" hidden>
 <input type="file" id="fJson" accept=".json,application/json" hidden>
-<input type="file" id="fDocx" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+<input type="file" id="fPlan" accept="application/pdf,.pdf" hidden> <input type="file" id="fDocx" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261122223143';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_VERSION='20261123002902';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -3823,8 +3823,8 @@ function gridMenu(cat){
  let body;
  if(C.sec){const my=swapFor||cat!=='prop'?[]:myList(),rec=(P.ui.recent||[]).filter(k=>LIB[k]&&C.k.includes(k));body=(my.length?`<div class="gh">My props</div>${my.map(v=>`<button data-my="${esc(v.key)}" data-n="${esc(v.name.toLowerCase())}">${myIcon(v)}<span>${esc(v.name)}</span></button>`).join('')}`:'')+(favs.length||ed?`<div class="gh">Favorites</div>${favs.length?favs.map(cell).join(''):`<div class="gnote">Tap any ${cat==='set'?'piece':'prop'} below to add it here.</div>`}`:'')+(rec.length?`<div class="gh">Recently used</div>${rec.map(cell).join('')}`:'')+C.sec.map(([t,ks])=>`<div class="gh">${t}</div>${ks.map(cell).join('')}`).join('');}
  else body=C.k.map(cell).join('');
- pop.innerHTML=`<div class="stk"><h4><button class="back">‹ Back</button>${C.t}</h4>${C.sec?`<div class="gs"><input id="gsq" type="search" placeholder="${cat==='set'?'Search set pieces':'Search props'}" autocomplete="off">${swapFor?'':`<button id="favEd"${ed?' class="on"':''}>${ed?'Done':'Edit Favorites'}</button>`}</div>`:''}${cat==='set'&&!swapFor?'<div class="grow2"><button id="ovhB" class="gwide">Overhead from an Address…</button><button id="bldB" class="gwide">Draw a Building…</button></div>':''}</div><div class="grid${ed?' faved':''}">${body}</div>`;
- {const fe=pop.querySelector('#favEd');if(fe)fe.onclick=()=>{favEdit=!favEdit;gridMenu(cat);};const ob=pop.querySelector('#ovhB');if(ob)ob.onclick=()=>{closePop();ovhDialog();};const bb=pop.querySelector('#bldB');if(bb)bb.onclick=()=>{closePop();sel=null;msel=null;startTool({t:'build',m:'rect'});};}
+ pop.innerHTML=`<div class="stk"><h4><button class="back">‹ Back</button>${C.t}</h4>${C.sec?`<div class="gs"><input id="gsq" type="search" placeholder="${cat==='set'?'Search set pieces':'Search props'}" autocomplete="off">${swapFor?'':`<button id="favEd"${ed?' class="on"':''}>${ed?'Done':'Edit Favorites'}</button>`}</div>`:''}${cat==='set'&&!swapFor?'<div class="grow2"><button id="ovhB" class="gwide">Overhead from an Address…</button><button id="bldB" class="gwide">Draw a Building…</button></div><div class="grow2"><button id="dpB" class="gwide">Set from a Director’s Plan…</button></div>':''}</div><div class="grid${ed?' faved':''}">${body}</div>`;
+ {const fe=pop.querySelector('#favEd');if(fe)fe.onclick=()=>{favEdit=!favEdit;gridMenu(cat);};const ob=pop.querySelector('#ovhB');if(ob)ob.onclick=()=>{closePop();ovhDialog();};const db=pop.querySelector('#dpB');if(db)db.onclick=()=>{closePop();dpPick();};const bb=pop.querySelector('#bldB');if(bb)bb.onclick=()=>{closePop();sel=null;msel=null;startTool({t:'build',m:'rect'});};}
  pop.querySelector('.back').onclick=swapFor?()=>{swapFor=null;objPop(popAt.x,popAt.y);}:addMenu2;if(swapFor){const h4=pop.querySelector('h4');if(h4)h4.lastChild.textContent='Change Type';}
  const q=pop.querySelector('#gsq');
  if(q){q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase(),seen=new Set();pop.querySelectorAll('.grid [data-k],.grid [data-my]').forEach(b=>{const id=b.dataset.k||b.dataset.my,show=!v||(b.dataset.n.includes(v)&&!seen.has(id));if(v&&show)seen.add(id);b.style.display=show?'':'none';});pop.querySelectorAll('.gh,.gnote').forEach(h=>h.style.display=v?'none':'');});if(matchMedia('(pointer:fine)').matches)q.focus();}
@@ -4710,6 +4710,144 @@ function twPanel(id,ra,before,fresh){twClose();const s=scene(),it=itemById(id);i
    const j=s.items.indexOf(it);s.items[j]=was;for(const m of was.marks)if(m.trk){delete m.trk.tn;}sel={id:was.id,mark:Math.min(ra,was.marks.length-1)};commit();}});
  el.addEventListener('input',e=>{const r=e.target.closest('[data-tw=off]'),t=T();if(!r||!t)return;t.off=+r.value;r.nextElementSibling.textContent=twFt(t)+' ft';render();});
  el.addEventListener('change',e=>{const t=T();if(!t)return;if(e.target.closest('[data-tw=off]')){commit();return;}const c=e.target.closest('[data-tw=dt]');if(c){t.dt=c.checked?1:0;commit();}});}
+/* ---------- reading a director's plan: walls, doors, windows, stairs and furniture from the drawn page ----------
+   px: RGBA of the rendered page, ppf: pixels per foot (from the plan's scale), ex: rectangles to ignore (the title block).
+   Solid walls are found by their fill (an even grey, or diagonal hatching), glass walls by long paired lines, doors by the
+   quarter arc drawn from a gap in a wall, windows by lines drawn along a gap, furniture by closed rectangles. Square-on walls only. */
+function dpRead(px,W,H,ppf,ex){
+ const N=W*H,ok=new Uint8Array(N).fill(1),R=Math.round,mx=Math.max,mn=Math.min;
+ for(const e of ex||[]){const x0=mx(0,e[0]|0),x1=mn(W,e[2]|0);if(x1>x0)for(let y=mx(0,e[1]|0);y<mn(H,e[3]|0);y++)ok.fill(0,y*W+x0,y*W+x1);}
+ const grey=new Uint8Array(N),dark=new Uint8Array(N),ink=new Uint8Array(N);
+ for(let i=0,j=0;i<N;i++,j+=4){if(!ok[i])continue;const r=px[j],g=px[j+1],b=px[j+2],l=(r*299+g*587+b*114)/1000,s=mx(r,g,b)-mn(r,g,b);
+  if(l<95&&s<60)dark[i]=1;if(l<150&&s<45)ink[i]=1;if(l>110&&l<205&&s<20)grey[i]=1;}
+ const runH=m=>{const r=new Uint16Array(N);for(let y=0;y<H;y++){const o=y*W;let x=0;while(x<W){if(!m[o+x]){x++;continue;}let e=x;while(e<W&&m[o+e])e++;r.fill(mn(65535,e-x),o+x,o+e);x=e;}}return r;};
+ const runV=m=>{const r=new Uint16Array(N);for(let x=0;x<W;x++){let y=0;while(y<H){if(!m[y*W+x]){y++;continue;}let e=y;while(e<H&&m[e*W+x])e++;const L=mn(65535,e-y);for(let q=y;q<e;q++)r[q*W+x]=L;y=e;}}return r;};
+ const runD=(m,dx)=>{const r=new Uint16Array(N);const walk=(x,y)=>{while(x>=0&&x<W&&y<H){if(!m[y*W+x]){x+=dx;y++;continue;}let n=0,a=x,b=y;while(a>=0&&a<W&&b<H&&m[b*W+a]){n++;a+=dx;b++;}for(let q=0;q<n;q++)r[(y+q)*W+x+dx*q]=n;x=a;y=b;}};
+  for(let x=0;x<W;x++)walk(x,0);for(let y=1;y<H;y++)walk(dx>0?0:W-1,y);return r;};
+ /* box sums through a summed-area table: erode, dilate and density with any window */
+ const sat=m=>{const S=new Int32Array((W+1)*(H+1));for(let y=0;y<H;y++){let row=0;for(let x=0;x<W;x++){row+=m[y*W+x];S[(y+1)*(W+1)+x+1]=S[y*(W+1)+x+1]+row;}}return S;};
+ const box=(S,x0,y0,x1,y1)=>{x0=mx(0,x0);y0=mx(0,y0);x1=mn(W,x1);y1=mn(H,y1);return S[y1*(W+1)+x1]-S[y0*(W+1)+x1]-S[y1*(W+1)+x0]+S[y0*(W+1)+x0];};
+ const win=(m,k,f)=>{k=mx(1,R(k));const S=sat(m),o=new Uint8Array(N),a=k>>1,b=k-a;for(let y=0;y<H;y++)for(let x=0;x<W;x++)o[y*W+x]=f(box(S,x-a,y-a,x+b,y+b),k*k)?1:0;return o;};
+ const erode=(m,k)=>win(m,k,(s,n)=>s>=n),dilate=(m,k)=>win(m,k,s=>s>0),open=(m,k)=>dilate(erode(m,k),k);
+ /* hatched wall fill: short diagonal strokes, dense over a patch */
+ let fills=0;{const g0=open(grey,mx(3,.16*ppf));for(let i=0;i<N;i++)fills+=g0[i];}
+ if(fills<N*.004){const k=mx(5,R(.19*ppf)),d1=runD(ink,1),d2=runD(ink,-1),h=runH(ink),v=runV(ink),ht=new Uint8Array(N);let n=0;
+  for(let i=0;i<N;i++)if(ink[i]&&(d1[i]>=k||d2[i]>=k)&&h[i]<9&&v[i]<9){ht[i]=1;n++;}
+  if(n>N*.002){const kb=R(.4*ppf)|1,m=open(win(ht,kb,(s,q)=>s>.07*q),R(.35*ppf));for(let i=0;i<N;i++)if(m[i]&&ok[i])grey[i]=1;}}
+ /* walls: the fill, less any large filled area and thin fringes */
+ let gw;{const big=dilate(open(grey,1.7*ppf),.4*ppf);gw=new Uint8Array(N);for(let i=0;i<N;i++)gw[i]=grey[i]&&!big[i]?1:0;gw=erode(dilate(gw,3),3);gw=open(gw,mx(3,.16*ppf));}
+ const comps=(m,conn8)=>{const seen=new Uint8Array(N),out=[],st=new Int32Array(N);
+  for(let s=0;s<N;s++){if(!m[s]||seen[s])continue;let top=0,x0=W,x1=0,y0=H,y1=0,a=0;st[top++]=s;seen[s]=1;
+   while(top){const i=st[--top],x=i%W,y=(i-x)/W;a++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy||(!conn8&&dx&&dy))continue;const X=x+dx,Y=y+dy;if(X<0||Y<0||X>=W||Y>=H)continue;const j=Y*W+X;if(m[j]&&!seen[j]){seen[j]=1;st[top++]=j;}}}
+   out.push({x:x0,y:y0,w:x1-x0+1,h:y1-y0+1,a});}
+  return out;};
+ const keepRuns=(m,horiz,L)=>{const r=horiz?runH(m):runV(m),o=new Uint8Array(N);for(let i=0;i<N;i++)if(r[i]>=L)o[i]=1;return o;};
+ let thick=.5*ppf;{const h=runH(gw),v=runV(gw),t=[];for(let i=0;i<N;i+=3)if(gw[i])t.push(mn(h[i],v[i]));if(t.length){t.sort((a,b)=>a-b);thick=t[t.length>>1];}}
+ const ml=mx(1.0*ppf,1.6*thick),tmax=mx(1.5*ppf,1.4*thick),segs=[];
+ for(const horiz of [true,false])for(const c of comps(keepRuns(gw,horiz,ml),true)){const L=horiz?c.w:c.h,T=horiz?c.h:c.w;
+  if(T<.18*ppf||T>tmax||L<ml||L<1.6*T||c.a<.55*c.w*c.h)continue;segs.push({h:horiz,a:horiz?c.x:c.y,b:horiz?c.x+c.w:c.y+c.h,c:horiz?c.y+c.h/2:c.x+c.w/2,t:T,k:'solid'});}
+ /* long thin drawn lines off the solid walls, in pairs: glass and other thin partitions */
+ const solid=new Uint8Array(N);for(const s of segs){const t=R(s.t);if(s.h)for(let y=mx(0,R(s.c)-t);y<=mn(H-1,R(s.c)+t);y++)solid.fill(1,y*W+mx(0,s.a|0),y*W+mn(W,s.b|0));else for(let y=mx(0,s.a|0);y<mn(H,s.b|0);y++)solid.fill(1,y*W+mx(0,R(s.c)-t),y*W+mn(W,R(s.c)+t+1));}
+ const LONG=9*ppf,thin=[];
+ for(const horiz of [true,false]){const d2=new Uint8Array(N),st=horiz?W:1;for(let i=st;i<N-st;i++)d2[i]=dark[i]|dark[i-st]|dark[i+st];
+  const o=keepRuns(d2,horiz,LONG);for(let i=0;i<N;i++)if(solid[i])o[i]=0;
+  for(const c of comps(o,true)){const L=horiz?c.w:c.h,T=horiz?c.h:c.w;if(L<LONG||T>.5*ppf||L>.86*(horiz?W:H))continue;thin.push({h:horiz,a:horiz?c.x:c.y,b:horiz?c.x+c.w:c.y+c.h,c:horiz?c.y+c.h/2:c.x+c.w/2,t:T});}}
+ {const used=new Set();thin.forEach((s,i)=>{if(used.has(i))return;const g=[s];thin.forEach((q,j)=>{if(j<=i||used.has(j)||q.h!==s.h)return;if(Math.abs(q.c-s.c)<.9*ppf&&mn(q.b,s.b)-mx(q.a,s.a)>.5*mn(q.b-q.a,s.b-s.a)){g.push(q);used.add(j);}});
+   if(g.length>=2){const cs=g.map(q=>q.c);segs.push({h:s.h,a:mn(...g.map(q=>q.a)),b:mx(...g.map(q=>q.b)),c:cs.reduce((a,b)=>a+b,0)/g.length,t:mx(...cs)-mn(...cs),k:'glass'});}});}
+ /* a glass run that sits in a break between two solid pieces of the same wall is a window in that wall */
+ const walls=[];let ops=[];const pre=[];
+ for(const g of segs.filter(s=>s.k==='glass')){const S=segs.filter(s=>s.k==='solid'&&s.h===g.h&&Math.abs(s.c-g.c)<.45*ppf),l=S.find(s=>Math.abs(s.b-g.a)<.7*ppf),r=S.find(s=>Math.abs(s.a-g.b)<.7*ppf);
+  if(l&&r&&g.b-g.a<=14*ppf){pre.push({h:g.h,a:l.b,b:r.a,c:(l.c+r.c)/2,kind:'window'});g.k='x';}}
+ /* join collinear pieces across small breaks; larger breaks are openings */
+ for(const horiz of [true,false]){const S=segs.filter(s=>s.h===horiz&&s.k!=='x').sort((p,q)=>R(p.c/(.35*ppf))-R(q.c/(.35*ppf))||p.a-q.a),out=[];
+  for(const s of S){const l=out[out.length-1],near=l&&Math.abs(l.c-s.c)<.45*ppf,gap=l?s.a-l.b:0;
+   if(near&&gap>-1.0*ppf&&gap<.35*ppf&&l.k===s.k){l.b=mx(l.b,s.b);l.t=mx(l.t,s.t);continue;}
+   if(near&&gap>=1.5*ppf&&gap<=12*ppf&&!pre.some(p=>p.h===horiz&&Math.abs(p.c-s.c)<.45*ppf&&Math.abs(p.a-l.b)<2&&Math.abs(p.b-s.a)<2))ops.push({h:horiz,a:l.b,b:s.a,c:(l.c+s.c)/2});
+   out.push(Object.assign({},s));}
+  walls.push(...out);}
+ const inked=(x,y)=>{x=R(x);y=R(y);if(x<2||y<2||x>=W-2||y>=H-2)return false;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)if(dark[(y+dy)*W+x+dx])return true;return false;};
+ const arc=(h,c,a0,b0)=>{const w=b0-a0;let best=[0,null];
+  for(const f of [1.2,1.14,1.08,1.0,.92,.84]){const r=w*f,ins=(w-r)/2;for(const hingeA of [true,false]){const hx=hingeA?a0+ins:b0-ins;for(const side of [-1,1]){let hit=0;const n=24;
+    for(let i=2;i<n-1;i++){const th=Math.PI/2*i/n,al=Math.cos(th)*r*(hingeA?1:-1),of=Math.sin(th)*r*side;if(h?inked(hx+al,c+of):inked(c+of,hx+al))hit++;}
+    const sc=hit/(n-3);if(sc>best[0])best=[sc,{hingeA,side}];}}}
+  return best;};
+ {const out=[];for(const o of ops){const a0=o.a|0,b0=o.b|0,c=R(o.c),band=mx(2,(.1*ppf)|0),n=b0-a0;if(n<2)continue;const prof=new Uint8Array(n);
+   for(let i=0;i<n;i++)for(let d=-band;d<=band;d++){const x=o.h?a0+i:c+d,y=o.h?c+d:a0+i;if(x>=0&&y>=0&&x<W&&y<H&&dark[y*W+x]){prof[i]=1;break;}}
+   {const k=(.35*ppf)|0;let last=-1e9;const p2=prof.slice();for(let i=0;i<n;i++){if(prof[i]){if(i-last<=k)for(let q=last+1;q<i;q++)p2[q]=1;last=i;}}prof.set(p2);}
+   let i=0;while(i<n){let j=i;while(j<n&&prof[j]===prof[i])j++;const L=j-i;
+    if(L>=1.2*ppf){const q={h:o.h,a:a0+i,b:a0+j,c:o.c};if(prof[i])q.kind='window';else{const [sc,hs]=arc(o.h,o.c,a0+i,a0+j);if(sc>=.6&&L<=5.5*ppf){q.kind='door';q.hingeA=hs.hingeA;q.side=hs.side;}else q.kind='gap';}out.push(q);}
+    i=j;}}
+  ops=out.concat(pre);}
+ /* furniture: closed blank rectangles bounded by drawn lines; a stack of treads is one flight of stairs */
+ const free=new Uint8Array(N);for(let y=1;y<H;y++)for(let x=1;x<W;x++){const i=y*W+x;if(ok[i]&&!grey[i]&&!dark[i]&&!dark[i-1]&&!dark[i-W]&&!dark[i-W-1])free[i]=1;}
+ let rects=[];for(const c of comps(free,false)){if(c.w<1.2*ppf||c.h<1.2*ppf){if(!(mx(c.w,c.h)>=3*ppf&&mn(c.w,c.h)>=.8*ppf))continue;}
+  if(c.w>14*ppf||c.h>14*ppf||c.a<.9*c.w*c.h||mn(c.w,c.h)>6.5*ppf)continue;rects.push({x:c.x+c.w/2,y:c.y+c.h/2,w:c.w,h:c.h});}
+ const tread=rects.filter(r=>mn(r.w,r.h)<1.4*ppf&&mx(r.w,r.h)>2.5*ppf),stairs=[],gone=new Set();
+ tread.forEach((r,i)=>{if(gone.has(r))return;const vert=r.w>r.h,g=tread.filter(q=>!gone.has(q)&&(vert?Math.abs(q.x-r.x)<.3*ppf&&Math.abs(q.w-r.w)<.4*ppf:Math.abs(q.y-r.y)<.3*ppf&&Math.abs(q.h-r.h)<.4*ppf));
+  if(g.length>=5){g.forEach(q=>gone.add(q));const x0=mn(...g.map(q=>q.x-q.w/2)),x1=mx(...g.map(q=>q.x+q.w/2)),y0=mn(...g.map(q=>q.y-q.h/2)),y1=mx(...g.map(q=>q.y+q.h/2));stairs.push({x:(x0+x1)/2,y:(y0+y1)/2,w:x1-x0,h:y1-y0});}});
+ rects=rects.filter(r=>!gone.has(r)&&mn(r.w,r.h)<=4.2*ppf&&!stairs.some(t=>Math.abs(r.x-t.x)<t.w/2&&Math.abs(r.y-t.y)<t.h/2));
+ return {walls,ops,rects,stairs};}
+
+/* ---------- a set from a director's plan ----------
+   Add > Set > Set from a Director's Plan: choose the PDF and the page. The scale and the set's name are read from the title block,
+   the page goes under the floor at true size (faint and locked; its opacity is the Background Image slider in Layers), and the
+   reader's walls, doors, windows, stairs and furniture are added as ordinary pieces in one step, so one Undo takes it all back. */
+function dpScale(txt){const t=String(txt||'').replace(/[“”″]/g,'"').replace(/[‘’′]/g,"'"),m=t.match(/(\d+(?:\s*\/\s*\d+)?)\s*"\s*=\s*(\d+)\s*'(?:\s*-?\s*(\d+)\s*"?)?/);if(!m)return null;
+ const f=m[1].split('/').map(Number),inch=f.length>1?f[0]/f[1]:f[0],ft=+m[2]+(+m[3]||0)/12;if(!(inch>0&&ft>0))return null;
+ return {ipf:inch/ft,label:`${m[1].replace(/\s+/g,'')}″ = ${m[2]}′${m[3]!=null?`-${m[3]}″`:''}`};}
+function dpPick(){const f=document.getElementById('fPlan');f.value='';f.click();}
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='fPlan'){const f=e.target.files&&e.target.files[0];e.target.value='';if(f)dpOpen(f);}});
+async function dpPageInfo(page){const tc=await page.getTextContent(),it=tc.items.filter(q=>q.str&&q.str.trim()),all=it.map(q=>q.str).join(' ');
+ const nm=it.map(q=>q.str.trim()).find(t=>/^(INT|EXT)(\.|\s|\/)/i.test(t)&&t.length>5&&t.length<70)||'';
+ const key=/scale|drawing title|set name|set no|set number|episode|location|director|designer|decorator|revisions|art department|drawn by|shoot date|^date:?$/i;
+ return {scale:dpScale(all),name:nm.replace(/\s+/g,' '),block:it.filter(q=>key.test(q.str)).map(q=>[q.transform[4],q.transform[5]])};}
+async function dpThumb(page,w){const v0=page.getViewport({scale:1}),v=page.getViewport({scale:w/v0.width}),c=document.createElement('canvas');c.width=Math.round(v.width);c.height=Math.round(v.height);await page.render({canvasContext:c.getContext('2d'),viewport:v}).promise;return c;}
+async function dpOpen(file){modal('<h3>Set from a Director’s Plan</h3><p class="mut">Opening the PDF…</p>');let pdf;
+ try{const lib=await loadPdfJs();pdf=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;}catch(e){closeModal();toast('That file could not be opened as a PDF.');return;}
+ if(pdf.numPages===1){dpPage(pdf,1);return;}
+ const n=Math.min(pdf.numPages,40);modal(`<h3>Which page?</h3><p class="mut" style="margin:-4px 0 0">${pdf.numPages>n?`The first ${n} of ${pdf.numPages} pages. `:''}Tap the plan you want under this scene.</p><div class="dppg" id="dpPg"></div><div class="btns end"><button data-x>Cancel</button></div>`,card=>{
+  (async()=>{for(let i=1;i<=n;i++){if(!card.isConnected)return;const pg=await pdf.getPage(i),c=await dpThumb(pg,240),info=await dpPageInfo(pg),b=document.createElement('button');b.dataset.pg=i;b.appendChild(c);b.appendChild(document.createTextNode(info.name||('Page '+i)));card.querySelector('#dpPg').appendChild(b);}})();
+  card.querySelector('#dpPg').onclick=e=>{const b=e.target.closest('[data-pg]');if(b)dpPage(pdf,+b.dataset.pg);};});}
+async function dpPage(pdf,num){let page,info,th;try{page=await pdf.getPage(num);info=await dpPageInfo(page);th=await dpThumb(page,300);}catch(e){closeModal();toast('That page could not be read.');return;}
+ const s=scene();
+ modal(`<h3>Set from a Director’s Plan</h3><div class="dprow"><div id="dpTh"></div><div style="flex:1;min-width:0">
+   <label class="fld">Scale on the plan<input id="dpSc" value="${esc(info.scale?info.scale.label:'')}" placeholder="1/4″ = 1′-0″" autocomplete="off"></label>
+   <p class="mut" id="dpScN" style="margin:6px 0 0;font-size:13px">${info.scale?'Read from the title block. Correct it here if it is wrong.':'No scale found on this page. Type it as it is written on the plan.'}</p>
+   ${info.name?`<p class="mut" style="margin:8px 0 0;font-size:13px">Set on the plan: <b>${esc(info.name)}</b></p>`:''}</div></div>
+  <label class="imopt"><input type="checkbox" id="dpW" checked> <span>Draw the walls, doors, windows and stairs it can find</span></label>
+  <label class="imopt"><input type="checkbox" id="dpF" checked> <span>Add tables, desks and benches where it finds them <span class="mut">· stand-ins by size; chairs are not read yet</span></span></label>
+  <div class="cmsum">The page goes under the floor at true size, faint and locked. Its opacity is the Background Image slider in Layers.${s.bgId?' <b>This scene’s present background image is replaced.</b>':''} Everything arrives in one step, so one Undo takes it back.</div>
+  <div class="btns end"><button data-x>Cancel</button><button class="pri" id="dpGo">Place the Plan</button></div>`,card=>{
+  card.querySelector('#dpTh').appendChild(th);
+  card.querySelector('#dpGo').onclick=async()=>{const sc=dpScale(card.querySelector('#dpSc').value);if(!sc){const n=card.querySelector('#dpScN');n.textContent='That scale could not be read. Type it like 1/4″ = 1′-0″ or 1″ = 20′.';n.style.color='#b3261e';return;}
+   const opt={walls:card.querySelector('#dpW').checked,furn:card.querySelector('#dpF').checked};card.querySelector('#dpGo').disabled=true;card.querySelector('#dpGo').textContent='Reading the plan…';
+   try{await new Promise(r=>setTimeout(r,30));await dpPlace(page,info,sc,opt);}catch(e){console.error(e);closeModal();toast('The plan could not be placed. Nothing was changed.');}};});}
+/* what the reader found, as pieces: px on the read page -> the plan's own feet */
+function dpItems(r,ppf,ox,oy,opt,pgs){const k=FT/ppf,X=v=>Math.round((ox+v*k)*10)/10,Y=v=>Math.round((oy+v*k)*10)/10,L=v=>Math.round(v*k*10)/10,out=[],n={walls:0,doors:0,windows:0,stairs:0,furn:0};
+ const wall=(h,a,b,c,t)=>{const w={id:uid(),type:'wall',x1:h?X(a):X(c),y1:h?Y(c):Y(a),x2:h?X(b):X(c),y2:h?Y(c):Y(b),t:t||WALL_T,pgs:pgs,locked:false};out.push(w);return w.id;};
+ if(opt.walls){for(const s of r.walls){wall(s.h,s.a,s.b,s.c);n.walls++;}
+  for(const o of r.ops){if(o.kind==='gap')continue;const id=wall(o.h,o.a,o.b,o.c),w=L(o.b-o.a);
+   if(o.kind==='door'){const d={id:uid(),type:'set',kind:'dooropen',x:0,y:0,w,h:w,rot:0,wall:id,wt:.5,ws:(o.side||1)*(o.h?-1:1),pgs:pgs,locked:false,label:''};if(!o.hingeA)d.mir=true;out.push(d);n.doors++;}
+   else{out.push({id:uid(),type:'set',kind:'window',x:0,y:0,w,h:LIB.window.h,rot:0,wall:id,wt:.5,ws:1,pgs:pgs,locked:false,label:''});n.windows++;}}
+  for(const q of r.stairs){const v=q.w<q.h;out.push({id:uid(),type:catOf('stairs'),kind:'stairs',x:X(q.x),y:Y(q.y),w:L(Math.min(q.w,q.h)),h:L(Math.max(q.w,q.h)),rot:v?0:90,pgs:pgs,locked:false,label:''});n.stairs++;}}
+ if(opt.furn)for(const q of r.rects){const wf=q.w/ppf,hf=q.h/ppf,lo=Math.min(wf,hf),hi=Math.max(wf,hf),kind=lo<1.7&&hi>=3?'bench':hi/lo>1.5?'desk':'sqtable';
+  out.push({id:uid(),type:'prop',kind,x:X(q.x),y:Y(q.y),w:L(Math.max(q.w,q.h)),h:L(Math.min(q.w,q.h)),rot:wf>=hf?0:90,pgs:pgs,locked:false,label:''});n.furn++;}
+ return {items:out,n};}
+async function dpPlace(page,info,sc,opt){const s=scene(),v0=page.getViewport({scale:1}),want=30/sc.ipf,dpi=Math.max(72,Math.min(220,want,72*3400/Math.max(v0.width,v0.height))),v=page.getViewport({scale:dpi/72}),ppf=dpi*sc.ipf;
+ const c=document.createElement('canvas');c.width=Math.round(v.width);c.height=Math.round(v.height);const cx=c.getContext('2d',{willReadFrequently:true});cx.fillStyle='#fff';cx.fillRect(0,0,c.width,c.height);await page.render({canvasContext:cx,viewport:v}).promise;
+ /* the title block is not part of the room */
+ const ex=[];if(info.block.length>=3){const P=info.block.map(p=>v.convertToViewportPoint(p[0],p[1])),pad=.035*c.width;let x0=Math.min(...P.map(p=>p[0]))-pad*1.6,x1=Math.max(...P.map(p=>p[0]))+pad*4,y0=Math.min(...P.map(p=>p[1]))-pad,y1=Math.max(...P.map(p=>p[1]))+pad;
+  if(y1-y0>.4*c.height&&x1>.9*c.width){y0=0;y1=c.height;x1=c.width;}else if(x1-x0>.4*c.width&&y1>.9*c.height){x0=0;x1=c.width;y1=c.height;}ex.push([x0,y0,x1,y1]);}
+ let r={walls:[],ops:[],rects:[],stairs:[]},small=ppf<14;
+ if((opt.walls||opt.furn)&&!small)r=dpRead(cx.getImageData(0,0,c.width,c.height).data,c.width,c.height,ppf,ex);
+ const blob=await new Promise(res=>c.toBlob(res,'image/png')),{data,w,h}=await shrinkImage(blob),id=addImage(data);
+ const worldW=v0.width/72/sc.ipf*FT,k=worldW/w,ctr=viewCenter(),ox=ctr.x-worldW/2,oy=ctr.y-h*k/2,pgs=s.pageId&&s.pageId!=='all'&&s.pages&&s.pages.length>1?[s.pageId]:null;
+ const made=dpItems(r,ppf,ox,oy,opt,pgs);
+ delete s.bgOrig;s.bgId=id;s.bg={x:ox,y:oy,w,h,s:k,op:.4,locked:true};s.items.push(...made.items);sel=null;msel=null;closeModal();commit();fit();
+ const n=made.n,parts=[n.walls?plural(n.walls,'wall'):'',n.doors?plural(n.doors,'door'):'',n.windows?plural(n.windows,'window'):'',n.stairs?(n.stairs>1?n.stairs+' flights of stairs':'1 flight of stairs'):'',n.furn?(n.furn>1?n.furn+' pieces of furniture':'1 piece of furniture'):''].filter(Boolean);
+ toast(`Plan placed at true size (${sc.label})${parts.length?', with '+parts.join(', '):small?'. The scale is too small to read walls from, so nothing was drawn':''}. Check it against the plan; one Undo takes it back.`);
+ setTimeout(()=>{try{bgOffer();}catch(e){}},900);}
 function aimName(sc,a){if(!a)return '';if(a.id){const o=sc.items.find(q=>q.id===a.id);return o&&o.type==='char'?String((charById(o.charId)||{}).name||'').toUpperCase():'';}return 'a spot';}
 /* ---------- smart guides for set pieces and props: edges, centers, the middle of a room, even spacing ---------- */
 function aabb(it,p){const a=rad(it.rot||0),c=Math.abs(Math.cos(a)),n=Math.abs(Math.sin(a)),hw=(it.w*c+it.h*n)/2,hh=(it.w*n+it.h*c)/2,x=p?p.x:it.x,y=p?p.y:it.y;return {x0:x-hw,x1:x+hw,cx:x,y0:y-hh,y1:y+hh,cy:y,hw,hh};}
