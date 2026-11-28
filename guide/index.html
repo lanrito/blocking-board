@@ -50,6 +50,8 @@ figcaption{color:var(--mut);font-size:.82em;margin-top:.5em;line-height:1.4}
 .two>div>*:first-child{margin-top:0}
 .grid4{display:grid;grid-template-columns:1fr 1fr;gap:1.2em}
 .grid4 figure{margin-top:0}
+.pgs{display:grid;grid-template-columns:repeat(5,1fr);gap:.7em}.pgs img{width:100%;display:block;border:1px solid #d9d9d4;border-radius:3px;background:#fff}
+@media (max-width:700px){.pgs{grid-template-columns:repeat(3,1fr)}}
 table{border-collapse:collapse;width:100%}
 th{text-align:left;font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:700;padding:0 .9em .55em 0;border-bottom:1.5px solid var(--ink)}
 td{vertical-align:top;padding:.55em .9em .55em 0;border-bottom:1px solid var(--line);line-height:1.42}
@@ -181,12 +183,13 @@ h3.hit{animation:gshit 2.2s ease-out}
 <li>Tap <b>Script</b>, the first tab: the scene’s page. Tap the Highlight Text symbol, drag across Maya’s line, then tap the symbol again to put it down.</li>
 <li>Tap <b>Breakdown</b> and add a line under Synopsis. Tap <b>Strategy</b> and read how the scene means to be shot.</li>
 <li>Tap <b>Floor Plan</b>. Drag a camera, or turn it, and see its frame change.</li>
-<li>Tap <b>Shot List</b>. Every camera on the plan is already a shot here, with its size, type and description.</li>
+<li>Tap <b>Shot List</b>. Every camera on the plan is already a shot here, with its storyboard frame, its size, type and description.</li>
+<li>Open <b>Menu › Export › Export PDF…</b> and tap <b>Export</b>. The scene comes out on paper: its script page, Breakdown, Strategy, Shot List and Floor Plan.</li>
 <li>Tap <b>Set</b> at the top right. The shot card is on the right; <b>Script</b>, <b>Breakdown</b>, <b>Strategy</b> and <b>Floor Plan</b> are at the top. Tap <b>Shot</b> on the card, then <b>Next</b>.</li>
 </ol></div>
 
 
-<p>The sample is invented and sits in a folder of its own; it does not count as one of your scenes. <b>Reset the Sample</b> puts it back as it was.</p>
+<p>The sample is invented, storyboard frames included, and sits in a folder of its own; it does not count as one of your scenes. <b>Reset the Sample</b> puts it back as it was. (A sample you opened before November 28 gets its storyboard frames and its fuller Strategy when you reset it.)</p>
 <p>That is the whole idea: the script, what the scene means, the set and the cameras, and the shots, all one scene. The rest of this guide is each of those steps in full.</p>
 <div class="keep"><h3 id="c1-the-screen">The screen</h3><figure><div class="fr"><img alt="The Floor Plan tab: a top bar, the plan in the middle with a set, two characters and a camera, the Shot List panel on the right, and a dark toolbar along the bottom." height="1133" src="img/main.jpg" width="1800"/><span class="mk" style="left:2.12%;top:6.40%">1</span><span class="mk" style="left:33.75%;top:6.40%">2</span><span class="mk" style="left:57.39%;top:6.40%">3</span><span class="mk" style="left:80.97%;top:6.40%">4</span><span class="mk" style="left:93.63%;top:6.40%">5</span><span class="mk" style="left:3.37%;top:93.02%">6</span><span class="mk" style="left:14.79%;top:93.02%">7</span><span class="mk" style="left:24.89%;top:93.02%">8</span><span class="mk" style="left:64.42%;top:93.02%">9</span><span class="mk" style="left:75.84%;top:93.02%">10</span></div><figcaption>Sc. 1 of the invented project, on the Floor Plan tab.</figcaption></figure></div>
 
@@ -231,13 +234,13 @@ h3.hit{animation:gshit 2.2s ease-out}
 
 
 
-<div class="keep"><h3 id="c1-the-five-tabs">The five tabs</h3><figure><div class="fr"><img alt="The Script tab: the script’s page for scene 12, with a highlight, a circled word, a note with an arrow, a box, an underline and a line struck through, and the tools in a row above." height="755" src="img/tab-script.jpg" width="1200"/></div><figcaption><b>Script.</b> The script’s own pages, to read and to mark up.</figcaption></figure></div>
+<div class="keep"><h3 id="c1-the-five-tabs">The five tabs</h3><figure><div class="fr"><img alt="The Script tab: the sample scene’s page, with two lines highlighted, two words underlined and a note with an arrow, and the tools in a row above." height="755" src="img/tab-script.jpg" width="1200"/></div><figcaption><b>Script.</b> The script’s own pages, to read and to mark up.</figcaption></figure></div>
 
 <div class="grid4">
-<figure><div class="fr"><img alt="The Breakdown tab." height="755" src="img/tab-breakdown.jpg" width="1200"/></div><figcaption><b>Breakdown.</b> What the scene is and what it needs.</figcaption></figure>
-<figure><div class="fr"><img alt="The Strategy tab." height="755" src="img/tab-strategy.jpg" width="1200"/></div><figcaption><b>Strategy.</b> How you mean to shoot it.</figcaption></figure>
-<figure><div class="fr"><img alt="The Floor Plan tab." height="755" src="img/tab-floor.jpg" width="1200"/></div><figcaption><b>Floor Plan.</b> The set, the blocking and the cameras.</figcaption></figure>
-<figure><div class="fr"><img alt="The Shot List tab." height="755" src="img/tab-shotlist.jpg" width="1200"/></div><figcaption><b>Shot List.</b> Every shot the cameras on the plan make.</figcaption></figure>
+<figure><div class="fr"><img alt="The Breakdown tab: the sample scene’s breakdown, six columns filled in." height="755" src="img/tab-breakdown.jpg" width="1200"/></div><figcaption><b>Breakdown.</b> What the scene is and what it needs.</figcaption></figure>
+<figure><div class="fr"><img alt="The Strategy tab: the sample scene’s strategy, section by section." height="755" src="img/tab-strategy.jpg" width="1200"/></div><figcaption><b>Strategy.</b> How you mean to shoot it.</figcaption></figure>
+<figure><div class="fr"><img alt="The Floor Plan tab: the sample scene’s studio from above, with its characters, cameras and storyboard frames." height="755" src="img/tab-floor.jpg" width="1200"/></div><figcaption><b>Floor Plan.</b> The set, the blocking and the cameras.</figcaption></figure>
+<figure><div class="fr"><img alt="The Shot List tab: the sample scene’s shots, each with its storyboard frame." height="755" src="img/tab-shotlist.jpg" width="1200"/></div><figcaption><b>Shot List.</b> Every shot the cameras on the plan make.</figcaption></figure>
 </div>
 <p>The <b>Script</b> comes first because the work starts there; see <a href="#script">The script’s pages</a>. The other four are the scene’s own views, and each has its own chapter. <b>Prep</b>, <b>Scout</b> and <b>Set</b> are covered in chapters 9 and 10.</p>
 <div class="keep"><h3 id="c1-saving-undo-and-earlier-versions">Saving, Undo and earlier versions</h3><p>There is no Save button. Work is saved as you go, and the status at the top right says so.</p><ul>
@@ -329,7 +332,7 @@ h3.hit{animation:gshit 2.2s ease-out}
 </ul>
 </div></div></div>
 
-<div class="keep"><h3 id="c2-breakdown">Breakdown</h3><p>The Breakdown tab asks one question: what does the scene mean?</p><figure><div class="fr"><img alt="The Breakdown tab: the Library on the left and the scene’s breakdown as a row of columns." height="1007" src="img/breakdown.jpg" width="1600"/></div></figure></div>
+<div class="keep"><h3 id="c2-breakdown">Breakdown</h3><p>The Breakdown tab asks one question: what does the scene mean?</p><figure><div class="fr"><img alt="The Breakdown tab: the sample scene’s breakdown as a row of columns, tinted in its story’s color, with the Story colors above them." height="1007" src="img/breakdown.jpg" width="1600"/></div></figure></div>
 
 
 <ul>
@@ -413,7 +416,7 @@ h3.hit{animation:gshit 2.2s ease-out}
 <ul>
 <li><b>Look at It</b> opens an earlier draft’s pages with its marks. A bar across the top says which draft it is. Nothing can be drawn or changed on it; Find and the <b>Sc.</b> box work as usual. <b>Back to the Current Draft</b> returns.</li>
 <li><b>Save the PDF</b> saves that draft’s PDF, exactly as it came in. To save it into Google Drive, Dropbox or a folder of your own, choose that place when the iPad or Mac asks where to save.</li>
-<li><b>Save All Drafts…</b> saves every draft together as one file. Open it in Files or the Finder and it becomes a folder with a PDF of each draft. Tick <b>Also a copy of each draft with your marks</b> to add each one with its marks drawn in.</li>
+<li><b>Save All Drafts…</b> saves every draft together as one file. Open it in Files or the Finder and it becomes a folder with a PDF of each draft. Check <b>Also a copy of each draft with your marks</b> to add each one with its marks drawn in.</li>
 <li><b>What Changed…</b> shows the report from when that draft came in.</li>
 <li><b>Make This the Current Draft</b> puts an earlier draft back as the script, with its marks and tools; the one you were using becomes an earlier draft.</li>
 <li><b>Remove…</b> clears an earlier draft and its marks for good, after asking.</li>
@@ -424,7 +427,7 @@ h3.hit{animation:gshit 2.2s ease-out}
 <li>The highlights sit under the words, the way a highlighter does, so the words stay readable.</li>
 <li>It works without a connection once the app has been opened on that device.</li>
 <li>Some scripts come as protected PDFs. Their pages are drawn into the export as pictures, so its words can’t be searched, and your marks are drawn over them as usual.</li>
-<li>For one scene’s pages together with its Breakdown, Strategy, Floor Plan and Shot List, use <a href="#ch11">Export PDF</a> and tick <b>Script Pages</b>.</li>
+<li>For one scene’s pages together with its Breakdown, Strategy, Shot List and Floor Plan, use <a href="#ch11">Export PDF</a> and check <b>Script Pages</b>.</li>
 </ul></div>
 
 
@@ -931,7 +934,7 @@ h3.hit{animation:gshit 2.2s ease-out}
 <div class="op-in"><div class="op-lab">In this chapter</div><ol class="op-list" style="--rows:3"><li><a href="#c8-the-shot-list-tab">The Shot List tab</a></li><li><a href="#c8-columns">Columns</a></li><li><a href="#c8-numbering">Numbering</a></li><li><a href="#c8-suggest-shooting-order">Suggest Shooting Order</a></li><li><a href="#c8-changing-several-shots-at-once">Changing several shots at once</a></li><li><a href="#c8-gear-list-and-new-shot">Gear List and New Shot</a></li></ol></div>
 </div>
 <div class="content">
-<div class="keep"><h3 id="c8-the-shot-list-tab">The Shot List tab</h3><div class="where"><b>Where:</b> the Shot List tab. <kbd>V</kbd> switches between the plan and the list. On the Floor Plan, the Shot List panel at the right shows the same shots.</div><figure><div class="fr"><img alt="The Shot List tab for scene 1: three rows, 1A, 2A and 2B, under the headings Storyboard, Shot number, Version, Shot size, Shot type, Shot angle, Movement and Description. The Shot List menu is open at the right." height="592" src="img/list.jpg" width="1500"/></div><figcaption>Three shots, with the Shot List menu open.</figcaption></figure></div>
+<div class="keep"><h3 id="c8-the-shot-list-tab">The Shot List tab</h3><div class="where"><b>Where:</b> the Shot List tab. <kbd>V</kbd> switches between the plan and the list. On the Floor Plan, the Shot List panel at the right shows the same shots.</div><figure><div class="fr"><img alt="The Shot List tab for the sample scene: its shots from 1A down, each with its storyboard frame, under the headings Storyboard, Shot number, Version, Shot size, Shot type, Shot angle, Movement and Description. The Shot List menu is open at the right." height="769" src="img/list.jpg" width="1500"/></div><figcaption>The sample scene’s shots, each with its storyboard frame, and the Shot List menu open.</figcaption></figure></div>
 
 
 <ul>
@@ -1105,28 +1108,29 @@ h3.hit{animation:gshit 2.2s ease-out}
 <div class="op-in"><div class="op-lab">In this chapter</div><ol class="op-list" style="--rows:3"><li><a href="#c11-export-pdf">Export PDF</a></li><li><a href="#c11-the-script-as-a-pdf">The script as a PDF</a></li><li><a href="#c11-productions-letterheads">Productions &amp; Letterheads</a></li><li><a href="#c11-a-picture-of-the-page">A picture of the page</a></li><li><a href="#c11-the-blocking-as-a-video">The blocking as a video</a></li><li><a href="#c11-who-can-sync">Who can sync</a></li></ol></div>
 </div>
 <div class="content">
-<div class="keep"><h3 id="c11-export-pdf">Export PDF</h3><div class="two" style="grid-template-columns:minmax(0,380px) minmax(0,1fr)"><figure style="margin-top:14px"><div class="fr"><img alt="The Export PDF window: This scene or The whole folder, a list of what to include with checkboxes, Script Pages first, then Layout, Letterhead, Header details and Page orientation." height="1761" src="img/export.jpg" width="760"/></div></figure><div>
+<div class="keep"><h3 id="c11-export-pdf">Export PDF</h3><div class="two" style="grid-template-columns:minmax(0,380px) minmax(0,1fr)"><figure style="margin-top:14px"><div class="fr"><img alt="The Export PDF window: This scene or The whole folder, a list of what to include with checkboxes, Script Pages first, then Layout, Letterhead, Header details and Page orientation." height="1785" src="img/export.jpg" width="760"/></div></figure><div>
 <div class="where"><b>Where:</b> Menu › Export › Export PDF…, or <kbd>⌘P</kbd>.</div>
 <table><thead><tr><th>Choice</th><th>Options</th></tr></thead><tbody>
 <tr><td>Export</td><td><b>This scene</b> or <b>The whole folder</b>.</td></tr>
-<tr><td>Include</td><td>Script Pages, Scene Breakdown, Shooting Strategy, Floor Plan, Shot List and a Storyboard sheet. Check any mix, or <b>Select all</b>.</td></tr>
-<tr><td>Layout</td><td><b>Full</b> puts each floor plan and the shot list on their own pages. <b>Compact</b> puts floor plans side by side with the shot list underneath, for the fewest pages.</td></tr>
+<tr><td>Include</td><td>Script Pages, Scene Breakdown, Shooting Strategy, Shot List, Floor Plan and a Storyboard sheet. Check any mix, or <b>Select all</b>. They print in that order.</td></tr>
+<tr><td>Layout</td><td><b>Full</b> prints the shot list, then each floor plan. A floor plan goes under the shot list on the same page when there is room for it. <b>Compact</b> puts floor plans side by side with the shot list underneath, for the fewest pages.</td></tr>
 <tr><td>Letterhead</td><td>The production whose logo and contact lines go at the top. The choice is remembered for the folder.</td></tr>
 <tr><td>Header details</td><td>Episode, shoot day and shoot date for this scene. They are in Scene Info too.</td></tr>
 <tr><td>Page orientation</td><td><b>Portrait</b> (tall pages, like the script’s) or <b>Landscape</b> (wide). It starts on Portrait and remembers what you pick. The script’s pages are always in at their own size.</td></tr>
 </tbody></table></div></div></div>
 
+<figure><div class="pgs"><img alt="The sample scene’s script page with a highlighted line, an underline and a note." height="673" src="img/sample-script.jpg" width="520"/><img alt="Its Scene Breakdown page: the scene line as the headline, then six tinted columns." height="673" src="img/sample-breakdown.jpg" width="520"/><img alt="Its Shooting Strategy page." height="673" src="img/sample-strategy.jpg" width="520"/><img alt="Its Shot List page: seven shots, each with a storyboard frame." height="673" src="img/sample-shot-list.jpg" width="520"/><img alt="Its Floor Plan page: the studio from above with the frames around it, a line from each to its camera." height="673" src="img/sample-floor-plan.jpg" width="520"/></div><figcaption>What comes out, for the sample scene: its script page, Scene Breakdown, Shooting Strategy, Shot List and Floor Plan. Every page starts with the scene; the line under it says which part it is.</figcaption></figure>
 <p>The parts have options of their own:</p>
 <ul>
-<li><b>Script Pages</b> are the pages of the script the scene runs across. They come first, ahead of the scene’s Breakdown, at their own size, with your marks on them. Untick <b>Your marks on the pages</b> for clean pages. In a folder’s PDF each scene’s pages come ahead of that scene. They need a script in the folder, and the scene’s heading has to be in its pages.</li>
+<li><b>Script Pages</b> are the pages of the script the scene runs across. They come first, ahead of the scene’s Breakdown, at their own size, with your marks on them. Clear <b>Your marks on the pages</b> for clean pages. In a folder’s PDF each scene’s pages come ahead of that scene. They need a script in the folder, and the scene’s heading has to be in its pages.</li>
 <li><b>Scene Breakdown</b> can include the Questions column.</li>
-<li><b>Floor Plan</b> can frame for the action, show storyboard frames on the plan, add a master page with every move, print each page on its own, and zoom each page to its action. Scenes with Night Look turned on get a Night Look option.</li>
 <li><b>Shot List</b> can include storyboard frames. It prints the same columns as the screen, in the same order.</li>
+<li><b>Floor Plan</b> can frame for the action, show storyboard frames on the plan, add a master page with every move, print each page on its own, and zoom each page to its action. Scenes with Night Look turned on get a Night Look option.</li>
 <li><b>Storyboard sheet</b> prints every frame large, with its shot.</li>
 </ul>
 <p>Two other PDFs are made elsewhere. The folder’s Overview has its own <b>Export PDF…</b> for the view you are on, and the Gear List has <b>Save as PDF</b>.</p>
 <p>An exported PDF can be searched. The words on the shot list and the page headings can be found with your PDF reader’s search, and copied. Labels drawn on the floor plan itself are part of the picture.</p>
-<div class="keep"><h3 id="c11-the-script-as-a-pdf">The script as a PDF</h3><p>A scene’s own pages of the script go out with the scene: tick <b>Script Pages</b> in Export PDF, above. The whole script is saved from the Script tab.</p><ul>
+<div class="keep"><h3 id="c11-the-script-as-a-pdf">The script as a PDF</h3><p>A scene’s own pages of the script go out with the scene: check <b>Script Pages</b> in Export PDF, above. The whole script is saved from the Script tab.</p><ul>
 <li><b>With your marks:</b> Script › <b>…</b> › <b>Export with Your Marks…</b>. See <a href="#scriptexport">Export the script with your marks</a>.</li>
 <li><b>Any draft, as it came in:</b> Script › <b>Drafts</b> › <b>Save the PDF</b>. <b>Save All Drafts…</b> saves every draft at once, each with your marks too if you like. See <a href="#drafts">Drafts</a>.</li>
 </ul></div>
@@ -1228,7 +1232,8 @@ h3.hit{animation:gshit 2.2s ease-out}
 <li><b>A new draft</b> replaces the script’s pages and moves your marks with their words; marks on cut words are removed and listed, with the scenes that are new, cut or changed. <a href="#newdraft">A new draft</a>.</li>
 <li><b>Drafts</b> lists every draft of the script: look at an earlier one with its marks, save any draft as its PDF, or save them all at once. <a href="#drafts">Drafts</a>.</li>
 <li><b>Export with Your Marks</b> makes the script’s PDF with every mark drawn in. <a href="#scriptexport">Export the script with your marks</a>.</li>
-<li><b>Export PDF</b> has <b>Script Pages</b>: the scene’s pages from the script, with your marks, ahead of its Breakdown, Strategy, Floor Plan and Shot List. <a href="#ch11">Printing and Sharing</a>.</li>
+<li><b>Export PDF</b> has <b>Script Pages</b>: the scene’s pages from the script, with your marks, ahead of its Breakdown, Strategy, Shot List and Floor Plan. It starts on tall pages, and every page now leads with the scene. <a href="#ch11">Printing and Sharing</a>.</li>
+<li><b>The sample scene</b> has storyboard frames and a fuller Shooting Strategy. <b>Reset the Sample</b> brings them into a sample you already opened.</li>
 <li><b>Pencil Notes</b> on the Breakdown, Strategy and Shot List: a card to write on by hand. <a href="#pencilnotes">Pencil Notes</a>.</li>
 <li><b>Set mode</b> has the Script, Breakdown, Strategy and Floor Plan at the top, beside the shot card. New Scene and the Library are under the scene name in Scout and Set too.</li>
 <li><b>The script’s pages</b> are in the notebook: the Script tab, now the first tab, and beside the shots in Set mode. Mark them up with a pen and highlighter, text marks that snap to the words, typed text, notes with an arrow, arrows, lines and boxes; keep bookmarks; find a word; type a scene’s number to go to it. <a href="#script">The script’s pages</a>.</li>
