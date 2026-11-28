@@ -911,7 +911,7 @@ table.sl thead th.cdr{box-shadow:inset -4px 0 0 var(--accent)}
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
 <script src="vendor/firebase-firestore-compat.js"></script>
-<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_UNIFONT='vendor/nb-uni';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_PDFLIB='vendor/pdf-lib.min.js';window.BB_VERSION='20261128103722';
+<script>window.BB_FIREBASE={"apiKey": "AIzaSyCUtzGFruu67J2nWs10NDhq_s8FtmrL1-A", "authDomain": "blocking-board.firebaseapp.com", "projectId": "blocking-board", "storageBucket": "blocking-board.firebasestorage.app", "messagingSenderId": "913569047735", "appId": "1:913569047735:web:30a6b22fb34e1abe7c5932"};window.BB_JSPDF='vendor/jspdf.umd.min.js';window.BB_UNIFONT='vendor/nb-uni';window.BB_PDFJS='vendor/pdf.min.js';window.BB_PDFWORKER='vendor/pdf.worker.min.js';window.BB_PDFLIB='vendor/pdf-lib.min.js';window.BB_VERSION='20261128152839';
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')reg.update().catch(()=>{});});}).catch(()=>{}));</script>
 <script>
 (()=>{'use strict';
@@ -5705,7 +5705,7 @@ async function dpPageInfo(page){const tc=await page.getTextContent(),it=tc.items
  return {scale:dpScale(all),name:nm.replace(/\s+/g,' '),block:it.filter(q=>key.test(q.str)).map(q=>[q.transform[4],q.transform[5]])};}
 async function dpThumb(page,w){const v0=page.getViewport({scale:1}),v=page.getViewport({scale:w/v0.width}),c=document.createElement('canvas');c.width=Math.round(v.width);c.height=Math.round(v.height);await page.render({canvasContext:c.getContext('2d'),viewport:v}).promise;return c;}
 async function dpOpen(file){modal('<h3>Set from a Director’s Plan</h3><p class="mut">Opening the PDF…</p>');let pdf;
- try{const lib=await loadPdfJs();pdf=await lib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;}catch(e){closeModal();toast('That file could not be opened as a PDF.');return;}
+ try{const lib=await loadPdfJs();pdf=await lib.getDocument({isEvalSupported:false,data:new Uint8Array(await file.arrayBuffer())}).promise;}catch(e){closeModal();toast('That file could not be opened as a PDF.');return;}
  if(pdf.numPages===1){dpPage(pdf,1);return;}
  const N=pdf.numPages;let shown=0,busy=false;modal(`<h3>Which page?</h3><p class="mut" style="margin:-4px 0 0">${N>40?`${N} pages, shown 40 at a time. `:''}Tap the plan you want under this scene.</p><div class="dppg" id="dpPg"></div><div class="btns end"><button id="dpMore" hidden></button><button data-x>Cancel</button></div>`,card=>{
   const mb=card.querySelector('#dpMore'),more=async()=>{if(busy)return;busy=true;mb.hidden=true;const to=Math.min(N,shown+40);
@@ -6864,6 +6864,7 @@ const SCR_IC={sel:'<path d="M6 3.5l12 9-5.2 1.1 3 5.6-2.3 1.2-3-5.7L6 18.5z"/>',
  here:'<circle cx="12" cy="12" r="6.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/>',
  more:'<circle cx="5.5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18.5" cy="12" r="1.3" fill="currentColor"/>',
  prev:'<path d="M14.5 6l-6 6 6 6"/>',next:'<path d="M9.5 6l6 6-6 6"/>',x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+ fit:'<path d="M4 4.5v15M20 4.5v15M8 12h8M10.5 9.2L7.7 12l2.8 2.8M13.5 9.2l2.8 2.8-2.8 2.8"/>',
  drafts:'<path d="M9 3.5h7l3.5 3.5v10.5A1.5 1.5 0 0 1 18 19H9a1.5 1.5 0 0 1-1.5-1.5v-12A1.5 1.5 0 0 1 9 3.5z"/><path d="M16 3.5V7h3.5"/><path d="M4.5 7.5v12A1.5 1.5 0 0 0 6 21h9"/>',
  undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',redo:'<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/>'};
 const scrIc=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${SCR_IC[k]}</svg>`;
@@ -6978,6 +6979,10 @@ function scrPgLabel(){const e=document.getElementById('scrPg');if(e){const on=SC
 function scrMarks(f,sc){const S=folderScenes(f.id).filter(x=>!x.scout),byN=new Map(),byH=new Map(),seen=new Map();
  for(const x of S){const n=scrNorm(x.number);if(n&&!byN.has(n))byN.set(n,x);const h=scrNorm(x.heading);if(h){if(!byH.has(h))byH.set(h,[]);byH.get(h).push(x);}}
  return (sc.marks||[]).map(m=>{const h=scrNorm(m.h),k=seen.get(h)||0;seen.set(h,k+1);const x=(m.n&&byN.get(scrNorm(m.n)))||(byH.get(h)||[])[k]||null;return {p:m.p-1,y:m.y,s:x,n:m.n||'',h:m.h||''};}).sort((a,b)=>a.p-b.p||a.y-b.y);}
+/* the script pages a scene runs across: from the page its heading is on, to the page the next scene starts on (or the one before, when that scene starts at the page's top) */
+function scrScenePages(x){const o=scrOf(x);if(!o)return null;const M=scrMarks(o.f,o.sc),j=M.findIndex(m=>m.s&&m.s.id===x.id);if(j<0)return null;
+ let k=j+1;while(M[k]&&M[k].s&&M[k].s.id===x.id)k++;const m=M[j],nx=M[k];
+ return {f:o.f,sc:o.sc,from:m.p,to:!nx?1e9:Math.max(m.p,nx.p>m.p&&nx.y-12<=SCR_TOP+18?nx.p-1:nx.p)};}
 /* type a scene's number: the pages go there (the scene that is open does not change) */
 function scrGoMark(m){cancelAnimationFrame(SCR.raf);SCR.ty=-(m.p*scrStep()+m.y-46)*SCR.z;scrClamp();scrPlace();scrUpdate();scrPosSave();return true;}
 function scrNumFind(n){const M=SCR.marks||[],own=q=>scrNorm(q.n),fol=q=>q.s?scrNorm(q.s.number):'';
@@ -7243,7 +7248,7 @@ function scrDom(){if(document.getElementById('scrView'))return;const v=document.
  bar.addEventListener('click',e=>{if(held){held=false;e.preventDefault();return;}const b=e.target.closest('[data-scr]');if(!b)return;const k=b.dataset.scr;
   if(k.startsWith('t:')){if(SCR.edit)scrEdDone();scrMenuClose();scrPopsClose();const t=k.slice(2);SCR.tool=t===SCR.tool&&t!=='sel'?'sel':t;if(SCR.tool!=='sel'&&SCR.tool!=='box'&&(SCR.sel||SCR.msel)){SCR.sel=null;SCR.msel=null;scrObj();}}
   else if(k.startsWith('c:')){SCR.color[scrGrp(SCR.tool)]=k.slice(2);scrToolSave();}
-  else if(k==='undo')scrUndo(false);else if(k==='redo')scrUndo(true);else if(k==='scene')scrGoScene(scene());else if(k==='more'){scrPopsClose();scrInfoDialog();return;}else if(k==='drafts'){scrPopsClose();scrDraftsDialog();return;}else if(k==='cur'){scrViewSet(SCR.f,null);return;}
+  else if(k==='undo')scrUndo(false);else if(k==='redo')scrUndo(true);else if(k==='scene')scrGoScene(scene());else if(k==='fit'){scrFit();return;}else if(k==='more'){scrPopsClose();scrInfoDialog();return;}else if(k==='drafts'){scrPopsClose();scrDraftsDialog();return;}else if(k==='cur'){scrViewSet(SCR.f,null);return;}
   else if(k==='size'){scrSizePop();return;}else if(k==='bm'){scrBmPop();return;}else if(k==='find'){scrFindOpen();return;}
   else if(k==='fprev'){scrFindStep(-1);return;}else if(k==='fnext'){scrFindStep(1);return;}else if(k==='fdone'){scrFindClose();return;}
   scrBarDraw();});
@@ -7258,7 +7263,7 @@ function scrBarDraw(){const el=document.getElementById('scrBar');if(!el)return;c
   h=`<div class="scrro"><span class="scrrot">${scrIc('drafts')}<span>Looking at <b>${esc(sc.name)}</b> <span class="mut">· added ${dd} · an earlier draft, to look at only</span></span></span><button class="pri" data-scr="cur">Back to the Current Draft</button></div>
    <div class="scrnav"><button class="scric" data-scr="find" aria-label="Find in the script" title="Find in the script">${scrIc('find')}</button>
    <input id="scrSc" placeholder="Sc." aria-label="Go to a scene: type its number, then Return" title="Go to a scene: type its number, then Return" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" maxlength="12">
-   <span id="scrPg"></span><button class="scric" data-scr="drafts" aria-label="Drafts" title="Drafts">${scrIc('drafts')}</button></div>`;}
+   <span id="scrPg"></span><button class="scric" data-scr="fit" aria-label="Fit the page to the width" title="Fit the page to the width">${scrIc('fit')}</button><button class="scric" data-scr="drafts" aria-label="Drafts" title="Drafts">${scrIc('drafts')}</button></div>`;}
  else if(SCR.find)h=`<span class="scrfi">${scrIc('find')}</span><input id="scrFq" type="search" placeholder="Find in the script" aria-label="Find in the script" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><span id="scrFn" aria-live="polite"></span><button class="scric" data-scr="fprev" aria-label="Previous" title="Previous">${scrIc('prev')}</button><button class="scric" data-scr="fnext" aria-label="Next" title="Next">${scrIc('next')}</button><span class="sp"></span><button data-scr="fdone">Done</button>`;
  else{const g=scrGrp(tl),set=tl==='er'||tl==='sel'||tl==='box'?null:SCR_COLORS[g],cur=SCR.color[g],wg=scrWGrp(tl),go=s.number?'Go to Scene '+s.number:'Go to This Scene';
   h=`<div class="scrtl" role="toolbar" aria-label="Tools">${SCR_TOOLS.map(t=>t?`<button class="scric${tl===t[0]?' on':''}" data-scr="t:${t[0]}" aria-label="${t[1]}" title="${t[1]}" aria-pressed="${tl===t[0]}">${scrIc(t[0])}</button>`:'<i class="scrsep"></i>').join('')}</div>
@@ -7267,7 +7272,7 @@ function scrBarDraw(){const el=document.getElementById('scrBar');if(!el)return;c
    <button class="scric" data-scr="undo" aria-label="Undo" title="Undo"${SCR.undo.length?'':' disabled'}>${scrIc('undo')}</button><button class="scric" data-scr="redo" aria-label="Redo" title="Redo"${SCR.redo.length?'':' disabled'}>${scrIc('redo')}</button></div>
    <div class="scrnav"><button class="scric" data-scr="find" aria-label="Find in the script" title="Find in the script">${scrIc('find')}</button><button class="scric" data-scr="bm" aria-label="Bookmarks" title="Bookmarks">${scrIc('bm')}</button>
    <input id="scrSc" placeholder="Sc." aria-label="Go to a scene: type its number, then Return" title="Go to a scene: type its number, then Return" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" maxlength="12"><button class="scric" data-scr="scene" aria-label="${esc(go)}" title="${esc(go)}">${scrIc('here')}</button>
-   <span id="scrPg"></span><button class="scric" data-scr="drafts" aria-label="Drafts" title="Drafts">${scrIc('drafts')}</button><button class="scric" data-scr="more" aria-label="Script…" title="Script…">${scrIc('more')}</button></div>`;}
+   <span id="scrPg"></span><button class="scric" data-scr="fit" aria-label="Fit the page to the width" title="Fit the page to the width">${scrIc('fit')}</button><button class="scric" data-scr="drafts" aria-label="Drafts" title="Drafts">${scrIc('drafts')}</button><button class="scric" data-scr="more" aria-label="Script…" title="Script…">${scrIc('more')}</button></div>`;}
  if(h===SCR.bar)return;const keep=document.activeElement&&document.activeElement.id==='scrSc'?document.activeElement.value:null;SCR.bar=h;el.innerHTML=h;scrPgLabel();scrSizeLabel();if(keep!=null){const i=document.getElementById('scrSc');if(i){i.value=keep;i.focus();}}}
 function scrB64(u8){let s='';for(let i=0;i<u8.length;i+=32768)s+=String.fromCharCode.apply(null,u8.subarray(i,i+32768));return btoa(s);}
 function scrAttach(f,buf,name,scenes){const u8=new Uint8Array(buf),parts=[];for(let i=0;i<u8.length;i+=SCR_PART)parts.push(addImage('data:application/x-nb-pdf;base64,'+scrB64(u8.subarray(i,i+SCR_PART))));
@@ -7360,7 +7365,7 @@ async function scrLoad(){const seq=++SCR.loadSeq,sc=SCR.sc;SCR.state='load';SCR.
  if(!u8){SCR.state='wait';scrMsg();
   if(!imgReady){if(idb){const need=sc.parts.filter(id=>!images[id]);idbGetKeys(need).then(o=>{for(const k in o){if(!images[k])images[k]=o[k];imgSaved.add(k);}if(seq===SCR.loadSeq&&SCR.sc===sc)scrWake();},()=>{});}}
   else try{for(const id of sc.parts)if(!images[id])imgTry[id]=0;imgPull();}catch(e){}clearTimeout(SCR.waitT);SCR.waitT=setTimeout(()=>{if(scrOn&&SCR.state==='wait'&&SCR.sc===sc)scrLoad();},2500);return;}
- try{const lib=await loadPdfJs(),doc=await lib.getDocument({data:u8}).promise;if(seq!==SCR.loadSeq||!scrOn){try{doc.destroy();}catch(e){}if(seq===SCR.loadSeq)SCR.state='';return;}
+ try{const lib=await loadPdfJs(),doc=await lib.getDocument({isEvalSupported:false,data:u8}).promise;if(seq!==SCR.loadSeq||!scrOn){try{doc.destroy();}catch(e){}if(seq===SCR.loadSeq)SCR.state='';return;}
   const p1=await doc.getPage(1),vp=p1.getViewport({scale:1});SCR.doc=doc;SCR.n=doc.numPages;SCR.pw=vp.width;SCR.ph=vp.height;SCR.state='ok';SCR.R=0;
   SCR.marks=scrMarks(SCR.f,sc);scrIndex();scrMsg();SCR.lastY=0;{const n=SCR.n,d=SCR.doc;scrText(n-1).then(T=>{if(SCR.doc!==d)return;SCR.lastY=Math.max(0,...T.rows.map(r=>r.y));scrObj();},()=>{});}const st=scrStage();SCR.z=Math.max(.3,Math.min(2.4,(((st&&st.clientWidth)||800)-24)/SCR.pw));SCR.tx=0;SCR.ty=12;
   const s=scene();SCR.lastScene=s.id;if(!scrPosLoad())scrGoScene(s,true);scrClamp();scrPlace();scrRaster();scrUpdate();scrBarDraw();}
@@ -7547,7 +7552,7 @@ const scrSkey=(m,k)=>scrNorm(m.n)||('H:'+scrNorm(m.h)+'#'+k);
 const scrSname=m=>(m.n?'Scene '+m.n:'The scene')+(m.h?' · '+m.h:'');
 /* compare the folder's script with a new PDF; returns the plan, applied by scrDraftApply */
 async function scrDraftPlan(f,buf,name,scenes,prog){const old=f.script,lib=await loadPdfJs(),u8o=scrBytes(old);if(!u8o)throw new Error('pieces');
- const da=await lib.getDocument({data:u8o}).promise,db=await lib.getDocument({data:new Uint8Array(buf.slice(0))}).promise;
+ const da=await lib.getDocument({isEvalSupported:false,data:u8o}).promise,db=await lib.getDocument({isEvalSupported:false,data:new Uint8Array(buf.slice(0))}).promise;
  try{const va=(await da.getPage(1)).getViewport({scale:1}),vb=(await db.getPage(1)).getViewport({scale:1}),na=da.numPages,nb=db.numPages;
   const TA=await scrDocToks(da,va.width,va.height,(i)=>prog&&prog(i,na+nb)),TB=await scrDocToks(db,vb.width,vb.height,(i)=>prog&&prog(na+i,na+nb));
   TA.forEach((t,i)=>t.i=i);TB.forEach((t,i)=>t.i=i);const M=scrAlign(TA,TB),hitB=new Uint8Array(TB.length);for(const j of M)if(j>=0)hitB[j]=1;
@@ -7666,10 +7671,10 @@ let pdflibP=null;
 function loadPdfLib(){if(window.PDFLib)return Promise.resolve(window.PDFLib);if(!pdflibP)pdflibP=new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=window.BB_PDFLIB||(location.protocol==='file:'?'pdf-lib.min.js':'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');sc.onload=()=>window.PDFLib?res(window.PDFLib):rej(new Error('load'));sc.onerror=()=>{pdflibP=null;rej(new Error('load'));};document.head.appendChild(sc);});return pdflibP;}
 const scrRGB=(L,h)=>{const n=parseInt(String(h).slice(1),16);return L.rgb((n>>16&255)/255,(n>>8&255)/255,(n&255)/255);};
 async function scrExport(f,opt){opt=opt||{};const sc=opt.sc||f.script,u8=scrBytes(sc);if(!u8)throw new Error('pieces');const L=await loadPdfLib(),lib=await loadPdfJs();
- const pj=await lib.getDocument({data:u8.slice(0)}).promise,v1=(await pj.getPage(1)).getViewport({scale:1}),PW=v1.width,PH=v1.height,ks=[];
+ const pj=await lib.getDocument({isEvalSupported:false,data:u8.slice(0)}).promise,v1=(await pj.getPage(1)).getViewport({scale:1}),PW=v1.width,PH=v1.height,ks=[];
  for(let i=0;i<pj.numPages;i++){const v=(await pj.getPage(i+1)).getViewport({scale:1});ks.push(Math.min(PW/v.width,PH/v.height));}try{pj.destroy();}catch(e){}
  let doc=await L.PDFDocument.load(u8,{ignoreEncryption:true}),pict=false;
- if(doc.isEncrypted){pict=true;doc=await L.PDFDocument.create();const pj2=await lib.getDocument({data:u8.slice(0)}).promise;
+ if(doc.isEncrypted){pict=true;doc=await L.PDFDocument.create();const pj2=await lib.getDocument({isEvalSupported:false,data:u8.slice(0)}).promise;
   try{for(let i=0;i<pj2.numPages;i++){const pg=await pj2.getPage(i+1),v=pg.getViewport({scale:1}),r=Math.min(2.4,Math.sqrt(6e6/(v.width*v.height))),vp=pg.getViewport({scale:r}),c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);
     const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:g,viewport:vp}).promise;const url=c.toDataURL('image/jpeg',.9);c.width=0;
     const jp=await doc.embedJpg(Uint8Array.from(atob(url.slice(url.indexOf(',')+1)),ch=>ch.charCodeAt(0))),np=doc.addPage([v.width,v.height]);np.drawImage(jp,{x:0,y:0,width:v.width,height:v.height});if(opt.prog)opt.prog(i+1,pj2.numPages);}}
@@ -7677,7 +7682,7 @@ async function scrExport(f,opt){opt=opt||{};const sc=opt.sc||f.script,u8=scrByte
  const font=await doc.embedFont(L.StandardFonts.Helvetica),bold=await doc.embedFont(L.StandardFonts.HelveticaBold),pages=doc.getPages();
  const safe=t=>{let o='';for(const ch of String(t||'').replace(/[\u2028\u2029]/g,' ')){try{font.encodeText(ch);o+=ch;}catch(e){o+=ch==='\t'?' ':'?';}}return o;};
  /* this script's marks, page by page, oldest first */
- const pre=sc.id+'.',by=new Map();for(const sid in P.text||{}){const ink=P.text[sid]&&P.text[sid].ink;if(!ink)continue;for(const k in ink){if(!k.startsWith(pre))continue;const c=ink[k];if(!c||c.del||!c.h)continue;const s=scrParse(c);if(!s)continue;let A=by.get(s.pg);if(!A)by.set(s.pg,A=[]);A.push({t:c.t||0,s});}}
+ const pre=sc.id+'.',by=new Map();for(const sid in (opt.plain?{}:P.text||{})){const ink=P.text[sid]&&P.text[sid].ink;if(!ink)continue;for(const k in ink){if(!k.startsWith(pre))continue;const c=ink[k];if(!c||c.del||!c.h)continue;const s=scrParse(c);if(!s)continue;let A=by.get(s.pg);if(!A)by.set(s.pg,A=[]);A.push({t:c.t||0,s});}}
  const pw0=SCR.pw,ph0=SCR.ph,M0=SCR.marks,n0=SCR.n;SCR.pw=PW;SCR.ph=PH;SCR.n=pages.length;SCR.marks=scrMarks(f,sc);let count=0;
  try{for(let i=0;i<pages.length;i++){const pg=pages[i],cb=pg.getCropBox(),k=ks[i]||1,X=x=>cb.x+x/k,Y=y=>cb.y+cb.height-y/k,W=w=>w/k;
    const A=(by.get(i)||[]).sort((a,b)=>a.t-b.t).map(v=>v.s);
@@ -7708,6 +7713,7 @@ async function scrExport(f,opt){opt=opt||{};const sc=opt.sc||f.script,u8=scrByte
       if(Ly.e8){const e=scrE8(j);if(e){const t=ppTxt(e),tw=bold.widthOfTextAtSize(t,9.5);pg.drawText(t,{x:X(bx+bw/2)-W(tw/2),y:Y(by+bh+3+8),size:W(9.5),font:bold,color:scrRGB(L,'#2f6fde')});}}}}}}
  }finally{SCR.pw=pw0;SCR.ph=ph0;SCR.marks=M0;SCR.n=n0;}
  doc.setTitle((sc.name||'Script')+' · with marks');doc.setProducer('The Director’s Notebook');doc.setCreator('The Director’s Notebook');
+ if(opt.keep)return {doc,count,pages:pages.length,pict};
  return {bytes:await doc.save(),count,pages:pages.length,pict};}
 async function scrExportGo(f,lay){toast('Making the PDF…',20000);try{const r=await scrExport(f,{lay});const name=(f.script.name||'Script').replace(/[^\w\- ]+/g,'').trim()+' - with marks.pdf';
   await save(name,new Blob([r.bytes],{type:'application/pdf'}));if(r.pict)setTimeout(()=>toast('This script’s PDF is protected, so its pages are drawn as pictures in the export. Your marks are drawn as usual.',7000),2500);}
@@ -7893,7 +7899,7 @@ function parseText(txt){
  return {title,scenes:out};
 }
 async function parsePDF(buf){
- const lib=await loadPdfJs(),doc=await lib.getDocument({data:buf}).promise,lines=[];let firstText='';
+ const lib=await loadPdfJs(),doc=await lib.getDocument({isEvalSupported:false,data:buf}).promise,lines=[];let firstText='';
  for(let pn=1;pn<=doc.numPages;pn++){
   const pg=await doc.getPage(pn),tc=await pg.getTextContent(),top=pg.view[3],rows=[];
   for(const it of tc.items){if(!it.str||!it.str.trim())continue;const x=it.transform[4],y=it.transform[5];let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r){r={y,parts:[]};rows.push(r);}r.parts.push({x,s:it.str,w:it.width||it.str.length*6});}
@@ -9238,7 +9244,7 @@ let expNoDesc=false; /* an export that leaves shot descriptions off */
 var expAllPri=false; /* a folder's or a day's PDF: every shot, whatever priority filter the screen has on */
 function listKit(s,o,W){
  const port=!!o.port,M=48,TW=W-2*M,on=colsOn(s).filter(c=>!(expNoDesc&&c.k==='desc')),sb=o.sb!==false&&on.some(c=>c.k==='sb')&&rowsOf(s).some(r=>shotFrames(r.it,r.vi).length); /* no frames in the scene: no empty column */
- const WL={sb:276,shot:92,ver:62,nick:140,size:150,type:150,angle:140,move:140,lens:90,gear:150,cast:160,props:160,time:84,pri:86,flag:66,vfx:62,sfx:62,ss:100,sn:180},WP={sb:204,shot:80,ver:54,nick:116,size:128,type:128,angle:118,move:118,lens:78,gear:126,cast:136,props:136,time:74,pri:76,flag:58,vfx:54,sfx:54,ss:86,sn:150};
+ const WL={sb:276,shot:92,ver:62,nick:140,size:150,type:150,angle:140,move:140,lens:90,gear:150,cast:160,props:160,time:84,pri:86,flag:66,vfx:62,sfx:62,ss:100,sn:180},WP={sb:204,shot:80,ver:54,nick:116,size:128,type:146,angle:118,move:126,lens:78,gear:136,cast:136,props:136,time:74,pri:76,flag:58,vfx:54,sfx:54,ss:86,sn:150};
  const base=Object.assign({},port?WP:WL),list=on.filter(c=>c.k!=='sb'||sb),wOf=c=>base[c.k]||(port?116:140),core=new Set(['sb','shot','ver','time','pri','flag','vfx','sfx','lens']),hasD=list.some(c=>c.k==='desc'),minD=hasD?(port?240:320):0;
  let fixed=0,scal=0;for(const c of list){if(c.k==='desc')continue;if(core.has(c.k))fixed+=wOf(c);else scal+=wOf(c);}
  let f0=scal?(TW-minD-fixed)/scal:1;const sbw0=base.sb;if(sb&&f0<.8){base.sb=Math.round(sbw0*.8);fixed-=sbw0-base.sb;f0=(TW-minD-fixed)/scal;}
@@ -9325,11 +9331,12 @@ async function save(filename,data){
 }
 function folderScenes(fid){const kids=P.folders.filter(f=>f.parent===fid).sort((a,b)=>natCmp(a.name,b.name));
  return [...P.scenes.filter(x=>!x.trashed&&!x.tpl&&x.folder===fid).sort(sceneCmp),...kids.flatMap(f=>folderScenes(f.id))];}
-function expOpts(){const o=Object.assign({scope:'scene',nb:true,q:false,st:true,dia:true,list:true,sb:true,bd:false,port:false,master:true,split:true,zoom:false,layout:'full'},P.ui.exp||{});if(o.fa==null)o.fa=true;if(o.pf==null)o.pf=true;if(o.nl==null)o.nl=true;return o;}
+function expOpts(){const o=Object.assign({scope:'scene',scr:true,scrm:true,nb:true,q:false,st:true,dia:true,list:true,sb:true,bd:false,port:true,master:true,split:true,zoom:false,layout:'full'},P.ui.exp||{});if(!(P.ui.exp&&P.ui.exp.pv))o.port=true;if(o.fa==null)o.fa=true;if(o.pf==null)o.pf=true;if(o.nl==null)o.nl=true;return o;}
 async function exportPDF(o){
  o=Object.assign(expOpts(),o||{});const cur=scene(),fid=sFolder(cur),day=o.dayx||null,folder=day?true:o.scope==='folder'&&fid;
  const list=day?day.list:folder?expList(fid):[cur],W=o.port?1275:1650,H=o.port?1650:1275;
- if(!o.dia&&!o.list&&!o.nb&&!o.st&&!o.bd){toast('Pick at least one thing to include.');return;}
+ const wantScr=!day&&!!o.scr,onlyScr=wantScr&&!o.dia&&!o.list&&!o.nb&&!o.st&&!o.bd,scrPlan=[];
+ if(!o.dia&&!o.list&&!o.nb&&!o.st&&!o.bd&&!wantScr){toast('Pick at least one thing to include.');return;}
  toast('Building PDF…');
  try{const {jsPDF}=await loadJsPDF(),doc=new jsPDF({orientation:o.port?'portrait':'landscape',unit:'pt',format:'letter'});let n=0,used=0;
   expProd=o.prod===undefined?undefined:(o.prod||null);expNoDesc=!!o.nodesc;expAllPri=!!(day||folder);
@@ -9338,20 +9345,33 @@ async function exportPDF(o){
    if(pdfNeedsUni(blob))pdfUni=await pdfUniLoad(doc);}
   if(day){for(const sv of dayCoverSVG(day,o)){const c=await rasterize(sv,W,H,1.4);np();doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,o.port?612:792,o.port?792:612);try{svgTextLayer(doc,sv,W,o.port?612:792);}catch(e){console.error(e);}}cover=n;}
   for(let si=0;si<list.length;si++){const sc=list[si],written=(o.nb||o.st)&&(txHas(sc)||(o.nb&&!!String(sc.synopsis||'').trim()));const hasPlan=!!(sc.items.length||(sc.bgId&&sc.bg&&images[sc.bgId])); /* a plan that is only a background picture is still a plan */
-   if(folder&&!hasPlan&&!written)continue;
+   const at0=n,sp=wantScr?scrScenePages(sc):null;
+   if(folder&&!hasPlan&&!written&&!(sp&&onlyScr))continue;
    let svgs=[],tp=0;if(written)tp=await pdfTextPages(doc,sc,o,np);const keep=P.sceneId,frK=frForce;P.sceneId=sc.id;frForce=o.pf!==false;nightForce=o.nl===false?false:null;
    try{if(!hasPlan&&written){}else if(!o.dia&&!o.list){}else if(o.layout==='compact'){svgs=compactPagesSVG(sc,o);}else{if(o.dia){const n=sc.pages.length;if(n<2)svgs.push(sheetSVG(sc,sc.pages[0].id,o.port,o.list,{fa:o.fa}));else{
      const box=o.zoom?null:planBox(sc,'all',o.fa),master=o.master||!o.split;
      if(master)svgs.push(sheetSVG(sc,'all',o.port,o.list,{label:`Master  ·  every move, all ${n} pages`,fa:o.fa}));
      if(o.split)sc.pages.forEach((pg,i)=>{const nm=String(pg.name||'').trim(),lbl=`Page ${i+1} of ${n}`+(nm&&!/^page\s*\d+$/i.test(nm)?`  ·  ${nm}`:'');svgs.push(sheetSVG(sc,pg.id,o.port,o.list,{label:lbl,box:box||planBox(sc,pg.id,o.fa),fa:o.fa}));});}}if(o.list)svgs.push(...listPagesSVG(sc,{port:o.port,sb:o.sb}));}if(o.bd==='auto'?(!(o.list&&o.sb!==false&&colsOn(sc).some(c=>c.k==='sb'))||rowsOf(sc).some(r=>shotFrames(r.it,r.vi).length>SBMAX)):o.bd)svgs.push(...boardPagesSVG(sc,{port:o.port}));}finally{P.sceneId=keep;frForce=frK;nightForce=null;}
    if(svgs.length||tp)used++;
+   if(sp&&(svgs.length||tp||!folder||onlyScr))scrPlan.push(Object.assign({at:at0},sp));
    for(const sv of svgs){const c=await rasterize(sv,W,H,1.4);np();doc.addImage(c.toDataURL('image/jpeg',.9),'JPEG',0,0,o.port?612:792,o.port?792:612);try{svgTextLayer(doc,sv,W,o.port?612:792);}catch(e){console.error(e);}}
    if(folder&&list.length>2)toast(`Building PDF… scene ${si+1} of ${list.length}`);
   }
-  expProd=undefined;expNoDesc=false;expAllPri=false;pdfUni=false;if(day&&n===cover){toast('This day’s scenes have nothing to export yet.');return;}if(!n){toast(o.dia?'Nothing to export yet.':o.list?'No shots to put in the shot list yet.':o.bd?'No storyboard frames yet. Add them in the shot list.':'Nothing is written in the Breakdown or Strategy yet.');return;}
+  expProd=undefined;expNoDesc=false;expAllPri=false;pdfUni=false;if(day&&n===cover){toast('This day’s scenes have nothing to export yet.');return;}if(!n&&!scrPlan.length){toast(onlyScr?(scrOf(cur)?(folder?'None of these scenes were found in the script’s pages.':'This scene wasn’t found in the script’s pages.'):'There is no script in this folder yet. Add one on the Script tab.'):o.dia?'Nothing to export yet.':o.list?'No shots to put in the shot list yet.':o.bd?'No storyboard frames yet. Add them in the shot list.':'Nothing is written in the Breakdown or Strategy yet.');return;}
   if(day){await save(`${day.folder||'Day'} - ${day.name} - ${day.dir?'Director copy':'Crew copy'}`.replace(/[^\w\- ]+/g,'').replace(/\s+/g,' ').trim()+'.pdf',doc.output('blob'));return;}
   const base=folder?(fById(fid).name||'Folder').replace(/[^\w\- ]+/g,'').trim()||'Folder':fname(cur);
-  {const pk=[['nb','Breakdown'],['st','Strategy'],['dia','Floor Plan'],['list','Shot List'],['bd','Storyboards']].filter(([k])=>o[k]);await save(base+(pk.length===1?' - '+pk[0][1]:'')+'.pdf',doc.output('blob'));
+  /* the script's own pages go in ahead of each scene's: the real pages, at their own size, with the marks drawn on them */
+  let outBlob=null,scrNote='';
+  if(scrPlan.length){try{const L=await loadPdfLib(),out=await L.PDFDocument.create(),src=n?await L.PDFDocument.load(doc.output('arraybuffer')):null,cache=new Map();let at=0,pict=false;
+    const copy=async(a,b)=>{if(!src||b<=a)return;const ix=[];for(let i=a;i<b;i++)ix.push(i);for(const p of await out.copyPages(src,ix))out.addPage(p);};
+    for(const q of scrPlan){await copy(at,q.at);at=q.at;let e=cache.get(q.sc.id);if(!e){const r=await scrExport(q.f,{sc:q.sc,plain:o.scrm===false,lay:o.scrm!==false,keep:true});e={d:r.doc,n:r.pages,pict:r.pict};cache.set(q.sc.id,e);}
+     const ix=[];for(let i=q.from;i<=Math.min(q.to,e.n-1);i++)ix.push(i);for(const p of await out.copyPages(e.d,ix))out.addPage(p);if(e.pict)pict=true;}
+    await copy(at,n);out.setTitle(base);out.setProducer('The Director’s Notebook');out.setCreator('The Director’s Notebook');outBlob=new Blob([await out.save()],{type:'application/pdf'});
+    if(pict)scrNote='PDF saved. This script’s PDF is protected, so its pages are in as pictures.';}
+   catch(e){console.warn(e);scrNote='PDF saved without the script’s pages: '+(e&&e.message==='pieces'?'they are still on their way from your other device.':e&&e.message==='load'?'the PDF maker couldn’t load. Connect once, then try again.':'they couldn’t be added.');
+    if(!n){toast(scrNote.replace('PDF saved without the script’s pages: ','The script’s pages couldn’t be exported: '));return;}}}
+  {const pk=[['scr','Script Pages'],['nb','Breakdown'],['st','Strategy'],['dia','Floor Plan'],['list','Shot List'],['bd','Storyboards']].filter(([k])=>k==='scr'?wantScr:o[k]);await save(base+(pk.length===1?' - '+pk[0][1]:'')+'.pdf',outBlob||doc.output('blob'));
+   if(scrNote)setTimeout(()=>toast(scrNote,8000),700);
    if(pdfLost&&(o.nb||o.st))setTimeout(()=>toast('PDF saved. Some letters or marks in the Breakdown or Strategy are in a script this PDF cannot print, and were left out or printed plain.',9000),700);}
  }catch(e){console.error(e);toast('PDF export failed. Try the image instead.');}finally{expProd=undefined;expNoDesc=false;expAllPri=false;pdfUni=false;}
 }
@@ -9407,29 +9427,29 @@ function prodEdit(pr0,back){const isNew=!pr0,pr=Object.assign({id:uid()},PROD_DE
  },'numcard');}
 /* what "The whole folder" exports: its scenes, in order. Location scouts and omitted scenes are not part of it */
 function expList(fid){return folderScenes(fid).filter(x=>!x.scout&&!(x.rev&&x.rev.k==='omitted'));}
-function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts(),mp=s.pages.length>1||(fid&&folderScenes(fid).some(x=>x.pages.length>1));if(!fid)o.scope='scene';const fp=fid?folderProd(s):(o.prod&&prodById(o.prod)?o.prod:null),PL=P.productions||[];
+function exportDialog(){const s=scene(),fid=sFolder(s),o=expOpts(),sHas=!!scrOf(s),mp=s.pages.length>1||(fid&&folderScenes(fid).some(x=>x.pages.length>1));if(!fid)o.scope='scene';const fp=fid?folderProd(s):(o.prod&&prodById(o.prod)?o.prod:null),PL=P.productions||[];
  const nF=fid?expList(fid).length:0;
  const radio=(g,v,l,sub,on,dis)=>`<button class="rrow" data-g="${g}" data-v="${v}"${dis?' disabled style="opacity:.45"':''}><span><b>${l}</b>${sub?`<small>${sub}</small>`:''}</span><i class="rad${on?' on':''}"></i></button>`;
  modal(`<h3>Export PDF</h3><div class="lbl">Export</div><div class="rgrp">${radio('scope','scene','This scene',esc(sceneLabel(s)),o.scope==='scene')}${radio('scope','folder','The whole folder',fid?`${esc(fById(fid).name)} · ${nF} scene${nF===1?'':'s'}`:'This scene isn’t in a folder',o.scope==='folder',!fid)}</div>
-  <div class="lbl" style="display:flex;align-items:center;gap:8px">Include<button class="sm" id="xAll" style="margin-left:auto;min-height:30px;padding:0 10px;font-size:13px">Select all</button></div><label class="imopt"><input type="checkbox" id="xNb"${o.nb?' checked':''}> Scene Breakdown</label><label class="imopt" id="xQRow" style="margin-left:24px"><input type="checkbox" id="xQ"${o.q?' checked':''}> Questions column</label><label class="imopt"><input type="checkbox" id="xSt"${o.st?' checked':''}> Shooting Strategy</label><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Floor Plan</label><div id="xPgOpts" style="margin-left:24px"><label class="imopt"><input type="checkbox" id="xFa"${o.fa?' checked':''}> Frame for action <span class="mut">· close in on the cameras and characters</span></label><label class="imopt"><input type="checkbox" id="xPf"${o.pf?' checked':''}> Storyboard frames on the floor plan</label><label class="imopt" id="xNlRow"${(s.night&&s.night.on)||(fid&&folderScenes(fid).some(x=>x.night&&x.night.on))?'':' style="display:none"'}><input type="checkbox" id="xNl"${o.nl?' checked':''}> Night Look <span class="mut">· for scenes that have it turned on</span></label><label class="imopt"><input type="checkbox" id="xMaster"${o.master?' checked':''}> Master page with every move${mp?'':' <span class="mut">(for scenes with more than one page)</span>'}</label><label class="imopt"><input type="checkbox" id="xSplit"${o.split?' checked':''}> Each page on its own</label><label class="imopt"><input type="checkbox" id="xZoom"${o.zoom?' checked':''}> Zoom each page to its action</label></div><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot List</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label><label class="imopt"><input type="checkbox" id="xBd"${o.bd?' checked':''}> Storyboard sheet <span class="mut">· every frame, large, with its shot</span></label>
+  <div class="lbl" style="display:flex;align-items:center;gap:8px">Include<button class="sm" id="xAll" style="margin-left:auto;min-height:30px;padding:0 10px;font-size:13px">Select all</button></div><label class="imopt" id="xScrRow"${sHas?'':' style="opacity:.45"'}><input type="checkbox" id="xScr"${sHas&&o.scr?' checked':''}${sHas?'':' disabled'}> Script Pages <span class="mut">· ${sHas?'the scene’s pages from the script':'this folder has no script yet'}</span></label><label class="imopt" id="xScrMRow" style="margin-left:24px"><input type="checkbox" id="xScrM"${o.scrm!==false?' checked':''}> Your marks on the pages</label><label class="imopt"><input type="checkbox" id="xNb"${o.nb?' checked':''}> Scene Breakdown</label><label class="imopt" id="xQRow" style="margin-left:24px"><input type="checkbox" id="xQ"${o.q?' checked':''}> Questions column</label><label class="imopt"><input type="checkbox" id="xSt"${o.st?' checked':''}> Shooting Strategy</label><label class="imopt"><input type="checkbox" id="xDia"${o.dia?' checked':''}> Floor Plan</label><div id="xPgOpts" style="margin-left:24px"><label class="imopt"><input type="checkbox" id="xFa"${o.fa?' checked':''}> Frame for action <span class="mut">· close in on the cameras and characters</span></label><label class="imopt"><input type="checkbox" id="xPf"${o.pf?' checked':''}> Storyboard frames on the floor plan</label><label class="imopt" id="xNlRow"${(s.night&&s.night.on)||(fid&&folderScenes(fid).some(x=>x.night&&x.night.on))?'':' style="display:none"'}><input type="checkbox" id="xNl"${o.nl?' checked':''}> Night Look <span class="mut">· for scenes that have it turned on</span></label><label class="imopt"><input type="checkbox" id="xMaster"${o.master?' checked':''}> Master page with every move${mp?'':' <span class="mut">(for scenes with more than one page)</span>'}</label><label class="imopt"><input type="checkbox" id="xSplit"${o.split?' checked':''}> Each page on its own</label><label class="imopt"><input type="checkbox" id="xZoom"${o.zoom?' checked':''}> Zoom each page to its action</label></div><label class="imopt"><input type="checkbox" id="xList"${o.list?' checked':''}> Shot List</label><label class="imopt" id="xSbRow" style="margin-left:24px"><input type="checkbox" id="xSb"${o.sb?' checked':''}> Storyboard frames in the shot list</label><label class="imopt"><input type="checkbox" id="xBd"${o.bd?' checked':''}> Storyboard sheet <span class="mut">· every frame, large, with its shot</span></label>
   <div class="lbl">Layout</div><div class="rgrp">${radio('layout','full','Full','Each floor plan and the shot list on their own pages',o.layout!=='compact')}${radio('layout','compact','Compact','Floor plans side by side, shot list underneath. Fewest pages',o.layout==='compact')}</div>
   <div class="lbl">Letterhead</div><div style="display:flex;gap:8px;align-items:center"><select id="xProd" style="flex:1;height:40px;border-radius:8px;border:1px solid var(--line);background:var(--chip);padding:0 8px;font-size:15px;color:var(--ink)"><option value="">None</option>${PL.map(pr=>`<option value="${pr.id}"${pr.id===fp?' selected':''}>${esc(pr.name||'Untitled production')}</option>`).join('')}</select><button class="sm" id="xProds">${PL.length?'Edit…':'Set up…'}</button></div>${fid?`<p class="mut" style="font-size:12.5px;margin:6px 0 0">Remembered for ${esc(folderPathName(topFolder(fid)))}.</p>`:''}
   <div class="lbl">Header details</div><div class="hdrf" style="display:flex;gap:6px">${[['code','Episode','e.g. Ep. 110'],['day','Shoot day','e.g. Shoot Day 8'],['date','Shoot date','e.g. April 17']].map(([k,l,ph])=>`<label class="fld" style="flex:1;margin:0">${l}<input data-h="${k}" data-ph="${ph}" placeholder="${ph}" autocomplete="off"></label>`).join('')}</div><p class="mut" id="xHnote" style="font-size:12.5px;margin:6px 0 0"></p>
-  <div class="lbl">Page orientation</div><div class="rgrp">${radio('port','0','Landscape','Wide pages',!o.port)}${radio('port','1','Portrait','Traditional, tall pages',o.port)}</div>
+  <div class="lbl">Page orientation</div><div class="rgrp">${radio('port','1','Portrait','Tall pages, like the script’s',o.port)}${radio('port','0','Landscape','Wide pages',!o.port)}</div>
   <div class="btns end"><button data-x>Cancel</button><button class="pri" id="xOk">Export</button></div>`,card=>{
-  const cur={scope:o.scope,port:o.port,layout:o.layout==='compact'?'compact':'full'};
+  const cur={scope:o.scope,port:o.port,layout:o.layout==='compact'?'compact':'full'},xIds=(sHas?['#xScr']:[]).concat(['#xNb','#xSt','#xDia','#xList','#xBd']);
   const sync=()=>{const on=card.querySelector('#xList').checked,d=card.querySelector('#xDia').checked,sp=card.querySelector('#xSplit').checked;card.querySelector('#xSb').disabled=!on;card.querySelector('#xSbRow').style.opacity=on?1:.45;
-   ['#xMaster','#xSplit','#xFa','#xPf','#xNl'].forEach(x=>card.querySelector(x).disabled=!d);card.querySelector('#xZoom').disabled=!d||!sp;card.querySelector('#xPgOpts').style.opacity=d?1:.45;card.querySelector('#xZoom').parentNode.style.opacity=d&&sp?1:.45;{const nb=card.querySelector('#xNb').checked;card.querySelector('#xQ').disabled=!nb;card.querySelector('#xQRow').style.opacity=nb?1:.45;card.querySelector('#xOk').disabled=!on&&!d&&!nb&&!card.querySelector('#xSt').checked&&!card.querySelector('#xBd').checked;}{const all=['#xNb','#xSt','#xDia','#xList','#xBd'].every(x=>card.querySelector(x).checked);card.querySelector('#xAll').textContent=all?'Clear all':'Select all';}};
+   ['#xMaster','#xSplit','#xFa','#xPf','#xNl'].forEach(x=>card.querySelector(x).disabled=!d);card.querySelector('#xZoom').disabled=!d||!sp;card.querySelector('#xPgOpts').style.opacity=d?1:.45;card.querySelector('#xZoom').parentNode.style.opacity=d&&sp?1:.45;{const nb=card.querySelector('#xNb').checked;card.querySelector('#xQ').disabled=!nb;card.querySelector('#xQRow').style.opacity=nb?1:.45;{const sr=card.querySelector('#xScr').checked;card.querySelector('#xScrM').disabled=!sr;card.querySelector('#xScrMRow').style.opacity=sr?1:.45;}card.querySelector('#xOk').disabled=!on&&!d&&!nb&&!card.querySelector('#xSt').checked&&!card.querySelector('#xBd').checked&&!card.querySelector('#xScr').checked;}{const all=xIds.every(x=>card.querySelector(x).checked);card.querySelector('#xAll').textContent=all?'Clear all':'Select all';}};
   card.addEventListener('click',e=>{const b=e.target.closest('[data-g]');if(!b||b.disabled)return;cur[b.dataset.g]=b.dataset.g==='port'?b.dataset.v==='1':b.dataset.v;card.querySelectorAll(`[data-g="${b.dataset.g}"] .rad`).forEach(x=>x.classList.toggle('on',x.parentNode===b));});
   card.addEventListener('change',sync);sync();
-  card.querySelector('#xAll').onclick=()=>{const ids=['#xNb','#xSt','#xDia','#xList','#xBd'],all=ids.every(x=>card.querySelector(x).checked);ids.forEach(x=>{card.querySelector(x).checked=!all;});sync();};
+  card.querySelector('#xAll').onclick=()=>{const ids=xIds,all=ids.every(x=>card.querySelector(x).checked);ids.forEach(x=>{card.querySelector(x).checked=!all;});sync();};
   let hOrig={};const hList=()=>cur.scope==='folder'&&fid?expList(fid):[s];
   const fillHdr=()=>{const L=hList();hOrig={};card.querySelectorAll('[data-h]').forEach(inp=>{const k=inp.dataset.h,v=[...new Set(L.map(x=>String(x[k]||'')))];hOrig[k]=v.length===1?v[0]:null;inp.value=v.length===1?v[0]:'';inp.placeholder=v.length===1?inp.dataset.ph:'Varies by scene';});
    card.querySelector('#xHnote').textContent=cur.scope==='folder'&&fid?`Changes here apply to all ${L.length} scene${L.length===1?'':'s'} in ${fById(fid).name}. Leave a box alone to keep each scene’s own.`:'For this scene. Also in Scene info (⌘I).';};
   fillHdr();card.addEventListener('click',e=>{if(e.target.closest('[data-g=scope]'))setTimeout(fillHdr,0);});
   card.querySelector('#xProds').onclick=()=>productionsDialog(exportDialog);
   card.querySelector('#xOk').onclick=()=>{let hch=false;card.querySelectorAll('[data-h]').forEach(inp=>{const k=inp.dataset.h,v=inp.value.trim();if(hOrig[k]===null&&!v)return;if(v!==(hOrig[k]||''))for(const x of hList()){x[k]=v;hch=true;}});if(hch)commit();
-   const pv=card.querySelector('#xProd').value||null,v={scope:cur.scope,port:cur.port,layout:cur.layout,nb:card.querySelector('#xNb').checked,q:card.querySelector('#xQ').checked,st:card.querySelector('#xSt').checked,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked,bd:card.querySelector('#xBd').checked,prod:pv,master:card.querySelector('#xMaster').checked,split:card.querySelector('#xSplit').checked,zoom:card.querySelector('#xZoom').checked,fa:card.querySelector('#xFa').checked,pf:card.querySelector('#xPf').checked,nl:card.querySelector('#xNl').checked};P.ui.exp=v;
+   const pv=card.querySelector('#xProd').value||null,v={scope:cur.scope,port:cur.port,pv:1,layout:cur.layout,scr:sHas?card.querySelector('#xScr').checked:o.scr,scrm:card.querySelector('#xScrM').checked,nb:card.querySelector('#xNb').checked,q:card.querySelector('#xQ').checked,st:card.querySelector('#xSt').checked,dia:card.querySelector('#xDia').checked,list:card.querySelector('#xList').checked,sb:card.querySelector('#xSb').checked,bd:card.querySelector('#xBd').checked,prod:pv,master:card.querySelector('#xMaster').checked,split:card.querySelector('#xSplit').checked,zoom:card.querySelector('#xZoom').checked,fa:card.querySelector('#xFa').checked,pf:card.querySelector('#xPf').checked,nl:card.querySelector('#xNl').checked};P.ui.exp=v;
    if(fid&&pv!==fp){let f=fById(fid),tgt=null,g=0;while(f&&g++<40){if(f.prod){tgt=f;break;}f=f.parent?fById(f.parent):null;}tgt=tgt||topFolder(fid);if(pv)tgt.prod=pv;else delete tgt.prod;prodSaved();}
    saveLocal();closeModal();exportPDF(v);};
  },'numcard');}
